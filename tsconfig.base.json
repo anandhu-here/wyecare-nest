@@ -1,0 +1,32 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@wyecare-monorepo/config": ["libs/shared/config/src/index.ts"],
+      "@wyecare-monorepo/core": ["libs/api/core/src/index.ts"],
+      "@wyecare-monorepo/api/core": ["libs/api/core/src/index.ts"],
+      "@wyecare-monorepo/features": ["libs/api/features/src/index.ts"],
+      "@wyecare-monorepo/shared-utils": ["libs/shared/utils/src/index.ts"],
+      "@wyecare-monorepo/shared/config": ["libs/shared/config/src/index.ts"],
+      "@wyecare-monorepo/types": ["libs/shared/types/src/index.ts"],
+      "@wyecare-monorepo/utils": ["libs/api/utils/src/index.ts"],
+      "@wyecare-monorepo/web-features": ["libs/web/features/src/index.ts"],
+      "@wyecare-monorepo/web-ui": ["libs/web/ui/src/index.ts"],
+      "@wyecare-monorepo/web-utils": ["libs/web/utils/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

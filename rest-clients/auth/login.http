@@ -1,0 +1,20 @@
+@baseUrl = http://localhost:4205/api/v1
+@authToken = {{login.response.body.token}}
+
+### Variables for test data
+
+@testEmail = anandhusathe@gmail.com
+@testPassword = testing@123
+@resetCode = 123456
+
+
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "anandhusathe@gmail.com",
+  "password": "testing@123"
+}

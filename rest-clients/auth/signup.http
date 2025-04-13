@@ -1,0 +1,96 @@
+@baseUrl = http://localhost:4205/api/v1
+@authToken = {{login.response.body.token}}
+
+### Variables for test data
+@testEmail = anandhusathe@gmail.com
+@testPassword = testing@123
+@resetCode = 123456
+
+### Register a new user
+# @name register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "{{testEmail}}",
+  "password": "{{testPassword}}",
+  "role": "user",
+  "phone": "1234567890",
+  "countryCode": "+1",
+  "gender": "male",
+  "address": {
+    "street": "123 Main St",
+    "city": "Anytown",
+    "state": "CA",
+    "zipCode": "12345",
+    "country": "USA"
+  },
+  "countryMetadata": {
+    "code": "US",
+    "currency": "USD",
+    "region": "GLOBAL"
+  }
+}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}",
+  "password": "{{testPassword}}"
+}
+
+### Verify Email
+POST {{baseUrl}}/auth/verify-email
+Content-Type: application/json
+
+{
+  "token": "c8fccec538a6515aa20ce1ee5359d42d953be863b2db68ce09d2a067b4d8ba08"
+}
+
+### Resend Verification Email
+POST {{baseUrl}}/auth/resend-verification-email
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}"
+}
+
+### Request Password Reset
+POST {{baseUrl}}/auth/request-reset
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}"
+}
+
+### Reset Password
+POST {{baseUrl}}/auth/reset-password
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}",
+  "code": "{{resetCode}}",
+  "newPassword": "NewPassword123!"
+}
+
+### Get User Profile
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{authToken}}
+
+### Request Account Deletion
+POST {{baseUrl}}/auth/request-account-deletion
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "reason": "No longer using the service"
+}
+
+### Cancel Account Deletion
+POST {{baseUrl}}/auth/cancel-account-deletion
+Authorization: Bearer {{authToken}}

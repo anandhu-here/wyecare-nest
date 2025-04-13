@@ -1,0 +1,112 @@
+### Seed Permissions
+POST http://localhost:4205/api/v1/seed-permission
+Content-Type: application/json
+
+{}
+
+### Create Super Admin
+POST http://localhost:4205/api/v1/create-super-admin
+Content-Type: application/json
+
+{
+  "email": "anandhu2@wyecare.com",
+  "password": "testing@123",
+  "firstName": "Super",
+  "lastName": "Admin",
+    "phone": "1234567890",
+  "countryCode": "+1",
+  "gender": "male",
+  "address": {
+    "street": "123 Admin Street",
+    "city": "Admin City",
+    "state": "Admin State",
+    "zipCode": "12345",
+    "country": "USA"
+  },
+  "countryMetadata": {
+    "code": "US",
+    "currency": "USD",
+    "region": "GLOBAL"
+  },
+  "systemSecret": "f291f153f3cda6909d15651e80eb479c8227793adb9b09c137bfd4446dedeca3948bbccc4abb9f42f6547d5cb99cbd1d118b6d552ccf56e10c3d040f1691748b"
+}
+
+### Create Organization Invitation (requires super admin)
+
+@baseUrl = http://localhost:4205/api/v1
+@authToken = {{superAdminLogin.response.body.token}}
+
+### Variables
+@superAdminEmail = anandhu2@wyecare.com
+@superAdminPassword = testing@123
+@testUserEmail = annusathee@gmail.com
+
+### Login as Super Admin
+# @name superAdminLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{superAdminEmail}}",
+  "password": "{{superAdminPassword}}"
+}
+
+### Create Organization Invitation (requires super admin)
+# @name createInvitation
+POST {{baseUrl}}/super-admin/organization-invitations
+Content-Type: application/json
+Authorization: Bearer {{superAdminLogin.response.body.token}}
+
+{
+  "email": "{{testUserEmail}}",
+  "roleToAssign": "owner",
+  "firstName": "Test",
+  "lastName": "User",
+  "message": "Please create your organization"
+}
+
+### Get All Invitations (requires super admin)
+GET {{baseUrl}}/super-admin/organization-invitations?page=1&limit=10
+Authorization: Bearer {{superAdminLogin.response.body.token}}
+
+### Get Invitation by ID (for checking status)
+GET {{baseUrl}}/super-admin/organization-invitations/{{createInvitation.response.body._id}}
+Authorization: Bearer {{superAdminLogin.response.body.token}}
+
+### Register with Invitation
+# @name registerWithInvitation
+POST {{baseUrl}}/auth/register-with-invitation?token=4203a7122977433547b335483a81714058e6eb5cfdec1504a5ae461d0ea96305
+Content-Type: application/json
+
+{
+  "firstName": "Annu",
+  "lastName": "Doe",
+   "email": "{{testUserEmail}}",
+  "password": "testing@123",
+  "role": "user",
+  "phone": "1234567890",
+  "countryCode": "+1",
+  "gender": "male",
+  "address": {
+    "street": "123 Main St",
+    "city": "Anytown",
+    "state": "CA",
+    "zipCode": "12345",
+    "country": "USA"
+  },
+  "countryMetadata": {
+    "code": "US",
+    "currency": "USD",
+    "region": "GLOBAL"
+  }
+}
+
+### Login as New User
+# @name newUserLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{testUserEmail}}",
+  "password": "password123"
+}

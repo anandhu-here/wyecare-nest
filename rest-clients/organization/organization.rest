@@ -1,0 +1,102 @@
+@baseUrl = http://localhost:4205/api/v1
+@testEmail = annusathee@gmail.com
+@testPassword = testing@123
+
+### Login first to get token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}",
+  "password": "{{testPassword}}"
+}
+
+### get profile 
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{authToken}}
+
+### Store the auth token from the login response
+@authToken = {{login.response.body.token}}
+
+### test auth 
+
+GET {{baseUrl}}/auth/test-auth
+Authorization: Bearer {{authToken}}
+
+
+### test 
+
+GET {{baseUrl}}/organizations/test
+Authorization: Bearer {{authToken}}
+
+
+### Create a new organization
+POST {{baseUrl}}/organizations
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Annu Organization",
+  "type": "agency",
+  "address": {
+    "street": "123 Main St",
+    "city": "Anytown",
+    "state": "CA",
+    "zipCode": "12345",
+    "country": "USA"
+  },
+  "phone": "1234567890",
+  "countryCode": "+1",
+  "email": "org@example.com"
+}
+
+### Get my organization
+GET {{baseUrl}}/organizations
+Authorization: Bearer {{authToken}}
+
+### Update organization
+PATCH {{baseUrl}}/organizations
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Updated Organization Name",
+  "address": {
+    "street": "456 Main St",
+    "city": "New City",
+    "state": "NY",
+    "zipCode": "54321",
+    "country": "USA"
+  },
+  "phone": "9876543210"
+}
+
+### Request organization deletion
+POST {{baseUrl}}/organizations/request-org-deletion
+Authorization: Bearer {{authToken}}
+
+### Cancel organization deletion
+POST {{baseUrl}}/organizations/123456789012345678901234/cancel-deletion
+Authorization: Bearer {{authToken}}
+
+### Get organizations listing
+GET {{baseUrl}}/organizations/listing
+Authorization: Bearer {{authToken}}
+
+### Search organizations
+GET {{baseUrl}}/organizations/search?query=test&type=agency
+Authorization: Bearer {{authToken}}
+
+### Get organization role hierarchy
+GET {{baseUrl}}/organizations/roles/123456789012345678901234
+Authorization: Bearer {{authToken}}
+
+### Set primary organization
+POST {{baseUrl}}/organizations/set-primary
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "organizationId": "123456789012345678901234"
+}

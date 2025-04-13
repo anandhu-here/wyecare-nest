@@ -1,0 +1,81 @@
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+
+import { User, UserSchema } from '../users/schemas/user.schema';
+import { AuthorizationModule } from '../authorization/authorization.module';
+import {
+  Organization,
+  OrganizationSchema,
+} from './schemas/organization.schema';
+import {
+  OrganizationRole,
+  OrganizationRoleSchema,
+} from '../authorization/schemas/organization-role.schema';
+import {
+  OrganizationInvitation,
+  OrganizationInvitationSchema,
+} from './schemas/organization.invitation.schema';
+import { OrganizationsController } from './controllers/organizations.controller';
+import { OrganizationStaffController } from './controllers/organization-staff.controller';
+import { OrganizationLinkingController } from './controllers/organization-linking.controller';
+import { OrganizationInvitationController } from './controllers/organization-invitation.controller';
+import { OrganizationsService } from './services/organizations.service';
+import { OrganizationStaffService } from './services/organization-staff.service';
+import { OrganizationLinkingService } from './services/organization-linking.service';
+import { OrganizationInvitationService } from './services/organization-invitation.service';
+import {
+  OrganizationLink,
+  OrganizationLinkSchema,
+} from './schemas/organization.link.schema';
+import {
+  LinkInvitation,
+  LinkInvitationSchema,
+} from './schemas/link.invitation';
+import { Role, RoleSchema } from '../authorization/schemas/role.schema';
+import { UtilsModule } from '@wyecare-monorepo/shared-utils';
+import {
+  UserMetadata,
+  UserMetadataSchema,
+} from '../super-admin/schemas/user-metadata.schema';
+import { OrganizationContextGuard } from './organization-context.guard';
+
+@Module({
+  imports: [
+    MongooseModule.forFeature([
+      { name: Organization.name, schema: OrganizationSchema },
+      { name: OrganizationRole.name, schema: OrganizationRoleSchema },
+      { name: OrganizationLink.name, schema: OrganizationLinkSchema },
+      { name: LinkInvitation.name, schema: LinkInvitationSchema },
+      { name: Role.name, schema: RoleSchema },
+      {
+        name: OrganizationInvitation.name,
+        schema: OrganizationInvitationSchema,
+      },
+      { name: User.name, schema: UserSchema },
+      { name: UserMetadata.name, schema: UserMetadataSchema },
+    ]),
+    UtilsModule,
+    AuthorizationModule,
+  ],
+  controllers: [
+    OrganizationsController,
+    OrganizationStaffController,
+    OrganizationLinkingController,
+    OrganizationInvitationController,
+  ],
+  providers: [
+    OrganizationsService,
+    OrganizationStaffService,
+    OrganizationLinkingService,
+    OrganizationInvitationService,
+    OrganizationContextGuard,
+  ],
+  exports: [
+    OrganizationsService,
+    OrganizationStaffService,
+    OrganizationLinkingService,
+    OrganizationInvitationService,
+    OrganizationContextGuard,
+  ],
+})
+export class OrganizationsModule {}

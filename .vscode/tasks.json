@@ -1,0 +1,41 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Clean npm",
+      "type": "shell",
+      "command": "rm -rf node_modules && rm -rf dist && rm -rf package-lock.json && npm install -f"
+    },
+    {
+      "label": "Start API",
+      "type": "shell",
+      "command": "nx",
+      "args": ["serve", "api"],
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "."
+        }
+      }
+    },
+    // start web
+    {
+      "label": "Start Web",
+      "type": "shell",
+      "command": "nx",
+      "args": ["serve", "web"],
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "."
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,310 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Req,
+  HttpStatus,
+  Res,
+} from '@nestjs/common';
+import { Response } from 'express';
+import { Types } from 'mongoose';
+import { JwtAuthGuard } from '../../authentication/jwt/jwt-auth.guard';
+import { RequirePermission } from '../../authorization/permissions.decorator';
+import { LinkOrganizationsDto } from '../dto/link-organizations.dto';
+import { UnlinkOrganizationsDto } from '../dto/unlink-organizations.dto';
+import { CreateLinkInvitationDto } from '../dto/create-link-invitation.dto';
+import { RespondToLinkInvitationDto } from '../dto/respond-to-link-invitation.dto';
+import { OrganizationLinkingService } from '../services/organization-linking.service';
+
+@Controller('organizations')
+@UseGuards(JwtAuthGuard)
+export class OrganizationLinkingController {
+  constructor(
+    private readonly organizationLinkingService: OrganizationLinkingService
+  ) {}
+
+  @Post('/link')
+  @RequirePermission('link_organizations')
+  async linkOrganizations(
+    @Body() linkOrganizationsDto: LinkOrganizationsDto,
+    @Req() req: any,
+    @Res() res: Response
+  ) {
+    try {
+      const result = await this.organizationLinkingService.linkOrganizations(
+        linkOrganizationsDto,
+        req.user._id
+      );
+
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Organizations linked successfully',
+        data: result,
+      });
+    } catch (error: any) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message || 'Failed to link organizations',
+      });
+    }
+  }
+
+  @Post('/unlink')
+  @RequirePermission('link_organizations')
+  async unlinkOrganizations(
+    @Body() unlinkOrganizationsDto: UnlinkOrganizationsDto,
+    @Req() req: any,
+    @Res() res: Response
+  ) {
+    try {
+      const result = await this.organizationLinkingService.unlinkOrganizations(
+        unlinkOrganizationsDto,
+        req.user._id
+      );
+
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Organizations unlinked successfully',
+        data: result,
+      });
+    } catch (error: any) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message || 'Failed to unlink organizations',
+      });
+    }
+  }
+
+  @Get('/linked')
+  @RequirePermission('view_organization')
+  async getLinkedOrganizations(@Req() req: any, @Res() res: Response) {
+    try {
+      const organizations =
+        await this.organizationLinkingService.getLinkedOrganizations(
+          req.currentOrganization._id
+        );
+
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        data: organizations,
+      });
+    } catch (error: any) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message || 'Failed to fetch linked organizations',
+      });
+    }
+  }
+
+  @Get('/linked/paginated')
+  @RequirePermission('view_organization')
+  async getLinkedOrganizationsPaginated(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('type') type: string,
+    @Req() req: any,
+    @Res() res: Response
+  ) {
+    try {
+      const result =
+        await this.organizationLinkingService.getLinkedOrganizationsPaginated(
+          req.currentOrganization._id,
+          page,
+          limit,
+          type
+        );
+
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        data: result.data,
+        pagination: result.pagination,
+      });
+    } catch (error: any) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message || 'Failed to fetch linked organizations',
+      });
+    }
+  }
+
+  @Get('/linked/:organizationId')
+  @RequirePermission('view_organization')
+  async getLinkedOrganizationById(
+    @Param('organizationId') organizationId: string,
+    @Req() req: any,
+    @Res() res: Response
+  ) {
+    try {
+      const organization =
+        await this.organizationLinkingService.getLinkedOrganizationById(
+          req.currentOrganization._id,
+          new Types.ObjectId(organizationId)
+        );
+
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        data: organization,
+      });
+    } catch (error: any) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message || 'Failed to fetch linked organization',
+      });
+    }
+  }
+
+  @Get('/linked-admins')
+  async getLinkedOrganizationAdmin(@Req() req: any, @Res() res: Response) {
+    try {
+      const admins =
+        await this.organizationLinkingService.getLinkedOrganizationAdmin(
+          req.currentOrganization._id
+        );
+
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        data: admins,
+      });
+    } catch (error: any) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message || 'Failed to fetch linked organization admins',
+      });
+    }
+  }
+
+  @Get('/linked-admins/carer')
+  async getLinkedOrganizationAdminForCarer(
+    @Req() req: any,
+    @Res() res: Response
+  ) {
+    try {
+      const admins =
+        await this.organizationLinkingService.getLinkedOrganizationAdminForCarer(
+          req.currentOrganization._id,
+          req.user._id
+        );
+
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        data: admins,
+      });
+    } catch (error: any) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message:
+          error.message ||
+          'Failed to fetch linked organization admins for carer',
+      });
+    }
+  }
+
+  // Link Invitation Endpoints
+  @Post('/linkInvitation')
+  @RequirePermission('link_organizations')
+  async createLinkInvitation(
+    @Body() createLinkInvitationDto: CreateLinkInvitationDto,
+    @Req() req: any,
+    @Res() res: Response
+  ) {
+    try {
+      const result = await this.organizationLinkingService.createLinkInvitation(
+        createLinkInvitationDto,
+        req.user._id,
+        req.currentOrganization._id
+      );
+
+      return res.status(HttpStatus.CREATED).json({
+        success: true,
+        message: 'Link invitation created successfully',
+        data: result,
+      });
+    } catch (error: any) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message || 'Failed to create link invitation',
+      });
+    }
+  }
+
+  @Get('/linkInvitations')
+  @RequirePermission('view_organization')
+  async getLinkInvitations(@Req() req: any, @Res() res: Response) {
+    try {
+      const invitations =
+        await this.organizationLinkingService.getLinkInvitations(
+          req.currentOrganization._id
+        );
+
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        data: invitations,
+      });
+    } catch (error: any) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message || 'Failed to fetch link invitations',
+      });
+    }
+  }
+
+  @Delete('/linkInvitations/:invitationId')
+  async deleteLinkInvitation(
+    @Param('invitationId') invitationId: string,
+    @Req() req: any,
+    @Res() res: Response
+  ) {
+    try {
+      const result = await this.organizationLinkingService.deleteLinkInvitation(
+        new Types.ObjectId(invitationId),
+        req.user._id
+      );
+
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Link invitation deleted successfully',
+        data: result,
+      });
+    } catch (error: any) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message || 'Failed to delete link invitation',
+      });
+    }
+  }
+
+  @Post('/respondToLinkInvitation')
+  @RequirePermission('link_organizations')
+  async respondToLinkInvitation(
+    @Body() respondToInvitationDto: RespondToLinkInvitationDto,
+    @Req() req: any,
+    @Res() res: Response
+  ) {
+    try {
+      const result =
+        await this.organizationLinkingService.respondToLinkInvitation(
+          respondToInvitationDto,
+          req.user._id,
+          req.currentOrganization._id
+        );
+
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        message: `Link invitation ${
+          respondToInvitationDto.accept ? 'accepted' : 'rejected'
+        } successfully`,
+        data: result,
+      });
+    } catch (error: any) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message || 'Failed to respond to link invitation',
+      });
+    }
+  }
+}
