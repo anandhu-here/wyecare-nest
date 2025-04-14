@@ -1,0 +1,149 @@
+@baseUrl = http://localhost:4205/api/v1
+@testEmail = anandhusathe@gmail.com
+@testPassword = testing@123
+
+### Login first to get token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}",
+  "password": "{{testPassword}}"
+}
+
+### Store the auth token from the login response
+@authToken = {{login.response.body.token}}
+
+### Create a new shift pattern
+# @name createShiftPattern
+POST {{baseUrl}}/shift-patterns
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Day Shift",
+  "rates": [
+    {
+      "careHomeId": "615f3e4b7c8b9a12345678ab",
+      "userType": "nurse",
+      "weekdayRate": 12.50,
+      "weekendRate": 15.75,
+      "holidayRate": 18,
+      "emergencyWeekdayRate": 15,
+      "emergencyWeekendRate": 18.25,
+      "emergencyHolidayRate": 22
+    }
+  ],
+  "userTypeRates": [
+    {
+      "userType": "nurse",
+      "weekdayRate": 11,
+      "weekendRate": 14,
+      "holidayRate": 16.5,
+      "emergencyWeekdayRate": 13.5,
+      "emergencyWeekendRate": 16.5,
+      "emergencyHolidayRate": 19.5
+    }
+  ],
+  "timings": [
+    {
+      "startTime": "08:00",
+      "endTime": "16:00",
+      "careHomeId": "615f3e4b7c8b9a12345678ab",
+      "billableHours": 7.5,
+      "breakHours": 0.5
+    }
+  ]
+}
+
+### Create a new agency shift pattern for a home
+POST {{baseUrl}}/shift-patterns/agency
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Agency Standard Shift",
+  "homeRates": [
+    {
+      "careHomeId": "67fc081145b3d854017fa67c",
+      "careHomeName": "Sample Care Home",
+      
+      "carerWeekdayRate": 11.50,
+      "carerWeekendRate": 14.00,
+      "carerHolidayRate": 17.00,
+      "carerEmergencyWeekdayRate": 13.50,
+      "carerEmergencyWeekendRate": 16.00,
+      "carerEmergencyHolidayRate": 19.00,
+      
+      "nurseWeekdayRate": 18.00,
+      "nurseWeekendRate": 22.00,
+      "nurseHolidayRate": 25.00,
+      "nurseEmergencyWeekdayRate": 21.00,
+      "nurseEmergencyWeekendRate": 25.00,
+      "nurseEmergencyHolidayRate": 28.00,
+      
+      "seniorCarerWeekdayRate": 14.50,
+      "seniorCarerWeekendRate": 17.00,
+      "seniorCarerHolidayRate": 20.00,
+      "seniorCarerEmergencyWeekdayRate": 17.00,
+      "seniorCarerEmergencyWeekendRate": 19.50,
+      "seniorCarerEmergencyHolidayRate": 22.50
+    }
+  ],
+  "timings": [
+    {
+      "careHomeId": "67fc081145b3d854017fa67c",
+      "startTime": "07:00",
+      "endTime": "15:00",
+      "billableHours": 7.5,
+      "breakHours": 0.5
+    }
+  ]
+}
+
+### Get all my shift patterns
+GET {{baseUrl}}/shift-patterns
+Authorization: Bearer {{authToken}}
+
+### Get shift patterns from another organization
+GET {{baseUrl}}/shift-patterns/other/615f3e4b7c8b9a12345678cd
+Authorization: Bearer {{authToken}}
+
+### Get a specific shift pattern
+GET {{baseUrl}}/shift-patterns/{{createShiftPattern.response.body._id}}
+Authorization: Bearer {{authToken}}
+
+### Update a shift pattern
+PUT {{baseUrl}}/shift-patterns/{{createShiftPattern.response.body._id}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Updated Day Shift",
+  "rates": [
+    {
+      "careHomeId": "615f3e4b7c8b9a12345678ab",
+      "userType": "nurse",
+      "weekdayRate": 13.50,
+      "weekendRate": 16.75,
+      "holidayRate": 19,
+      "emergencyWeekdayRate": 16,
+      "emergencyWeekendRate": 19.25,
+      "emergencyHolidayRate": 23
+    }
+  ],
+  "timings": [
+    {
+      "startTime": "07:00",
+      "endTime": "15:00",
+      "careHomeId": "615f3e4b7c8b9a12345678ab",
+      "billableHours": 7.5,
+      "breakHours": 0.5
+    }
+  ]
+}
+
+### Delete a shift pattern
+DELETE {{baseUrl}}/shift-patterns/{{createShiftPattern.response.body._id}}
+Authorization: Bearer {{authToken}}

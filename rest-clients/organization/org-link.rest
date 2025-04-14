@@ -1,0 +1,135 @@
+@baseUrl = http://localhost:4205/api/v1
+@testEmail = annusathee@gmail.com
+@testPassword = testing@123
+
+### Login first to get token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}",
+  "password": "{{testPassword}}"
+}
+
+### Store the auth token from the login response
+@authToken = {{login.response.body.token}}
+
+### Create a link token
+# @name createLinkToken
+POST {{baseUrl}}/organizations/link-token
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "sourceOrganizationId": "615f3e4b7c8b9a12345678ab",
+  "linkType": "partner",
+  "message": "Let's connect our organizations",
+  "expiresIn": "7d"
+}
+
+### Store the link token and URL from the response
+@linkToken = {{createLinkToken.response.body.data.token}}
+@linkUrl = {{createLinkToken.response.body.data.linkUrl}}
+
+### Verify a link token
+POST {{baseUrl}}/organizations/verify-link-token
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "token": "{{linkToken}}"
+}
+
+### Accept a link using token
+POST {{baseUrl}}/organizations/accept-link-token
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "token": "{{linkToken}}",
+  "targetOrganizationId": "615f3e4b7c8b9a87654321cd"
+}
+
+### Get linked organizations
+GET {{baseUrl}}/organizations/linked
+Authorization: Bearer {{authToken}}
+
+### Get linked organizations with pagination
+GET {{baseUrl}}/organizations/linked/paginated?page=1&limit=10&type=agency
+Authorization: Bearer {{authToken}}
+
+### Get a specific linked organization
+GET {{baseUrl}}/organizations/linked/615f3e4b7c8b9a87654321cd
+Authorization: Bearer {{authToken}}
+
+### Get admins of linked organizations
+GET {{baseUrl}}/organizations/linked-admins
+Authorization: Bearer {{authToken}}
+
+### Traditional (direct) linking of organizations
+POST {{baseUrl}}/organizations/link
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "sourceOrganizationId": "615f3e4b7c8b9a12345678ab",
+  "targetOrganizationId": "615f3e4b7c8b9a87654321cd",
+  "linkType": "partner",
+  "notes": "Strategic partnership"
+}
+
+### Unlink organizations
+POST {{baseUrl}}/organizations/unlink
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "sourceOrganizationId": "615f3e4b7c8b9a12345678ab",
+  "targetOrganizationId": "615f3e4b7c8b9a87654321cd"
+}
+
+### Create a link invitation (direct)
+POST {{baseUrl}}/organizations/linkInvitation
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "sourceOrganizationId": "615f3e4b7c8b9a12345678ab",
+  "targetOrganizationId": "615f3e4b7c8b9a12345678cd",
+  "invitationType": "direct",
+  "message": "Let's connect our organizations",
+  "linkType": "partner"
+}
+
+### Create a link invitation (via email)
+POST {{baseUrl}}/organizations/linkInvitation
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "sourceOrganizationId": "615f3e4b7c8b9a12345678ab",
+  "targetEmail": "partner@example.com",
+  "invitationType": "email",
+  "message": "Please join our organization network",
+  "linkType": "affiliate"
+}
+
+### Get pending link invitations
+GET {{baseUrl}}/organizations/linkInvitations
+Authorization: Bearer {{authToken}}
+
+### Delete a link invitation
+DELETE {{baseUrl}}/organizations/linkInvitations/615f3e4b7c8b9a12345678ef
+Authorization: Bearer {{authToken}}
+
+### Respond to a link invitation
+POST {{baseUrl}}/organizations/respondToLinkInvitation
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "invitationId": "615f3e4b7c8b9a12345678ef",
+  "accept": true,
+  "notes": "Happy to connect with your organization"
+}

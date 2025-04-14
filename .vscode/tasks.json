@@ -36,6 +36,17 @@
           "endsPattern": "."
         }
       }
+    },
+
+    // Start all apps
+    {
+      "label": "Start All",
+      "dependsOn": ["Start API", "Start Web"],
+      "dependsOrder": "sequence",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     }
   ]
 }

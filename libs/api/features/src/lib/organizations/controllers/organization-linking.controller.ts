@@ -20,6 +20,12 @@ import { UnlinkOrganizationsDto } from '../dto/unlink-organizations.dto';
 import { CreateLinkInvitationDto } from '../dto/create-link-invitation.dto';
 import { RespondToLinkInvitationDto } from '../dto/respond-to-link-invitation.dto';
 import { OrganizationLinkingService } from '../services/organization-linking.service';
+import { Auth } from '../../authorization/auth.decorator';
+import {
+  AcceptLinkDto,
+  CreateLinkTokenDto,
+  VerifyLinkTokenDto,
+} from '../dto/token-link.dto';
 
 @Controller('organizations')
 @UseGuards(JwtAuthGuard)
@@ -81,7 +87,7 @@ export class OrganizationLinkingController {
   }
 
   @Get('/linked')
-  @RequirePermission('view_organization')
+  @Auth('view_organization')
   async getLinkedOrganizations(@Req() req: any, @Res() res: Response) {
     try {
       const organizations =
@@ -102,7 +108,7 @@ export class OrganizationLinkingController {
   }
 
   @Get('/linked/paginated')
-  @RequirePermission('view_organization')
+  @Auth('view_organization')
   async getLinkedOrganizationsPaginated(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
@@ -204,9 +210,103 @@ export class OrganizationLinkingController {
     }
   }
 
+  @Post('/link-token')
+  @Auth('link_organizations')
+  async createLinkToken(
+    @Body() createLinkTokenDto: CreateLinkTokenDto,
+    @Req() req: any,
+    @Res() res: Response
+  ) {
+    try {
+      const result = await this.organizationLinkingService.createLinkToken(
+        {
+          ...createLinkTokenDto,
+          sourceOrganizationId: req.currentOrganization._id,
+        },
+        req.user._id
+      );
+
+      // Create the frontend URL that can be shared
+      const baseUrl = process.env['FRONTEND_URL'] || 'https://yourdomain.com';
+      const linkUrl = `${baseUrl}/organizations/link?token=${result.token}`;
+
+      return res.status(HttpStatus.CREATED).json({
+        success: true,
+        message: 'Link token created successfully',
+        data: {
+          ...result,
+          linkUrl,
+        },
+      });
+    } catch (error: any) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message || 'Failed to create link token',
+      });
+    }
+  }
+
+  /**
+   * Verify a link token without accepting it
+   */
+  @Post('/verify-link-token')
+  @UseGuards(JwtAuthGuard)
+  async verifyLinkToken(
+    @Body() verifyLinkTokenDto: VerifyLinkTokenDto,
+    @Res() res: Response
+  ) {
+    try {
+      const result = await this.organizationLinkingService.verifyLinkToken(
+        verifyLinkTokenDto
+      );
+
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Link token verified successfully',
+        data: result,
+      });
+    } catch (error: any) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message: error.message || 'Invalid link token',
+      });
+    }
+  }
+
+  /**
+   * Accept a link using a token
+   */
+  @Post('/accept-link-token')
+  @Auth('link_organizations')
+  async acceptLink(
+    @Body() acceptLinkDto: AcceptLinkDto,
+    @Req() req: any,
+    @Res() res: Response
+  ) {
+    try {
+      const result = await this.organizationLinkingService.acceptLink(
+        {
+          ...acceptLinkDto,
+          targetOrganizationId: req.currentOrganization._id,
+        },
+        req.user._id
+      );
+
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Organizations linked successfully',
+        data: result,
+      });
+    } catch (error: any) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message: error.message || 'Failed to link organizations',
+      });
+    }
+  }
   // Link Invitation Endpoints
   @Post('/linkInvitation')
-  @RequirePermission('link_organizations')
+  @Auth('link_organizations')
   async createLinkInvitation(
     @Body() createLinkInvitationDto: CreateLinkInvitationDto,
     @Req() req: any,

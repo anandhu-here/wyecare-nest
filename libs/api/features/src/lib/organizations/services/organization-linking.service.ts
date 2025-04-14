@@ -34,6 +34,12 @@ import {
   LinkInvitationDocument,
 } from '../schemas/link.invitation';
 import { Role, RoleDocument } from '../../authorization/schemas/role.schema';
+import {
+  AcceptLinkDto,
+  CreateLinkTokenDto,
+  VerifyLinkTokenDto,
+} from '../dto/token-link.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class OrganizationLinkingService {
@@ -51,7 +57,8 @@ export class OrganizationLinkingService {
     private organizationRoleModel: Model<OrganizationRoleDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private emailService: EmailService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private jwtService: JwtService
   ) {}
 
   /**
@@ -420,6 +427,228 @@ export class OrganizationLinkingService {
     }));
   }
 
+  async createLinkToken(
+    createLinkTokenDto: CreateLinkTokenDto,
+    userId: Types.ObjectId
+  ): Promise<{ token: string; expiresAt: Date }> {
+    const {
+      sourceOrganizationId,
+      linkType,
+      message,
+      expiresIn = '7d',
+    } = createLinkTokenDto;
+
+    // Verify that source organization exists
+    const organization = await this.organizationModel.findById(
+      sourceOrganizationId
+    );
+    if (!organization) {
+      throw new NotFoundException('Source organization not found');
+    }
+
+    // Get expiration time
+    const expiresInMs = this.parseDuration(expiresIn);
+    const expiresAt = new Date(Date.now() + expiresInMs);
+
+    // Create token payload
+    const payload = {
+      sourceOrganizationId: sourceOrganizationId.toString(),
+      sourceOrganizationName: organization.name,
+      linkType: linkType || 'default',
+      message: message || '',
+      createdBy: userId.toString(),
+      createdAt: new Date().toISOString(),
+      expiresAt: expiresAt.toISOString(),
+    };
+
+    // Generate JWT token
+    const token = this.jwtService.sign(payload, {
+      expiresIn,
+      secret: process.env['JWT_LINK_TOKEN_SECRET'] || process.env['JWT_SECRET'],
+    });
+
+    return { token, expiresAt };
+  }
+
+  /**
+   * Verify a link token without accepting the link
+   */
+  async verifyLinkToken(verifyLinkTokenDto: VerifyLinkTokenDto): Promise<any> {
+    try {
+      // Verify the token
+      const payload = this.jwtService.verify(verifyLinkTokenDto.token, {
+        secret:
+          process.env['JWT_LINK_TOKEN_SECRET'] || process.env['JWT_SECRET'],
+      });
+
+      // Check if token is expired
+      if (new Date(payload.expiresAt) < new Date()) {
+        throw new BadRequestException('Link token has expired');
+      }
+
+      // Get source organization details
+      const sourceOrg = await this.organizationModel.findById(
+        payload.sourceOrganizationId
+      );
+      if (!sourceOrg) {
+        throw new NotFoundException('Source organization not found');
+      }
+
+      return {
+        valid: true,
+        sourceOrganization: {
+          id: sourceOrg._id,
+          name: sourceOrg.name,
+          type: sourceOrg.type,
+        },
+        linkType: payload.linkType,
+        message: payload.message,
+        expiresAt: payload.expiresAt,
+      };
+    } catch (error: any) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
+      }
+
+      // Handle JWT verification errors
+      this.logger.error(
+        `Error verifying link token: ${error.message}`,
+        error.stack
+      );
+      throw new BadRequestException('Invalid or expired link token');
+    }
+  }
+
+  /**
+   * Accept a link using the token
+   */
+  async acceptLink(
+    acceptLinkDto: AcceptLinkDto,
+    userId: Types.ObjectId
+  ): Promise<OrganizationLink> {
+    try {
+      // Verify the token first
+      const tokenInfo = await this.verifyLinkToken({
+        token: acceptLinkDto.token,
+      });
+
+      // Check if target organization exists
+      const targetOrg = await this.organizationModel.findById(
+        acceptLinkDto.targetOrganizationId
+      );
+      if (!targetOrg) {
+        throw new NotFoundException('Target organization not found');
+      }
+
+      // Check if organizations are already linked
+      const existingLink = await this.organizationLinkModel
+        .findOne({
+          $or: [
+            {
+              sourceOrganization: tokenInfo.sourceOrganization.id,
+              targetOrganization: acceptLinkDto.targetOrganizationId,
+            },
+            {
+              sourceOrganization: acceptLinkDto.targetOrganizationId,
+              targetOrganization: tokenInfo.sourceOrganization.id,
+            },
+          ],
+        })
+        .exec();
+
+      if (existingLink) {
+        throw new BadRequestException('Organizations are already linked');
+      }
+
+      // Create the link
+      const link = new this.organizationLinkModel({
+        sourceOrganization: tokenInfo.sourceOrganization.id,
+        targetOrganization: acceptLinkDto.targetOrganizationId,
+        linkType: tokenInfo.linkType,
+        notes: tokenInfo.message,
+        createdBy: userId,
+      });
+
+      // Execute operations in parallel
+      await Promise.all([
+        // Save the link
+        link.save(),
+
+        // Update both organizations
+        this.organizationModel.findByIdAndUpdate(
+          tokenInfo.sourceOrganization.id,
+          {
+            $addToSet: {
+              linkedOrganizations: acceptLinkDto.targetOrganizationId,
+            },
+          }
+        ),
+        this.organizationModel.findByIdAndUpdate(
+          acceptLinkDto.targetOrganizationId,
+          {
+            $addToSet: {
+              linkedOrganizations: tokenInfo.sourceOrganization.id,
+            },
+          }
+        ),
+      ]);
+
+      // Notify both organizations
+      try {
+        await this.notifyAdmins(
+          tokenInfo.sourceOrganization.id,
+          'Organizations Linked',
+          `Your organization has been linked with ${targetOrg.name}.`
+        );
+
+        await this.notifyAdmins(
+          acceptLinkDto.targetOrganizationId,
+          'Organizations Linked',
+          `Your organization has been linked with ${tokenInfo.sourceOrganization.name}.`
+        );
+      } catch (error: any) {
+        this.logger.error(
+          `Error notifying about organization linking: ${error.message}`,
+          error.stack
+        );
+      }
+
+      return link;
+    } catch (error: any) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
+      }
+
+      this.logger.error(`Error accepting link: ${error.message}`, error.stack);
+      throw new BadRequestException('Failed to process link acceptance');
+    }
+  }
+
+  /**
+   * Helper to parse duration string to milliseconds
+   */
+  private parseDuration(duration: string): number {
+    const unit = duration.charAt(duration.length - 1);
+    const value = parseInt(duration.slice(0, -1));
+
+    switch (unit) {
+      case 'h': // hours
+        return value * 60 * 60 * 1000;
+      case 'd': // days
+        return value * 24 * 60 * 60 * 1000;
+      case 'w': // weeks
+        return value * 7 * 24 * 60 * 60 * 1000;
+      default:
+        throw new BadRequestException('Invalid duration format');
+    }
+  }
+
   /**
    * Create a link invitation
    */
@@ -429,12 +658,6 @@ export class OrganizationLinkingService {
     sourceOrgId: Types.ObjectId
   ): Promise<LinkInvitation> {
     // Validate source organization
-    if (
-      createLinkInvitationDto.sourceOrganizationId.toString() !==
-      sourceOrgId.toString()
-    ) {
-      throw new BadRequestException('Source organization ID mismatch');
-    }
 
     // Create invitation based on type
     if (createLinkInvitationDto.invitationType === InvitationType.DIRECT) {

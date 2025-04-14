@@ -9,7 +9,7 @@ POST http://localhost:4205/api/v1/create-super-admin
 Content-Type: application/json
 
 {
-  "email": "anandhu2@wyecare.com",
+  "email": "anandhu@wyecare.com",
   "password": "testing@123",
   "firstName": "Super",
   "lastName": "Admin",
@@ -37,9 +37,9 @@ Content-Type: application/json
 @authToken = {{superAdminLogin.response.body.token}}
 
 ### Variables
-@superAdminEmail = anandhu2@wyecare.com
+@superAdminEmail = anandhu@wyecare.com
 @superAdminPassword = testing@123
-@testUserEmail = annusathee@gmail.com
+@testUserEmail = anandhusathe@gmail.com
 
 ### Login as Super Admin
 # @name superAdminLogin
@@ -75,12 +75,12 @@ Authorization: Bearer {{superAdminLogin.response.body.token}}
 
 ### Register with Invitation
 # @name registerWithInvitation
-POST {{baseUrl}}/auth/register-with-invitation?token=4203a7122977433547b335483a81714058e6eb5cfdec1504a5ae461d0ea96305
+POST {{baseUrl}}/auth/register-with-invitation?token=e66b4681e36ba82de223f58f2ed851e68175644639275ae5a7b322098becb9b8
 Content-Type: application/json
 
 {
   "firstName": "Annu",
-  "lastName": "Doe",
+  "lastName": "Doey",
    "email": "{{testUserEmail}}",
   "password": "testing@123",
   "role": "user",

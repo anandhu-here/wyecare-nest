@@ -1,9 +1,6 @@
-export function WebUtils() {
-  return (
-    <div className={styles['container']}>
-      <h1>Welcome to WebUtils!</h1>
-    </div>
-  );
-}
+import clsx, { type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
-export default WebUtils;
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}

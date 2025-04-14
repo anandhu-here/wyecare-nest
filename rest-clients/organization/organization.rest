@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:4205/api/v1
-@testEmail = annusathee@gmail.com
+@testEmail = anandhusathe@gmail.com
 @testPassword = testing@123
 
 ### Login first to get token
@@ -37,7 +37,7 @@ Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-  "name": "Annu Organization",
+  "name": "Annu Home",
   "type": "agency",
   "address": {
     "street": "123 Main St",
@@ -100,3 +100,56 @@ Content-Type: application/json
 {
   "organizationId": "123456789012345678901234"
 }
+
+
+### Create a link invitation (direct)
+# @name createDirectLinkInvitation
+POST {{baseUrl}}/organizations/linkInvitation
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "sourceOrganizationId": "615f3e4b7c8b9a12345678ab",
+  "targetOrganizationId": "615f3e4b7c8b9a12345678cd",
+  "invitationType": "direct",
+  "message": "Let's connect our organizations",
+  "linkType": "partner"
+}
+
+### Create a link invitation (via email)
+# @name createEmailLinkInvitation
+POST {{baseUrl}}/organizations/linkInvitation
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "sourceOrganizationId": "615f3e4b7c8b9a12345678ab",
+  "targetEmail": "anandhusathe@gmail.com",
+  "invitationType": "email",
+  "message": "Please join our organization network",
+  "linkType": "affiliate"
+}
+
+### Get pending link invitations
+GET {{baseUrl}}/organizations/linkInvitations/pending
+Authorization: Bearer {{authToken}}
+
+### Accept a link invitation
+POST {{baseUrl}}/organizations/linkInvitations/accept/615f3e4b7c8b9a12345678ef
+Authorization: Bearer {{authToken}}
+
+### Reject a link invitation
+POST {{baseUrl}}/organizations/linkInvitations/reject/615f3e4b7c8b9a12345678ef
+Authorization: Bearer {{authToken}}
+
+### Cancel a link invitation
+DELETE {{baseUrl}}/organizations/linkInvitations/615f3e4b7c8b9a12345678ef
+Authorization: Bearer {{authToken}}
+
+### Get all linked organizations
+GET {{baseUrl}}/organizations/linked
+Authorization: Bearer {{authToken}}
+
+### Remove a link between organizations
+DELETE {{baseUrl}}/organizations/links/615f3e4b7c8b9a12345678ef
+Authorization: Bearer {{authToken}}

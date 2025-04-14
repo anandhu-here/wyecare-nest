@@ -38,6 +38,7 @@ import {
   UserMetadataSchema,
 } from '../super-admin/schemas/user-metadata.schema';
 import { OrganizationContextGuard } from './organization-context.guard';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -56,6 +57,10 @@ import { OrganizationContextGuard } from './organization-context.guard';
     ]),
     UtilsModule,
     AuthorizationModule,
+    JwtModule.register({
+      secret: process.env['JWT_SECRET'],
+      signOptions: { expiresIn: '60m' },
+    }),
   ],
   controllers: [
     OrganizationsController,

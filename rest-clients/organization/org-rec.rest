@@ -1,0 +1,135 @@
+@baseUrl = http://localhost:4205/api/v1
+@testEmail = anandhusathe@gmail.com
+@testPassword = password123
+
+### Login first to get token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}",
+  "password": "{{testPassword}}"
+}
+
+### Store the auth token from the login response
+@authToken = {{login.response.body.token}}
+
+### Create a link token
+# @name createLinkToken
+POST {{baseUrl}}/organizations/link-token
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "sourceOrganizationId": "615f3e4b7c8b9a12345678ab",
+  "linkType": "partner",
+  "message": "Let's connect our organizations",
+  "expiresIn": "7d"
+}
+
+### Store the link token and URL from the response
+@linkToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzb3VyY2VPcmdhbml6YXRpb25JZCI6IjY3ZmJlMjVjOGQ5MzljZGM1MWQyZDliYyIsInNvdXJjZU9yZ2FuaXphdGlvbk5hbWUiOiJVcGRhdGVkIE9yZ2FuaXphdGlvbiBOYW1lIiwibGlua1R5cGUiOiJwYXJ0bmVyIiwibWVzc2FnZSI6IkxldCdzIGNvbm5lY3Qgb3VyIG9yZ2FuaXphdGlvbnMiLCJjcmVhdGVkQnkiOiI2N2ZiZTAzN2Q5ZmM5OTNiOTBhYzFkMjEiLCJjcmVhdGVkQXQiOiIyMDI1LTA0LTEzVDE4OjI0OjA2LjkzNloiLCJleHBpcmVzQXQiOiIyMDI1LTA0LTIwVDE4OjI0OjA2LjkzNVoiLCJpYXQiOjE3NDQ1Njg2NDYsImV4cCI6MTc0NTE3MzQ0Nn0.K4QnKduU0giHgQ3EVzEwNzIenWhknumXEBe4OlMtroo
+@linkUrl = {{createLinkToken.response.body.data.linkUrl}}
+
+### Verify a link token
+POST {{baseUrl}}/organizations/verify-link-token
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "token": "{{linkToken}}"
+}
+
+### Accept a link using token
+POST {{baseUrl}}/organizations/accept-link-token
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "token": "{{linkToken}}",
+  "targetOrganizationId": "615f3e4b7c8b9a87654321cd"
+}
+
+### Get linked organizations
+GET {{baseUrl}}/organizations/linked
+Authorization: Bearer {{authToken}}
+
+### Get linked organizations with pagination
+GET {{baseUrl}}/organizations/linked/paginated?page=1&limit=10&type=agency
+Authorization: Bearer {{authToken}}
+
+### Get a specific linked organization
+GET {{baseUrl}}/organizations/linked/615f3e4b7c8b9a87654321cd
+Authorization: Bearer {{authToken}}
+
+### Get admins of linked organizations
+GET {{baseUrl}}/organizations/linked-admins
+Authorization: Bearer {{authToken}}
+
+### Traditional (direct) linking of organizations
+POST {{baseUrl}}/organizations/link
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "sourceOrganizationId": "615f3e4b7c8b9a12345678ab",
+  "targetOrganizationId": "615f3e4b7c8b9a87654321cd",
+  "linkType": "partner",
+  "notes": "Strategic partnership"
+}
+
+### Unlink organizations
+POST {{baseUrl}}/organizations/unlink
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "sourceOrganizationId": "615f3e4b7c8b9a12345678ab",
+  "targetOrganizationId": "615f3e4b7c8b9a87654321cd"
+}
+
+### Create a link invitation (direct)
+POST {{baseUrl}}/organizations/linkInvitation
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "sourceOrganizationId": "615f3e4b7c8b9a12345678ab",
+  "targetOrganizationId": "615f3e4b7c8b9a12345678cd",
+  "invitationType": "direct",
+  "message": "Let's connect our organizations",
+  "linkType": "partner"
+}
+
+### Create a link invitation (via email)
+POST {{baseUrl}}/organizations/linkInvitation
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "sourceOrganizationId": "615f3e4b7c8b9a12345678ab",
+  "targetEmail": "partner@example.com",
+  "invitationType": "email",
+  "message": "Please join our organization network",
+  "linkType": "affiliate"
+}
+
+### Get pending link invitations
+GET {{baseUrl}}/organizations/linkInvitations
+Authorization: Bearer {{authToken}}
+
+### Delete a link invitation
+DELETE {{baseUrl}}/organizations/linkInvitations/615f3e4b7c8b9a12345678ef
+Authorization: Bearer {{authToken}}
+
+### Respond to a link invitation
+POST {{baseUrl}}/organizations/respondToLinkInvitation
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "invitationId": "615f3e4b7c8b9a12345678ef",
+  "accept": true,
+  "notes": "Happy to connect with your organization"
+}

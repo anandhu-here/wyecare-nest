@@ -25,7 +25,8 @@
       "@wyecare-monorepo/utils": ["libs/api/utils/src/index.ts"],
       "@wyecare-monorepo/web-features": ["libs/web/features/src/index.ts"],
       "@wyecare-monorepo/web-ui": ["libs/web/ui/src/index.ts"],
-      "@wyecare-monorepo/web-utils": ["libs/web/utils/src/index.ts"]
+      "@wyecare-monorepo/web-utils": ["libs/web/utils/src/index.ts"],
+      "@wyecare-monorepo/shadcn/*": ["libs/web/ui/src/lib/shadcn-components/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]
