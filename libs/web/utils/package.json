@@ -1,5 +1,5 @@
 {
-  "name": "@wyecare-monorepo/web-utils",
+  "name": "@/lib/util",
   "version": "0.0.1",
   "main": "./index.js",
   "types": "./index.d.ts",

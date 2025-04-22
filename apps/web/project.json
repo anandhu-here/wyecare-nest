@@ -6,6 +6,9 @@
   "implicitDependencies": ["web-features", "web-ui", "web-utils", "utils"],
   "tags": [],
   "targets": {
+    "start-dev-frontend": {
+      "command": "cd apps/web && env-cmd -f .env.dev vite serve --mode development"
+    },
     "build": {
       "executor": "@nx/vite:build",
       "outputs": ["{options.outputPath}"],

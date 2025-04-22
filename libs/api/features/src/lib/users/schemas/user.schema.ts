@@ -54,7 +54,7 @@ export class User {
   @Prop({ default: false })
   isSuperAdmin!: boolean;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   role!: string;
 
   @Prop({ type: AddressSchema })

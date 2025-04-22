@@ -4,7 +4,6 @@ import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { User, UserDocument } from '../../users/schemas/user.schema';
-
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
 import { ConfigService } from '@nestjs/config';
@@ -13,95 +12,93 @@ import { randomBytes } from 'crypto';
 import { EmailService } from 'libs/shared/utils/src/lib/services/email.service';
 import { OrganizationsService } from '../../organizations/services/organizations.service';
 import { OrganizationInvitationService } from '../../super-admin/services/organization-invitation.service';
-
+import { OrganizationStaffService } from '../../organizations/services/organization-staff.service';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
-
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private configService: ConfigService,
     private emailService: EmailService,
     private organizationsService: OrganizationsService,
-    private organizationInvitationService: OrganizationInvitationService
+    private organizationInvitationService: OrganizationInvitationService,
+    private organizationStaffService: OrganizationStaffService
   ) {}
-
   async registerWithInvitationToken(
     registerDto: RegisterDto,
     token?: string
   ): Promise<Partial<UserDocument>> {
-    // Create the user account first
-    const user = await this.register(registerDto);
-
-    // If no token is provided, just return the normal user
-    if (!token) {
-      return user.user;
+    const existingUser = await this.findUserByEmail(registerDto.email);
+    if (existingUser) {
+      throw new BadRequestException('Email is already registered');
     }
-
+    const user = new this.userModel({
+      firstName: registerDto.firstName.trim(),
+      lastName: registerDto.lastName.trim(),
+      email: registerDto.email.toLowerCase().trim(),
+      password: registerDto.password,
+      countryCode: registerDto.countryCode,
+      phone: registerDto.phone.trim(),
+      address: registerDto.address,
+    });
+    if (!token) {
+      return user;
+    }
     try {
-      // Validate and process the invitation token
       const invitation =
         await this.organizationInvitationService.getInvitationByToken(token);
-
-      // Check if invitation email matches registration email
-      if (invitation.email.toLowerCase() !== user.user.email.toLowerCase()) {
+      if (invitation.email.toLowerCase() !== user.email.toLowerCase()) {
         this.logger.warn(
-          `Email mismatch for invitation: ${invitation.email} vs ${user.user.email}`
+          `Email mismatch for invitation: ${invitation.email} vs ${user.email}`
         );
         throw new BadRequestException(
           'The invitation was sent to a different email address'
         );
       }
-
-      // Grant permission to create organization with the specified role
+      console.log(invitation, 'invitation');
       await this.organizationInvitationService.grantPermissionToCreateOrganization(
-        user.user._id as any,
+        user._id as any,
         invitation.roleToAssign,
         invitation.invitedBy as any
       );
-
-      // Mark the invitation as accepted
       await this.organizationInvitationService.acceptInvitation(
         token,
-        user.user._id as any
+        user._id as any
       );
-
       this.logger.log(
-        `User ${user.user.email} registered with invitation token and granted create_organization permission`
+        `User ${user.email} registered with invitation token and granted create_organization permission`
       );
-
-      return user.user;
+      user.emailVerified = true;
+      user.emailVerificationToken = undefined;
+      user.emailVerificationTokenExpires = undefined;
+      user.role = invitation.roleToAssign;
+      await user.save();
+      return user;
     } catch (error: any) {
-      // Log the error but don't prevent user registration
       this.logger.error(
         `Error processing invitation during registration: ${error.message}`,
         error.stack
       );
-      return user.user;
+      throw new BadRequestException(
+        'Error processing invitation during registration'
+      );
     }
   }
-
-  /**
-   * Register a new user
-   */
-  async register(registerDto: RegisterDto) {
+  async registerWithStaffInvitationToken(
+    registerDto: RegisterDto,
+    token: string
+  ): Promise<Partial<UserDocument>> {
     try {
-      // Validate email format
       if (!this.isValidEmail(registerDto.email)) {
         throw { code: 'VALIDATION_ERROR', message: 'Invalid email format' };
       }
-
-      // Validate password
       if (registerDto.password.length < 8 || registerDto.password.length > 32) {
         throw {
           code: 'VALIDATION_ERROR',
           message: 'Password must be between 8 and 32 characters',
         };
       }
-
       const email = registerDto.email.toLowerCase().trim();
-
-      // Check if user already exists
       const existingUser = await this.findUserByEmail(email);
       if (existingUser) {
         throw {
@@ -109,7 +106,67 @@ export class AuthService {
           message: 'Email is already registered',
         };
       }
-
+      const invitation =
+        await this.organizationStaffService.getStaffInvitationByToken(token);
+      console.log(invitation, 'staff invitation');
+      console.log(invitation.email, email, 'staff invitation email');
+      if (invitation.email.toLowerCase() !== email) {
+        this.logger.warn(
+          `Email mismatch for staff invitation: ${invitation.email} vs ${email}`
+        );
+        throw new BadRequestException(
+          'The invitation was sent to a different email address'
+        );
+      }
+      const user = new this.userModel({
+        firstName: registerDto.firstName.trim(),
+        lastName: registerDto.lastName.trim(),
+        email,
+        role: registerDto.role,
+        password: registerDto.password,
+        countryCode: registerDto.countryCode,
+        phone: registerDto.phone.trim(),
+        address: registerDto.address,
+        emailVerified: true,
+        gender: registerDto.gender,
+        countryMetadata: registerDto.countryMetadata,
+      });
+      await user.save();
+      await this.organizationStaffService.processStaffInvitation(
+        token,
+        user._id as any
+      );
+      this.logger.log(
+        `User ${user.email} registered with staff invitation and added to organization ${invitation.organizationId}`
+      );
+      return user;
+    } catch (error: any) {
+      this.logger.error(
+        `Error during staff invitation registration: ${error.message}`,
+        error.stack
+      );
+      throw error;
+    }
+  }
+  async register(registerDto: RegisterDto) {
+    try {
+      if (!this.isValidEmail(registerDto.email)) {
+        throw { code: 'VALIDATION_ERROR', message: 'Invalid email format' };
+      }
+      if (registerDto.password.length < 8 || registerDto.password.length > 32) {
+        throw {
+          code: 'VALIDATION_ERROR',
+          message: 'Password must be between 8 and 32 characters',
+        };
+      }
+      const email = registerDto.email.toLowerCase().trim();
+      const existingUser = await this.findUserByEmail(email);
+      if (existingUser) {
+        throw {
+          code: 'EMAIL_ALREADY_REGISTERED',
+          message: 'Email is already registered',
+        };
+      }
       const user = new this.userModel({
         firstName: registerDto.firstName.trim(),
         lastName: registerDto.lastName.trim(),
@@ -123,35 +180,22 @@ export class AuthService {
         gender: registerDto.gender,
         countryMetadata: registerDto.countryMetadata,
       });
-
-      // Generate email verification token
       const emailToken = this.generateRandomToken();
       user.emailVerificationToken = emailToken;
       user.emailVerificationTokenExpires = new Date(
         Date.now() + 24 * 60 * 60 * 1000
-      ); // 24 hours
-
+      );
       await user.save();
-
-      // Generate JWT token
       const token = await this.generateToken(user._id as any);
-
-      // Get user roles
-      // const roles = await this.organizationsService.getUserHighestAndLowestRoles(
-      //   user._id.toString()
-      // );
       const roles: any = {
         highest: null,
         lowest: null,
         primaryRole: null,
       };
-
-      // Send verification email
       const emailTemplate = getEmailVerificationTemplate(
         emailToken,
         user.firstName
       );
-
       try {
         await this.emailService.sendEmail({
           to: user.email,
@@ -165,10 +209,6 @@ export class AuthService {
           error
         );
       }
-
-      // Create initial organization roles if needed
-      // This would be implemented based on your business logic
-
       return {
         user: {
           _id: user._id,
@@ -179,7 +219,7 @@ export class AuthService {
           emailVerified: user.emailVerified,
         },
         token,
-        pendingJoinRequest: null, // Would be fetched from join request service
+        pendingJoinRequest: null,
         currentOrganization: roles?.highest?.organization || null,
       };
     } catch (error) {
@@ -187,16 +227,30 @@ export class AuthService {
       throw error;
     }
   }
-
-  /**
-   * Login a user
-   */
+  async redirectUrlForLogin(
+    userId: string,
+    currentOrganizationId: string | undefined,
+    permissions: string[] | undefined
+  ): Promise<string> {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user?.emailVerified) {
+      return `${process.env['FRONTEND_URL']}/auth/verify-email?email=${user?.email}`;
+    }
+    if (!currentOrganizationId) {
+      if (
+        permissions?.length === 1 &&
+        permissions?.includes('create_organization')
+      ) {
+        return `${process.env['FRONTEND_URL']}/auth/create-organization`;
+      }
+      return `${process.env['FRONTEND_URL']}/auth/join-organization`;
+    }
+    return `${process.env['FRONTEND_URL']}/dashboard`;
+  }
   async login(loginDto: LoginDto) {
     const email = loginDto.email.toLowerCase();
     console.log(`Attempting to find user with email: ${email}`);
-
     const user = await this.findUserByEmail(email);
-
     if (!user) {
       throw { code: 'INVALID_CREDENTIALS', message: 'Invalid credentials' };
     }
@@ -204,28 +258,14 @@ export class AuthService {
     if (!isPasswordValid) {
       throw { code: 'INVALID_CREDENTIALS', message: 'Invalid credentials' };
     }
-
-    // Get roles for user
     const roles =
       await this.organizationsService.getUserHighestAndLowestRolesByEmail(
         loginDto.email
       );
-
-    // const roles: any = {
-    //   highest: null,
-    //   lowest: null,
-    //   primaryRole: null,
-    // };
-
     const token = await this.generateToken(user._id as any);
-
-    // Handle organization role logic
     if (roles && roles.primaryRole && roles.primaryRole.organization) {
       console.log(roles);
-      // Update or create organization role for the user
-      // This would be implemented based on your business logic
     }
-
     return {
       user: {
         id: user._id,
@@ -235,198 +275,123 @@ export class AuthService {
       token,
     };
   }
-
-  /**
-   * Verify a user's email
-   */
   async verifyEmail(token: string) {
     const user = await this.userModel.findOne({
       emailVerificationToken: token,
       emailVerificationTokenExpires: { $gt: new Date() },
     });
-
     if (!user) {
       throw { code: 'INVALID_TOKEN', message: 'Invalid verification token' };
     }
-
     user.emailVerified = true;
     user.emailVerificationToken = undefined;
     user.emailVerificationTokenExpires = undefined;
-
     await user.save();
-
     return user;
   }
-
-  /**
-   * Resend verification email
-   */
   async resendVerificationEmail(email: string) {
     const user = await this.findUserByEmail(email);
-
     if (!user) {
       throw { code: 'USER_NOT_FOUND', message: 'User not found' };
     }
-
     if (user.emailVerified) {
       throw {
         code: 'EMAIL_ALREADY_VERIFIED',
         message: 'Email is already verified',
       };
     }
-
     const newEmailToken = this.generateRandomToken();
-
     user.emailVerificationToken = newEmailToken;
     user.emailVerificationTokenExpires = new Date(
       Date.now() + 24 * 60 * 60 * 1000
-    ); // 24 hours
-
+    );
     await user.save();
-
     const emailTemplate = getEmailVerificationTemplate(
       newEmailToken,
       user.firstName
     );
-
     await this.emailService.sendEmail({
       to: user.email,
       subject: 'Verify Your Email',
       html: emailTemplate,
     });
-
     return true;
   }
-
-  /**
-   * Request password reset
-   */
   async requestPasswordReset(email: string) {
     const user = await this.findUserByEmail(email);
-
     if (!user) {
       throw { code: 'USER_NOT_FOUND', message: 'User not found' };
     }
-
-    // Generate a 6-digit reset code
     const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
-
     user.passwordResetCode = resetCode;
-    user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-
+    user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000);
     await user.save();
-
-    // Send reset code email
     const emailTemplate = ``;
     await this.emailService.sendEmail({
       to: user.email,
       subject: 'Password Reset Code',
       html: emailTemplate,
     });
-
     return true;
   }
-
-  /**
-   * Reset user password
-   */
   async resetPassword(email: string, code: string, newPassword: string) {
     const user = await this.userModel.findOne({
       email,
       passwordResetCode: code,
       passwordResetExpires: { $gt: new Date() },
     });
-
     if (!user) {
       throw { code: 'INVALID_RESET_CODE', message: 'Invalid reset code' };
     }
-
     user.password = await this.hashPassword(newPassword);
     user.passwordResetCode = undefined;
     user.passwordResetExpires = undefined;
-
     await user.save();
-
     return true;
   }
-
-  /**
-   * Request account deletion
-   */
   async requestAccountDeletion(userId: string, reason: string) {
     const user = await this.userModel.findById(userId);
-
     if (!user) {
       throw { code: 'USER_NOT_FOUND', message: 'User not found' };
     }
-
     user.accountDeletionRequested = true;
     user.accountDeletionRequestedAt = new Date();
-    // You might want to store the reason somewhere
-
     await user.save();
-
     return {
       success: true,
       message: 'Account deletion request submitted successfully',
     };
   }
-
-  /**
-   * Cancel account deletion
-   */
   async cancelAccountDeletion(userId: string) {
     const user = await this.userModel.findById(userId);
-
     if (!user) {
       throw { code: 'USER_NOT_FOUND', message: 'User not found' };
     }
-
     user.accountDeletionRequested = false;
     user.accountDeletionRequestedAt = undefined;
-
     await user.save();
-
     return {
       success: true,
       message: 'Account deletion request cancelled successfully',
     };
   }
-
-  /**
-   * Find a user by email
-   */
   async findUserByEmail(email: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ email: email.toLowerCase() }).exec();
   }
-
-  /**
-   * Find a user by ID
-   */
   async findUserById(id: string): Promise<UserDocument | null> {
     return this.userModel.findById(id).exec();
   }
-
-  /**
-   * Generate JWT token
-   */
   async generateToken(userId: string): Promise<string> {
     const secret = this.configService.get<string>('JWT_SECRET');
-
     if (!secret) {
       this.logger.error('JWT_SECRET is not defined in environment variables');
       throw new Error('JWT_SECRET is not defined');
     }
-
     return jwt.sign({ userId }, secret, {
       expiresIn: '1d',
       algorithm: 'HS256',
     });
   }
-
-  /**
-   * Verify password
-   */
   async verifyPassword(
     providedPassword: string,
     storedPassword: string
@@ -436,26 +401,14 @@ export class AuthService {
     console.log(await bcrypt.compare(providedPassword, storedPassword));
     return bcrypt.compare(providedPassword, storedPassword);
   }
-
-  /**
-   * Hash password
-   */
   private async hashPassword(password: string): Promise<string> {
     const salt = await bcrypt.genSalt(10);
     return bcrypt.hash(password, salt);
   }
-
-  /**
-   * Validate email format
-   */
   private isValidEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
-
-  /**
-   * Generate random token
-   */
   private generateRandomToken(): string {
     return randomBytes(32).toString('hex');
   }

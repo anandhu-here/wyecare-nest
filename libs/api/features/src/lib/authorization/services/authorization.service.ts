@@ -72,6 +72,202 @@ export class AuthorizationService {
   }
 
   /**
+   * Get all permissions for a user in a given context
+   */
+  async getAllUserPermissions(
+    userId: Types.ObjectId,
+    context: PermissionContext
+  ): Promise<string[]> {
+    try {
+      const permissionSet = new Set<string>();
+
+      // 1. Get direct custom permissions
+      const customPermissionsQuery: any = {
+        userId,
+        contextType: context.contextType,
+        $or: [
+          { expiresAt: { $exists: false } },
+          { expiresAt: null },
+          { expiresAt: { $gt: new Date() } },
+        ],
+      };
+
+      // Add contextId only for ORGANIZATION context
+      if (context.contextType === 'ORGANIZATION' && context.organizationId) {
+        customPermissionsQuery.contextId = context.organizationId;
+      }
+
+      const userCustomPermissions = await this.userCustomPermissionModel
+        .find(customPermissionsQuery)
+        .exec();
+
+      // Add custom permissions to the set
+      userCustomPermissions.forEach((permission) => {
+        permissionSet.add(permission.permissionId);
+      });
+
+      console.log(
+        context.contextType,
+        'customPermissions:',
+        userCustomPermissions
+      );
+
+      // // For SYSTEM context, we only consider custom permissions
+      // if (context.contextType === 'SYSTEM') {
+      //   return Array.from(permissionSet);
+      // }
+
+      console.log(context.organizationId, 'context.organizationId:');
+      // The rest applies only to ORGANIZATION context
+      if (!context.organizationId) {
+        this.logger.debug(
+          'No organization ID provided for organization context'
+        );
+        return Array.from(permissionSet);
+      }
+
+      // 2. Get role-based permissions
+      const userRoles = await this.getUserRolesForOrganization(
+        userId,
+        context.organizationId
+      );
+
+      console.log('userRoles:', userRoles);
+
+      if (userRoles.length > 0) {
+        const rolePermissions = await this.rolePermissionModel
+          .find({
+            roleId: { $in: userRoles },
+          })
+          .exec();
+
+        // Add role permissions to the set
+        rolePermissions.forEach((permission) => {
+          permissionSet.add(permission.permissionId);
+        });
+
+        // 3. Add permissions from role hierarchy
+        for (const roleId of userRoles) {
+          const hierarchyPermissions =
+            await this.getPermissionsFromRoleHierarchy(roleId);
+          hierarchyPermissions.forEach((permId) => permissionSet.add(permId));
+        }
+      }
+
+      // 4. Add implied permissions
+      const directPermissions = Array.from(permissionSet);
+      const impliedPermissions = await this.getImpliedPermissions(
+        directPermissions
+      );
+      impliedPermissions.forEach((permId) => permissionSet.add(permId));
+
+      return Array.from(permissionSet);
+    } catch (error: any) {
+      this.logger.error(
+        `Error getting user permissions: ${error.message}`,
+        error.stack
+      );
+      return [];
+    }
+  }
+
+  /**
+   * Helper method to get permissions from role hierarchy
+   */
+  private async getPermissionsFromRoleHierarchy(
+    roleId: string,
+    processedRoles: Set<string> = new Set()
+  ): Promise<string[]> {
+    // Prevent circular references
+    if (processedRoles.has(roleId)) {
+      return [];
+    }
+
+    processedRoles.add(roleId);
+    const permissionSet = new Set<string>();
+
+    try {
+      // Get permissions for this role
+      const rolePermissions = await this.rolePermissionModel
+        .find({ roleId })
+        .exec();
+
+      rolePermissions.forEach((perm) => {
+        permissionSet.add(perm.permissionId);
+      });
+
+      // Check if this role has a base role
+      const role = await this.roleModel.findOne({ id: roleId }).exec();
+
+      if (role?.baseRoleId) {
+        const baseRolePermissions = await this.getPermissionsFromRoleHierarchy(
+          role.baseRoleId,
+          processedRoles
+        );
+
+        baseRolePermissions.forEach((permId) => {
+          permissionSet.add(permId);
+        });
+      }
+
+      return Array.from(permissionSet);
+    } catch (error: any) {
+      this.logger.error(
+        `Error in role hierarchy traversal: ${error.message}`,
+        error.stack
+      );
+      return [];
+    }
+  }
+
+  /**
+   * Helper method to get all implied permissions
+   */
+  private async getImpliedPermissions(
+    permissionIds: string[]
+  ): Promise<string[]> {
+    if (permissionIds.length === 0) {
+      return [];
+    }
+
+    const permissionSet = new Set<string>();
+
+    try {
+      // Find direct implications
+      const implications = await this.permissionImplicationModel
+        .find({
+          childPermissionId: { $in: permissionIds },
+        })
+        .exec();
+
+      const parentPermIds = implications.map((imp) => imp.parentPermissionId);
+
+      // Add all parent permissions
+      parentPermIds.forEach((permId) => {
+        permissionSet.add(permId);
+      });
+
+      // Recursively find nested implications
+      if (parentPermIds.length > 0) {
+        const nestedImplications = await this.getImpliedPermissions(
+          parentPermIds
+        );
+        nestedImplications.forEach((permId) => {
+          permissionSet.add(permId);
+        });
+      }
+
+      return Array.from(permissionSet);
+    } catch (error: any) {
+      this.logger.error(
+        `Error getting implied permissions: ${error.message}`,
+        error.stack
+      );
+      return [];
+    }
+  }
+
+  /**
    * Check if a user has a specific permission in a given context
    */
   async hasPermission(

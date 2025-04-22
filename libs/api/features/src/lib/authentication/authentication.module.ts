@@ -47,7 +47,16 @@ import { RolesService } from '../authorization/services/roles.service';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './jwt/jwt-auth.guard';
 import { TestController } from './controllers/test-controller';
-
+import { AuthorizationModule } from '../authorization/authorization.module';
+import { OrganizationStaffService } from '../organizations/services/organization-staff.service';
+import {
+  StaffInvitation,
+  StaffInvitationSchema,
+} from '../organizations/schemas/staff-invitation.schema';
+import {
+  Organization,
+  OrganizationSchema,
+} from '../organizations/schemas/organization.schema';
 @Module({
   imports: [
     PassportModule,
@@ -71,8 +80,11 @@ import { TestController } from './controllers/test-controller';
       { name: RolePermission.name, schema: RolePermissionSchema },
       { name: PermissionImplication.name, schema: PermissionImplicationSchema },
       { name: Role.name, schema: RoleSchema },
-      { name: Permission.name, schema: PermissionSchema }, // Add this line
+      { name: Permission.name, schema: PermissionSchema },
+      { name: StaffInvitation.name, schema: StaffInvitationSchema },
+      { name: Organization.name, schema: OrganizationSchema },
     ]),
+    AuthorizationModule,
     OrganizationsModule,
     UtilsModule,
   ],

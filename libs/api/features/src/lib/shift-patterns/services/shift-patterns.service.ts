@@ -107,6 +107,7 @@ export class ShiftPatternsService {
     try {
       return await this.shiftPatternModel
         .find({ userId: new Types.ObjectId(userId) })
+        .lean()
         .exec();
     } catch (error: any) {
       this.logger.error(

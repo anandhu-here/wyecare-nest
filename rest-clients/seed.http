@@ -39,7 +39,7 @@ Content-Type: application/json
 ### Variables
 @superAdminEmail = anandhu@wyecare.com
 @superAdminPassword = testing@123
-@testUserEmail = anandhusathe@gmail.com
+@testUserEmail = annusathee@gmail.com
 
 ### Login as Super Admin
 # @name superAdminLogin
@@ -75,7 +75,7 @@ Authorization: Bearer {{superAdminLogin.response.body.token}}
 
 ### Register with Invitation
 # @name registerWithInvitation
-POST {{baseUrl}}/auth/register-with-invitation?token=e66b4681e36ba82de223f58f2ed851e68175644639275ae5a7b322098becb9b8
+POST {{baseUrl}}/auth/register-with-invitation?token=c1f32eeb1428d665bb42812997d0857d428a644c13f718968b9a5f93514ec6a4
 Content-Type: application/json
 
 {

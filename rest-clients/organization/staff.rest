@@ -1,0 +1,135 @@
+@baseUrl = http://localhost:4205/api/v1
+@testEmail = anandhusathe@gmail.com
+@testPassword = testing@123
+
+### Login first to get token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}",
+  "password": "{{testPassword}}"
+}
+
+### Store the auth token from the login response
+@authToken = {{login.response.body.token}}
+
+### Get my organization to obtain organizationId
+# @name myOrg
+GET {{baseUrl}}/organizations
+Authorization: Bearer {{authToken}}
+
+### Store the organization ID from the response
+@organizationId = {{myOrg.response.body.data._id}}
+
+### Create a staff invitation
+# @name createStaffInvitation
+POST {{baseUrl}}/organizations/staff/invitations
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "email": "annusathee@gmail.com",
+  "firstName": "New",
+  "lastName": "Staff",
+  "role": "carer",
+  "message": "Please join our team as a carer"
+}
+
+### Get all staff invitations for an organization
+GET {{baseUrl}}/organizations/{{organizationId}}/staff/invitations
+Authorization: Bearer {{authToken}}
+
+### Get all staff invitations with status filter
+GET {{baseUrl}}/organizations/{{organizationId}}/staff/invitations?status=pending
+Authorization: Bearer {{authToken}}
+
+### Get all staff invitations with pagination
+GET {{baseUrl}}/organizations/{{organizationId}}/staff/invitations?page=1&limit=10
+Authorization: Bearer {{authToken}}
+
+### Store the invitation ID from the create response
+@invitationId = {{createStaffInvitation.response.body.invitation._id}}
+
+### Resend a staff invitation
+POST {{baseUrl}}/organizations/{{organizationId}}/staff/invitations/{{invitationId}}/resend
+Authorization: Bearer {{authToken}}
+
+### Cancel/delete a staff invitation
+DELETE {{baseUrl}}/organizations/{{organizationId}}/staff/invitations/{{invitationId}}
+Authorization: Bearer {{authToken}}
+
+### Register with staff invitation (test the registration flow)
+# Note: This would be done by the invited user, not the admin
+POST {{baseUrl}}/auth/register-with-staff-invitation?token=h2bbfff6y5m9lim38r&type=staff
+Content-Type: application/json
+
+{
+  "firstName": "Bheekaran",
+  "lastName": "Staff",
+  "email": "annusathee@gmail.com",
+  "password": "testing123",
+  "role": "carer",
+  "phone": "1234567890",
+  "countryCode": "+1",
+  "address": {
+    "street": "123 Main St",
+    "city": "Anytown",
+    "state": "CA",
+    "zipCode": "12345",
+    "country": "USA"
+  }
+}
+
+### Get organization staff
+GET {{baseUrl}}/organizations/{{organizationId}}/staff
+Authorization: Bearer {{authToken}}
+
+### Add a user to organization
+POST {{baseUrl}}/organizations/{{organizationId}}/staff
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "email": "existinguser@example.com",
+  "role": "carer",
+  "organizationId": "{{organizationId}}"
+}
+
+### Update user role in organization
+# First get a user ID from staff list
+# @name staffList
+GET {{baseUrl}}/organizations/{{organizationId}}/staff
+Authorization: Bearer {{authToken}}
+
+### Store a user ID from the staff list
+# Note: You may need to adjust this depending on how the staff list is returned
+@staffUserId = {{staffList.response.body.staff.0._id}}
+
+### Update the role of a staff member
+PATCH {{baseUrl}}/organizations/{{organizationId}}/staff/{{staffUserId}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "role": "senior_carer",
+  "organizationId": "{{organizationId}}"
+}
+
+### Remove a user from organization
+DELETE {{baseUrl}}/organizations/{{organizationId}}/staff/{{staffUserId}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "organizationId": "{{organizationId}}"
+}
+
+### Get all care staff for organization
+GET {{baseUrl}}/organizations/{{organizationId}}/staff/care
+Authorization: Bearer {{authToken}}
+
+### Get all admin staff for organization
+GET {{baseUrl}}/organizations/{{organizationId}}/staff/admin
+Authorization: Bearer {{authToken}}

@@ -120,11 +120,7 @@ export class ShiftPatternsController {
 
       // Convert all timings back to user timezone for response
       return results.map((pattern) => ({
-        ...pattern.toJSON(),
-        timings: this.convertTimingsToUserTime(
-          pattern.timings as any,
-          userTimezone
-        ),
+        ...pattern,
       }));
     } catch (error: any) {
       this.logger.error(

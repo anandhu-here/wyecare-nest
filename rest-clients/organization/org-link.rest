@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:4205/api/v1
-@testEmail = annusathee@gmail.com
+@testEmail = anandhusathe@gmail.com
 @testPassword = testing@123
 
 ### Login first to get token
@@ -85,8 +85,8 @@ Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-  "sourceOrganizationId": "615f3e4b7c8b9a12345678ab",
-  "targetOrganizationId": "615f3e4b7c8b9a87654321cd"
+  "sourceOrganizationId": "680244c62c14deb349615892",
+  "targetOrganizationId": "680244c62c14deb349615892"
 }
 
 ### Create a link invitation (direct)

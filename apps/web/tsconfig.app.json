@@ -2,12 +2,21 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../dist/out-tsc",
+    "baseUrl": ".",
     "types": [
       "node",
       "@nx/react/typings/cssmodule.d.ts",
       "@nx/react/typings/image.d.ts",
       "vite/client"
-    ]
+    ],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@wyecare/frontend/*": ["./src/*"],
+      "@wyecare-monorepo/shadcn": [
+        "../../libs/web/ui/src/lib/shadcn-components/*"
+      ],
+      "@wyecare-monorepo/shared-types": ["../../libs/shared/types/src/index.ts"]
+    }
   },
   "exclude": [
     "src/**/*.spec.ts",

@@ -86,6 +86,38 @@ export class OrganizationLinkingController {
     }
   }
 
+  @Post('/send-link-invitation')
+  @Auth('link_organizations')
+  async sendLinkInvitation(
+    @Body()
+    sendLinkInvitationDto: {
+      targetOrganizationId: string;
+      token: string;
+      message?: string;
+    },
+    @Req() req: any,
+    @Res() res: Response
+  ) {
+    try {
+      await this.organizationLinkingService.sendLinkInvitation(
+        req.currentOrganization._id,
+        new Types.ObjectId(sendLinkInvitationDto.targetOrganizationId),
+        sendLinkInvitationDto.token,
+        sendLinkInvitationDto.message
+      );
+
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Link invitation sent successfully',
+      });
+    } catch (error: any) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message || 'Failed to send link invitation',
+      });
+    }
+  }
+
   @Get('/linked')
   @Auth('view_organization')
   async getLinkedOrganizations(@Req() req: any, @Res() res: Response) {
@@ -242,6 +274,34 @@ export class OrganizationLinkingController {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: error.message || 'Failed to create link token',
+      });
+    }
+  }
+  @Get('/find-by-email')
+  @Auth('link_organizations')
+  async findOrganizationsByEmail(
+    @Query('email') email: string,
+    @Req() req: any,
+    @Res() res: Response
+  ) {
+    try {
+      // Prevent searching for own organization
+      const currentOrgId = req.currentOrganization._id;
+
+      const organizations =
+        await this.organizationLinkingService.findOrganizationsByEmail(
+          email,
+          currentOrgId // Pass current org ID to prevent returning it in results
+        );
+
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        data: organizations,
+      });
+    } catch (error: any) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message || 'Failed to find organizations',
       });
     }
   }

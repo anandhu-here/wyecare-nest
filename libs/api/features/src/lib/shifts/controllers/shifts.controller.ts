@@ -22,6 +22,9 @@ import { PermissionGuard } from '../../authorization/permission.guard';
 import { Auth } from '../../authorization/auth.decorator';
 import { CreateShiftAssignmentDto } from '../dto/create-shift-assignment.dto';
 import { UpdateShiftAssignmentDto } from '../dto/update-shift-assignment.dto';
+import { OrganizationContextGuard } from '../../organizations/organization-context.guard';
+import { RequirePermission } from '../../authorization/permissions.decorator';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('shifts')
 @UseGuards(JwtAuthGuard)
@@ -31,8 +34,8 @@ export class ShiftsController {
   constructor(private readonly shiftsService: ShiftsService) {}
 
   @Post()
-  @UseGuards(PermissionGuard)
-  @Auth('create_shift')
+  @UseGuards(JwtAuthGuard, OrganizationContextGuard)
+  @RequirePermission('create_shift')
   async create(@Body() createShiftDto: CreateShiftDto, @Req() req: any) {
     try {
       return await this.shiftsService.create(createShiftDto);
@@ -105,6 +108,7 @@ export class ShiftsController {
   }
 
   @Get('by-date/:date')
+  @UseGuards(JwtAuthGuard, OrganizationContextGuard)
   async getShiftsByDate(@Param('date') date: string, @Req() req: any) {
     try {
       const organizationId = req.currentOrganization._id.toString();
@@ -193,7 +197,7 @@ export class ShiftsController {
 
   @Post('bulk')
   @UseGuards(PermissionGuard)
-  @Auth('CREATE_SHIFT')
+  @Auth('create_shift')
   async createMultipleShifts(
     @Body() body: { shifts: CreateShiftDto[]; needsApproval?: boolean },
     @Req() req: any

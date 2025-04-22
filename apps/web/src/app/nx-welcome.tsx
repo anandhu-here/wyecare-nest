@@ -471,7 +471,7 @@ export function NxWelcome({ title }: { title: string }) {
           <div id="middle-content">
             <div id="middle-content-container">
               <div id="learning-materials" className="rounded shadow">
-                <h2>Learning materials</h2>
+                <h2 className="text-primary-300" >Learning materials</h2>
                 <a
                   href="https://nx.dev/getting-started/intro?utm_source=nx-project"
                   target="_blank"

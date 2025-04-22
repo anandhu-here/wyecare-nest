@@ -159,6 +159,56 @@ export class OrganizationLinkingService {
     return link;
   }
 
+  async findOrganizationsByEmail(
+    email: string,
+    currentOrgId: Types.ObjectId
+  ): Promise<Organization[]> {
+    // Find organizations with matching email (excluding current org)
+    const orgsByDirectEmail = await this.organizationModel
+      .find({
+        email: { $regex: new RegExp(email, 'i') }, // Case-insensitive search
+        _id: { $ne: currentOrgId }, // Exclude current organization
+      })
+      .select('_id name email type logoUrl')
+      .exec();
+
+    // Find organizations with admins/owners having the email
+    const adminRoles = await this.organizationRoleModel
+      .find({
+        organizationId: { $ne: currentOrgId }, // Exclude current organization
+        roleId: { $in: ['ORGANIZATION_ADMIN', 'ORGANIZATION_OWNER'] },
+      })
+      .populate('userId', 'email')
+      .populate('organizationId', '_id name email type logoUrl')
+      .exec();
+
+    // Filter admin roles where user email matches search
+    const orgsByAdminEmail = adminRoles
+      .filter((role: any) => {
+        const user = role.userId as any;
+        return (
+          user.email && user.email.toLowerCase().includes(email.toLowerCase())
+        );
+      })
+      .map((role: any) => role.organizationId);
+
+    // Combine results, removing duplicates
+    const allOrgs = [...orgsByDirectEmail];
+
+    // Add orgs found by admin email only if not already included
+    orgsByAdminEmail.forEach((org: any) => {
+      const isDuplicate = allOrgs.some(
+        (existingOrg: any) => existingOrg._id.toString() === org._id.toString()
+      );
+
+      if (!isDuplicate) {
+        allOrgs.push(org);
+      }
+    });
+
+    return allOrgs;
+  }
+
   /**
    * Unlink two organizations
    */
@@ -425,6 +475,43 @@ export class OrganizationLinkingService {
       user: role.userId,
       organization: role.organizationId,
     }));
+  }
+
+  async sendLinkInvitation(
+    sourceOrgId: Types.ObjectId,
+    targetOrgId: Types.ObjectId,
+    token: string,
+    message?: string
+  ): Promise<void> {
+    // Get source organization details
+    const sourceOrg = await this.organizationModel.findById(sourceOrgId);
+    if (!sourceOrg) {
+      throw new NotFoundException('Source organization not found');
+    }
+
+    // Get target organization details
+    const targetOrg = await this.organizationModel.findById(targetOrgId);
+    if (!targetOrg) {
+      throw new NotFoundException('Target organization not found');
+    }
+
+    // Create the frontend URL that can be shared
+    const baseUrl = process.env['FRONTEND_URL'] || 'https://yourdomain.com';
+    const linkUrl = `${baseUrl}/dashboard/organizations/link?token=${token}`;
+
+    // Notify admins of the target organization
+    const title = 'Organization Link Invitation';
+    const body = `
+    <h2>Organization Link Invitation</h2>
+    <p>${sourceOrg.name} has invited your organization to link with them.</p>
+    <p>${message || ''}</p>
+    <p>Click the following link to accept this invitation:</p>
+    <p><a href="${linkUrl}">${linkUrl}</a></p>
+  `;
+
+    console.log(targetOrgId, 'targetOrgId');
+
+    await this.notifyAdmins(targetOrgId, title, body);
   }
 
   async createLinkToken(
@@ -931,12 +1018,13 @@ export class OrganizationLinkingService {
       const adminRoles = await this.organizationRoleModel
         .find({
           organizationId: organizationId,
-          roleId: { $in: ['ORGANIZATION_ADMIN', 'ORGANIZATION_OWNER'] }, // Use your actual role IDs
+          roleId: { $in: ['owner', 'admin'] }, // Use your actual role IDs
         })
         .populate('userId')
         .exec();
 
       if (adminRoles.length === 0) {
+        throw new Error('No admins or owners found for this organization');
         return;
       }
       // Get admin user IDs and emails
@@ -963,6 +1051,7 @@ export class OrganizationLinkingService {
         `Error notifying admins: ${error.message}`,
         error.stack
       );
+      throw error;
     }
   }
 }

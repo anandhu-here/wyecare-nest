@@ -255,7 +255,7 @@ export class OrganizationInvitationService {
     const subject = 'Invitation to Create an Organization';
 
     // Create registration URL with token
-    const registrationUrl = `${process.env['FRONTEND_URL']}/auth/register?token=${invitation.token}`;
+    const registrationUrl = `${process.env['FRONTEND_URL']}/auth/register-with-invitation?token=${invitation.token}`;
 
     // Build email content
     const html = `

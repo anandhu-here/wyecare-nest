@@ -9,7 +9,6 @@ import {
   HttpStatus,
   Query,
 } from '@nestjs/common';
-
 import { Response } from 'express';
 import { AuthService } from '../services/authentication.service';
 import { RegisterDto } from '../dto/register.dto';
@@ -22,12 +21,14 @@ import {
 import { JwtAuthGuard } from '../jwt/jwt-auth.guard';
 import { RequirePermission } from '../../authorization/permissions.decorator';
 import { OrganizationsService } from '../../organizations/services/organizations.service';
-
+import { AuthorizationService } from '../../authorization/services/authorization.service';
+import { OrganizationContextGuard } from '../../organizations/organization-context.guard';
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly organizationsService: OrganizationsService
+    private readonly organizationsService: OrganizationsService,
+    private authorizationService: AuthorizationService
   ) {}
   @Get('test-auth')
   @UseGuards(JwtAuthGuard)
@@ -40,7 +41,6 @@ export class AuthController {
       user: req.user ? true : false,
     };
   }
-
   @Post('register')
   async register(@Body() registerDto: RegisterDto, @Res() res: Response) {
     try {
@@ -58,21 +58,18 @@ export class AuthController {
           isEmailUsed: true,
         });
       }
-
       if (error.code === 'VALIDATION_ERROR') {
         return res.status(HttpStatus.BAD_REQUEST).json({
           success: false,
           message: error.message,
         });
       }
-
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: 'Something went wrong',
       });
     }
   }
-
   @Post('register-with-invitation')
   async registerWithInvitation(
     @Body() registerDto: RegisterDto,
@@ -86,20 +83,81 @@ export class AuthController {
           message: 'Invitation token is required',
         });
       }
-
       const user: any = await this.authService.registerWithInvitationToken(
         registerDto,
         token
       );
-
-      // Generate JWT token
       const authToken = await this.authService.generateToken(
         user._id.toString()
       );
-
       return res.status(HttpStatus.CREATED).json({
         success: true,
         message: 'Registration successful with invitation',
+        user: {
+          _id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          role: user.role,
+          emailVerified: user.emailVerified,
+          canCreateOrganization: true,
+        },
+        token: authToken,
+      });
+    } catch (error: any) {
+      if (error.code === 'EMAIL_ALREADY_REGISTERED') {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          message: error.message,
+          isEmailUsed: true,
+        });
+      }
+      if (error.code === 'VALIDATION_ERROR') {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          message: error.message,
+        });
+      }
+      if (error.message && error.message.includes('invitation')) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          message: error.message,
+        });
+      }
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: 'Something went wrong during registration',
+      });
+    }
+  }
+  @Post('register-with-staff-invitation')
+  async registerWithStaffInvitation(
+    @Body() registerDto: RegisterDto,
+    @Query('token') token: string,
+    @Query('type') type: string,
+    @Res() res: Response
+  ) {
+    try {
+      if (!token) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          message: 'Invitation token is required',
+        });
+      }
+      if (type !== 'staff') {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          message: 'Invalid invitation type',
+        });
+      }
+      const user = await this.authService.registerWithStaffInvitationToken(
+        registerDto,
+        token
+      );
+      const authToken = await this.authService.generateToken(user._id as any);
+      return res.status(HttpStatus.CREATED).json({
+        success: true,
+        message: 'Registration successful with staff invitation',
         user: {
           _id: user._id,
           firstName: user.firstName,
@@ -111,7 +169,6 @@ export class AuthController {
         token: authToken,
       });
     } catch (error: any) {
-      // Handle specific error cases
       if (error.code === 'EMAIL_ALREADY_REGISTERED') {
         return res.status(HttpStatus.BAD_REQUEST).json({
           success: false,
@@ -119,34 +176,31 @@ export class AuthController {
           isEmailUsed: true,
         });
       }
-
       if (error.code === 'VALIDATION_ERROR') {
         return res.status(HttpStatus.BAD_REQUEST).json({
           success: false,
           message: error.message,
         });
       }
-
       if (error.message && error.message.includes('invitation')) {
         return res.status(HttpStatus.BAD_REQUEST).json({
           success: false,
           message: error.message,
         });
       }
-
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
-        message: 'Something went wrong during registration',
+        message:
+          'Something went wrong during registration with staff invitation',
+        error: error.message,
       });
     }
   }
-
   @Post('login')
   async login(@Body() loginDto: LoginDto, @Res() res: Response) {
     try {
-      console.log('Login DTO:', loginDto); // Log the incoming DTO for debugging
+      console.log('Login DTO:', loginDto);
       const result = await this.authService.login(loginDto);
-      console.log('Login result:', result); // Log the result for debugging
       return res.status(HttpStatus.OK).json({
         message: 'Login successful',
         user: result.user,
@@ -159,14 +213,12 @@ export class AuthController {
           message: 'Invalid credentials',
         });
       }
-
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: 'An error occurred during login',
       });
     }
   }
-
   @Post('verify-email')
   async verifyEmail(
     @Body() verifyEmailDto: VerifyEmailDto,
@@ -186,14 +238,12 @@ export class AuthController {
           message: 'Invalid verification token',
         });
       }
-
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: 'Something went wrong',
       });
     }
   }
-
   @Post('resend-verification-email')
   async resendVerificationEmail(
     @Body() body: { email: string },
@@ -212,21 +262,18 @@ export class AuthController {
           message: 'User not found',
         });
       }
-
       if (error.code === 'EMAIL_ALREADY_VERIFIED') {
         return res.status(HttpStatus.BAD_REQUEST).json({
           success: false,
           message: 'Email is already verified',
         });
       }
-
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: 'Failed to resend verification email',
       });
     }
   }
-
   @Post('request-reset')
   async requestReset(
     @Body() requestResetDto: RequestResetDto,
@@ -245,14 +292,12 @@ export class AuthController {
           message: 'User not found',
         });
       }
-
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: 'Failed to send password reset email',
       });
     }
   }
-
   @Post('reset-password')
   async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,
@@ -275,14 +320,12 @@ export class AuthController {
           message: 'Invalid reset code',
         });
       }
-
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: 'Password reset failed',
       });
     }
   }
-
   @UseGuards(JwtAuthGuard)
   @Post('request-account-deletion')
   @RequirePermission('delete_account')
@@ -307,7 +350,6 @@ export class AuthController {
       });
     }
   }
-
   @UseGuards(JwtAuthGuard)
   @Post('cancel-account-deletion')
   @RequirePermission('delete_account')
@@ -328,9 +370,14 @@ export class AuthController {
     }
   }
   @Get('profile')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, OrganizationContextGuard, JwtAuthGuard)
   async getProfile(@Req() req: any, @Res() res: Response) {
     try {
+      const redirectUr = await this.authService.redirectUrlForLogin(
+        req.user?._id?.toString(),
+        req.currentOrganization?._id?.toString() || undefined,
+        req.permissions || []
+      );
       return res.status(HttpStatus.OK).json({
         user: req.user,
         organization: req.organization,
@@ -341,8 +388,10 @@ export class AuthController {
         staffType: req.staffType,
         unReadNotificationCount: req.unReadNotificationCount,
         totalOrgRoles: req.totalOrgRoles,
+        redirectUrl: redirectUr,
       });
     } catch (error: any) {
+      console.log(error, 'Error in getProfile method');
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         error: 'An error occurred while fetching profile',
       });

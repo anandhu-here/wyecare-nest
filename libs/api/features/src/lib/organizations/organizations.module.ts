@@ -39,6 +39,22 @@ import {
 } from '../super-admin/schemas/user-metadata.schema';
 import { OrganizationContextGuard } from './organization-context.guard';
 import { JwtModule } from '@nestjs/jwt';
+import {
+  StaffInvitation,
+  StaffInvitationSchema,
+} from './schemas/staff-invitation.schema';
+import {
+  EmployeeAvailability,
+  EmployeeAvailabilitySchema,
+} from './schemas/employee.schema';
+import {
+  ShiftPattern,
+  ShiftPatternSchema,
+} from '../shift-patterns/schemas/shift-pattern.schema';
+import {
+  ShiftAssignment,
+  ShiftAssignmentSchema,
+} from '../shifts/schemas/shift-assignment.schema';
 
 @Module({
   imports: [
@@ -54,6 +70,14 @@ import { JwtModule } from '@nestjs/jwt';
       },
       { name: User.name, schema: UserSchema },
       { name: UserMetadata.name, schema: UserMetadataSchema },
+      {
+        name: StaffInvitation.name,
+        schema: StaffInvitationSchema,
+      },
+
+      { name: EmployeeAvailability.name, schema: EmployeeAvailabilitySchema },
+      { name: ShiftPattern.name, schema: ShiftPatternSchema },
+      { name: ShiftAssignment.name, schema: ShiftAssignmentSchema },
     ]),
     UtilsModule,
     AuthorizationModule,
