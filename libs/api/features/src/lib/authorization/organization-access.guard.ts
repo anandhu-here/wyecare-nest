@@ -21,7 +21,8 @@ export class OrganizationAccessGuard implements CanActivate {
     }
 
     // Get the organization ID from params, query, or body
-    const organizationId =
+    let organizationId =
+      request.currentOrganization?._id ||
       request.params.organizationId ||
       request.query.organizationId ||
       request.body.organizationId;

@@ -1,26 +1,12 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import {
-  StaffInvitation,
-  StaffInvitationSchema,
-} from './schemas/staff-invitation.schema';
-import {
-  OrganizationCreationInvitation,
-  OrganizationCreationInvitationSchema,
-} from './schemas/organization-creation-invitation.schema';
+import { CoreModule } from '@wyecare-monorepo/api/core';
 import { InvitationService } from './services/invitation.service';
 import { EventsModule } from '../events/events.module';
 import { UtilsModule } from '@wyecare-monorepo/shared-utils';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: StaffInvitation.name, schema: StaffInvitationSchema },
-      {
-        name: OrganizationCreationInvitation.name,
-        schema: OrganizationCreationInvitationSchema,
-      },
-    ]),
+    CoreModule, // Import CoreModule instead of using MongooseModule.forFeature
     EventsModule,
     UtilsModule,
   ],

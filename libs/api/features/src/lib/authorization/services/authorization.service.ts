@@ -6,20 +6,20 @@ import { RolesService } from './roles.service';
 import {
   UserCustomPermission,
   UserCustomPermissionDocument,
-} from '../schemas/user-custom-permission.schema';
+} from '../../../../../core/src/lib/schemas';
 import {
   OrganizationRole,
   OrganizationRoleDocument,
-} from '../schemas/organization-role.schema';
+} from '../../../../../core/src/lib/schemas';
 import {
   RolePermission,
   RolePermissionDocument,
-} from '../schemas/role-permission.schema';
+} from '../../../../../core/src/lib/schemas';
 import {
   PermissionImplication,
   PermissionImplicationDocument,
-} from '../schemas/permission-implication.schema';
-import { Role, RoleDocument } from '../schemas/role.schema';
+} from '../../../../../core/src/lib/schemas';
+import { Role, RoleDocument } from '../../../../../core/src/lib/schemas';
 
 interface PermissionContext {
   organizationId?: Types.ObjectId;

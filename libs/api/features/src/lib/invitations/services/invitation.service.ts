@@ -10,11 +10,11 @@ import * as crypto from 'crypto';
 import {
   StaffInvitation,
   StaffInvitationDocument,
-} from '../schemas/staff-invitation.schema';
+} from '../../../../../core/src/lib/schemas';
 import {
   OrganizationCreationInvitation,
   OrganizationCreationInvitationDocument,
-} from '../schemas/organization-creation-invitation.schema';
+} from '../../../../../core/src/lib/schemas';
 import { EventBusService } from '../../events/services/event-bus.service';
 import { EmailService } from 'libs/shared/utils/src/lib/services/email.service';
 import { CreateStaffInvitationDto } from '../dto/create-staff-invitation.dto';

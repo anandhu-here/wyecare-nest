@@ -1,6 +1,6 @@
 // api/features/src/lib/shifts/dto/create-shift-assignment.dto.ts
 import { IsEnum, IsMongoId, IsNotEmpty } from 'class-validator';
-import { ShiftAssignmentStatus } from '../schemas/shift-assignment.schema';
+import { ShiftAssignmentStatus } from '../../../../../core/src/lib/schemas';
 
 export class CreateShiftAssignmentDto {
   @IsNotEmpty()

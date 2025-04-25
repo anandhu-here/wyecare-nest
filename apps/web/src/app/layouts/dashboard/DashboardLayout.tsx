@@ -7,6 +7,9 @@ import StatCard from './components/StatCard';
 import ChartCard from './components/ChartCard';
 import CalendarCard from './components/CalendarCard';
 import MetricCard from './components/MetricCard';
+import { QuickStats } from './components/quick-stats';
+import { useSelector } from 'react-redux';
+import { selectCurrentOrganization, selectUser } from '@/app/features/auth/AuthSlice';
 
 interface DashboardLayoutProps {
     children?: React.ReactNode;
@@ -18,39 +21,22 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     const month = currentDate.toLocaleString('default', { month: 'long' });
     const year = currentDate.getFullYear();
 
+    const currentOrganization = useSelector(selectCurrentOrganization);
+
+    const user = useSelector(selectUser);
+
+    let staffType;
+
+    if (['carer', 'senior_carer', 'nurse'].includes(user?.role as any)) {
+        staffType = 'care'
+    }
+
     return (
         <div className="mx-auto p-4 space-y-6">
             {/* Top Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard
-                    title="Total Shifts"
-                    value="0"
-                    icon="library"
-                    change={{ value: "100%", direction: "down" }}
-                    previousValue="Previous month: 41"
-                />
-                <StatCard
-                    title="Internal Shifts"
-                    value="0"
-                    icon="user"
-                    change={{ value: "NaN%", direction: "down" }}
-                    secondaryText="0 completed"
-                />
-                <StatCard
-                    title="Agency Shifts"
-                    value="0"
-                    icon="building"
-                    change={{ value: "NaN%", direction: "down" }}
-                    secondaryText="0 completed"
-                />
-                <StatCard
-                    title="Completion Rate"
-                    value="0%"
-                    icon="bar-chart"
-                    change={{ value: "0%", direction: "down" }}
-                    secondaryText="Weekly average: 0 shifts"
-                />
-            </div>
+            <QuickStats type={
+                staffType === 'care' ? 'staff' : currentOrganization?.type as any
+            } />
 
             {/* Calendar and Quick Stats Row - Side by side on desktop */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

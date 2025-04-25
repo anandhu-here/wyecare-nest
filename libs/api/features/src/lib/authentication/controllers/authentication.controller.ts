@@ -378,6 +378,8 @@ export class AuthController {
         req.currentOrganization?._id?.toString() || undefined,
         req.permissions || []
       );
+
+      console.log(req.permissions?.length);
       return res.status(HttpStatus.OK).json({
         user: req.user,
         organization: req.organization,

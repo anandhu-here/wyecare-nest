@@ -4,7 +4,7 @@ import { Model, Types } from 'mongoose';
 import {
   ShiftPattern,
   ShiftPatternDocument,
-} from '../schemas/shift-pattern.schema';
+} from '../../../../../core/src/lib/schemas';
 import { CreateShiftPatternDto } from '../dto/create-shift-pattern.dto';
 import { UpdateShiftPatternDto } from '../dto/update-shift-pattern.dto';
 import { CreateAgencyShiftPatternDto } from '../dto/reate-agency-shift-pattern.dto';
@@ -118,12 +118,11 @@ export class ShiftPatternsService {
     }
   }
 
-  async findOne(id: string, userId: string): Promise<ShiftPatternDocument> {
+  async findOne(id: string, userId?: string): Promise<ShiftPatternDocument> {
     try {
       const shiftPattern = await this.shiftPatternModel
         .findOne({
           _id: new Types.ObjectId(id),
-          userId: new Types.ObjectId(userId),
         })
         .exec();
 

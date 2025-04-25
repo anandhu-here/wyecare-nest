@@ -13,6 +13,7 @@ import {
   Logger,
   HttpStatus,
   HttpException,
+  Res,
 } from '@nestjs/common';
 import { ShiftsService } from '../services/shifts.service';
 import { CreateShiftDto } from '../dto/create-shift.dto';
@@ -25,13 +26,18 @@ import { UpdateShiftAssignmentDto } from '../dto/update-shift-assignment.dto';
 import { OrganizationContextGuard } from '../../organizations/organization-context.guard';
 import { RequirePermission } from '../../authorization/permissions.decorator';
 import { AuthGuard } from '@nestjs/passport';
+import { OrganizationAccessGuard } from '../../authorization/organization-access.guard';
+import { DashboardService } from '../services/dashboard.service';
 
 @Controller('shifts')
 @UseGuards(JwtAuthGuard)
 export class ShiftsController {
   private readonly logger = new Logger(ShiftsController.name);
 
-  constructor(private readonly shiftsService: ShiftsService) {}
+  constructor(
+    private readonly shiftsService: ShiftsService,
+    private readonly dashboardService: DashboardService
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard, OrganizationContextGuard)
@@ -108,6 +114,7 @@ export class ShiftsController {
   }
 
   @Get('by-date/:date')
+  @RequirePermission('view_shift')
   @UseGuards(JwtAuthGuard, OrganizationContextGuard)
   async getShiftsByDate(@Param('date') date: string, @Req() req: any) {
     try {
@@ -126,12 +133,14 @@ export class ShiftsController {
   }
 
   @Get('home/:orgId')
+  @Auth('view_shift')
   async getPubShifts(
     @Param('orgId') orgId: string,
     @Query('month') month?: number,
     @Query('year') year?: number
   ) {
     try {
+      console.log('andi');
       return await this.shiftsService.getPubShifts(orgId, month, year);
     } catch (error: any) {
       this.logger.error(
@@ -360,6 +369,64 @@ export class ShiftsController {
         error.message || 'Error swapping assigned users',
         error.status || HttpStatus.INTERNAL_SERVER_ERROR
       );
+    }
+  }
+
+  // quick stats
+
+  @Get('dashboard/quick-stats')
+  @UseGuards(JwtAuthGuard, OrganizationContextGuard)
+  async getQuickStats(
+    @Req() req: any,
+    @Res() res: any,
+    @Query('month') month?: string,
+    @Query('year') year?: string
+  ) {
+    try {
+      console.log(req.currentOrganization, 'peri');
+      const currentUser = req.user;
+      const type = req.currentOrganization?.type;
+      const currentDate = new Date();
+      const monthNum = month ? parseInt(month, 10) : currentDate.getMonth() + 1;
+      const yearNum = year ? parseInt(year, 10) : currentDate.getFullYear();
+
+      let stats;
+      if (['carer', 'nurse', 'senior_carer'].includes(currentUser.role)) {
+        stats = await this.dashboardService.getCarerQuickStats(
+          currentUser._id.toString(),
+          monthNum,
+          yearNum
+        );
+      } else if (type === 'agency') {
+        stats = await this.dashboardService.getAgencyQuickStats(
+          req.currentOrganization?._id?.toString(),
+          monthNum,
+          yearNum
+        );
+      } else if (type === 'home') {
+        stats = await this.dashboardService.getHomeQuickStats(
+          req.currentOrganization?._id?.toString(),
+          monthNum,
+          yearNum
+        );
+      } else {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          message: 'Invalid organization type or user role',
+        });
+      }
+
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        data: stats,
+      });
+    } catch (error: any) {
+      console.log(error, 'error');
+      this.logger.error('Error getting quick stats:', error);
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: 'Internal server error',
+      });
     }
   }
 }

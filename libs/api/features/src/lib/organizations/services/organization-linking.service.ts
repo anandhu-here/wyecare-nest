@@ -9,13 +9,13 @@ import { Model, Types } from 'mongoose';
 import {
   Organization,
   OrganizationDocument,
-} from '../schemas/organization.schema';
+} from '../../../../../core/src/lib/schemas';
 import {
   CreateLinkInvitationDto,
   InvitationType,
 } from '../dto/create-link-invitation.dto';
 
-import { User, UserDocument } from '../../users/schemas/user.schema';
+import { User, UserDocument } from '../../../../../core/src/lib/schemas';
 import { EmailService } from 'libs/shared/utils/src/lib/services/email.service';
 import { LinkOrganizationsDto } from '../dto/link-organizations.dto';
 import { UnlinkOrganizationsDto } from '../dto/unlink-organizations.dto';
@@ -23,17 +23,17 @@ import { RespondToLinkInvitationDto } from '../dto/respond-to-link-invitation.dt
 import {
   OrganizationRole,
   OrganizationRoleDocument,
-} from '../../authorization/schemas/organization-role.schema';
+} from '../../../../../core/src/lib/schemas';
 import { NotificationService } from 'libs/shared/utils/src/lib/services/notification.service';
 import {
   OrganizationLink,
   OrganizationLinkDocument,
-} from '../schemas/organization.link.schema';
+} from '../../../../../core/src/lib/schemas';
 import {
   LinkInvitation,
   LinkInvitationDocument,
-} from '../schemas/link.invitation';
-import { Role, RoleDocument } from '../../authorization/schemas/role.schema';
+} from '../../../../../core/src/lib/schemas';
+import { Role, RoleDocument } from '../../../../../core/src/lib/schemas';
 import {
   AcceptLinkDto,
   CreateLinkTokenDto,

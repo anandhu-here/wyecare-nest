@@ -14,6 +14,7 @@ import { databaseConfig, appConfig } from '@wyecare-monorepo/shared/config';
       load: [databaseConfig, appConfig],
     }),
     CoreModule,
+    FeaturesModule, // You'll need to add this back
   ],
   controllers: [AppController],
   providers: [AppService],

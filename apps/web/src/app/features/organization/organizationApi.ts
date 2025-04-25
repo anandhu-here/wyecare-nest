@@ -1,5 +1,6 @@
 // src/redux/api/organizationApi.ts
 import { baseApi } from '@/redux/baseApi';
+import { IOrganization } from '@wyecare-monorepo/shared-types';
 
 export const organizationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -21,14 +22,18 @@ export const organizationApi = baseApi.injectEndpoints({
 
     // Update organization
     updateOrganization: builder.mutation({
-      query: (data) => ({
-        url: `organizations/${data._id}`,
-        method: 'PATCH',
-        body: data,
-      }),
+      query: (data: Partial<IOrganization & { _id: string }>) => {
+        const url = `organizations/${data._id}`;
+        console.log('RTK Query sending PATCH to:', url);
+        console.log('With data:', data);
+        return {
+          url: url,
+          method: 'PATCH',
+          body: data,
+        };
+      },
       invalidatesTags: ['Organization'],
     }),
-
     getLinkedOrganizations: builder.query({
       query: () => 'organizations/linked',
       providesTags: ['LinkedOrganizations'],
@@ -327,6 +332,20 @@ export const organizationApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['StaffInvitations', 'OrganizationStaff'],
     }),
+
+    verifyStaffInvitation: builder.query({
+      query: (token) => `organizations/staff/invitations/verify/${token}`,
+      providesTags: ['StaffInvitation'],
+    }),
+
+    acceptStaffInvitation: builder.mutation({
+      query: (token) => ({
+        url: 'organizations/staff/invitations/accept',
+        method: 'POST',
+        body: { token },
+      }),
+      invalidatesTags: ['StaffInvitations', 'OrganizationStaff', 'Profile'],
+    }),
   }),
 });
 
@@ -368,4 +387,7 @@ export const {
 
   useGetStaffPaginatedQuery,
   useInviteStaffMutation,
+
+  useVerifyStaffInvitationQuery,
+  useAcceptStaffInvitationMutation,
 } = organizationApi;

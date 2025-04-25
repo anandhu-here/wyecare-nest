@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
-import { User, UserDocument } from '../../users/schemas/user.schema';
+import { User, UserDocument } from '../../../../../core/src/lib/schemas';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
 import { ConfigService } from '@nestjs/config';
@@ -13,6 +13,7 @@ import { EmailService } from 'libs/shared/utils/src/lib/services/email.service';
 import { OrganizationsService } from '../../organizations/services/organizations.service';
 import { OrganizationInvitationService } from '../../super-admin/services/organization-invitation.service';
 import { OrganizationStaffService } from '../../organizations/services/organization-staff.service';
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);

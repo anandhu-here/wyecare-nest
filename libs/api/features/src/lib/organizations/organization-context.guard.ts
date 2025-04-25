@@ -23,6 +23,8 @@ export class OrganizationContextGuard implements CanActivate {
       return false;
     }
 
+    console.log(request.currentOrganization, 'fucking org');
+
     // Extract organization ID from various sources
     const explicitOrgId =
       request.params.organizationId ||

@@ -37,6 +37,7 @@ import {
 } from './organizationApi';
 import { selectCurrentOrganization } from './OrganizationSlice';
 import DeleteConfirmationDialog from './components/delete-confirmation';
+import StaffInvitationModal from './components/invite-staff';
 
 // Types
 interface QueryParams {
@@ -183,8 +184,8 @@ const OrganizationStaffsList: React.FC = () => {
         if (!selectedStaff) return;
 
         try {
-            await removeUserFromOrganization(selectedStaff.user._id).unwrap();
-            toast.success(`${selectedStaff.user.firstName} ${selectedStaff.user.lastName} was removed successfully`);
+            await removeUserFromOrganization(selectedStaff?.user._id).unwrap();
+            toast.success(`${selectedStaff?.user.firstName} ${selectedStaff?.user.lastName} was removed successfully`);
             refetchStaffs();
         } catch (error) {
             toast.error('Failed to remove staff');
@@ -253,7 +254,7 @@ const OrganizationStaffsList: React.FC = () => {
                     <div className="relative flex-1 mx-2">
                         <Input
                             className="pr-8 w-48"
-                            placeholder="Search staff..."
+                            placeholder="Search staff?..."
                             value={queryParams.search}
                             onChange={handleSearch}
                         />
@@ -318,33 +319,33 @@ const OrganizationStaffsList: React.FC = () => {
                             <TableBody>
                                 {filteredStaffData.map((staff: any) => (
                                     <TableRow
-                                        key={staff._id}
+                                        key={staff?._id}
                                         className='cursor-pointer hover:bg-gray-50'
-                                        onClick={() => navigate(`/employee-profile/${staff.user._id}`)}
+                                        onClick={() => navigate(`/employee-profile/${staff?.user._id}`)}
                                     >
                                         <TableCell>
                                             <div className="flex items-center gap-4">
                                                 <Avatar>
                                                     <AvatarImage
                                                         className='object-scale-down'
-                                                        src={staff.user.avatarUrl || undefined}
+                                                        src={staff?.user.avatarUrl || undefined}
                                                     />
                                                     <AvatarFallback>
-                                                        {staff.user.firstName.charAt(0)}{staff.user.lastName.charAt(0)}
+                                                        {staff?.user.firstName?.charAt(0)}{staff?.user.lastName?.charAt(0)}
                                                     </AvatarFallback>
                                                 </Avatar>
                                                 <div>
-                                                    <div className="font-medium">{staff.user.firstName} {staff.user.lastName}</div>
-                                                    <div className="text-sm text-gray-500">{staff.user.email}</div>
+                                                    <div className="font-medium">{staff?.user.firstName} {staff?.user.lastName}</div>
+                                                    <div className="text-sm text-gray-500">{staff?.user.email}</div>
                                                 </div>
                                             </div>
                                         </TableCell>
                                         <TableCell>
                                             <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                                                {staff.role.replace('_', ' ')}
+                                                {staff?.role?.replace('_', ' ')}
                                             </span>
                                         </TableCell>
-                                        <TableCell>{staff.user.phone || 'N/A'}</TableCell>
+                                        <TableCell>{staff?.user.phone || 'N/A'}</TableCell>
                                         <TableCell>
                                             <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                 Active
@@ -364,7 +365,7 @@ const OrganizationStaffsList: React.FC = () => {
                                                 <DropdownMenuContent className='bg-white' align="end">
                                                     <DropdownMenuItem onClick={(e) => {
                                                         e.stopPropagation();
-                                                        navigate(`/employee-profile/${staff.user._id}`);
+                                                        navigate(`/employee-profile/${staff?.user._id}`);
                                                     }}>
                                                         View Profile
                                                     </DropdownMenuItem>
@@ -436,26 +437,26 @@ const OrganizationStaffsList: React.FC = () => {
                 <div className="md:hidden space-y-4">
                     {filteredStaffData.map((staff: any) => (
                         <Card
-                            key={staff._id}
+                            key={staff?._id}
                             className="p-4"
-                            onClick={() => navigate(`/employee-profile/${staff.user._id}`)}
+                            onClick={() => navigate(`/employee-profile/${staff?.user._id}`)}
                         >
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <Avatar>
                                         <AvatarImage
                                             className='object-scale-down'
-                                            src={staff.user.avatarUrl || undefined}
+                                            src={staff?.user.avatarUrl || undefined}
                                         />
                                         <AvatarFallback>
-                                            {staff.user.firstName.charAt(0)}{staff.user.lastName.charAt(0)}
+                                            {staff?.user.firstName.charAt(0)}{staff?.user.lastName.charAt(0)}
                                         </AvatarFallback>
                                     </Avatar>
                                     <div>
                                         <div className="font-medium text-gray-900">
-                                            {staff.user.firstName} {staff.user.lastName}
+                                            {staff?.user.firstName} {staff?.user.lastName}
                                         </div>
-                                        <div className="text-sm text-gray-500">{staff.user.email}</div>
+                                        <div className="text-sm text-gray-500">{staff?.user.email}</div>
                                     </div>
                                 </div>
                                 <DropdownMenu>
@@ -471,7 +472,7 @@ const OrganizationStaffsList: React.FC = () => {
                                     <DropdownMenuContent align="end" className="bg-white">
                                         <DropdownMenuItem onClick={(e) => {
                                             e.stopPropagation();
-                                            navigate(`/employee-profile/${staff.user._id}`);
+                                            navigate(`/employee-profile/${staff?.user._id}`);
                                         }}>
                                             View Profile
                                         </DropdownMenuItem>
@@ -492,7 +493,7 @@ const OrganizationStaffsList: React.FC = () => {
                                 <div>
                                     <span className="text-sm text-gray-500 block mb-1">Role</span>
                                     <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                                        {staff.role.replace('_', ' ')}
+                                        {staff?.role?.replace('_', ' ')}
                                     </span>
                                 </div>
                                 <div>
@@ -503,7 +504,7 @@ const OrganizationStaffsList: React.FC = () => {
                                 </div>
                                 <div className="col-span-2">
                                     <span className="text-sm text-gray-500 block mb-1">Contact</span>
-                                    <span className="text-sm">{staff.user.phone || 'N/A'}</span>
+                                    <span className="text-sm">{staff?.user.phone || 'N/A'}</span>
                                 </div>
                             </div>
                         </Card>
@@ -580,6 +581,10 @@ const OrganizationStaffsList: React.FC = () => {
                     )}
                 </div>
             </div>
+            <StaffInvitationModal
+                isOpen={isInviteModalOpen}
+                onClose={() => setIsInviteModalOpen(false)}
+            />
 
             {/* Confirmation Dialog */}
             <DeleteConfirmationDialog

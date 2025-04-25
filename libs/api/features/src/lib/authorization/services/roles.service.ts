@@ -1,15 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Role, RoleDocument } from '../schemas/role.schema';
+import { Role, RoleDocument } from '../../../../../core/src/lib/schemas';
 import {
   RolePermission,
   RolePermissionDocument,
-} from '../schemas/role-permission.schema';
+} from '../../../../../core/src/lib/schemas';
 import {
   OrganizationRole,
   OrganizationRoleDocument,
-} from '../schemas/organization-role.schema';
+} from '../../../../../core/src/lib/schemas';
 import { Types } from 'mongoose';
 
 @Injectable()

@@ -18,3 +18,8 @@ Content-Type: application/json
   "email": "anandhusathe@gmail.com",
   "password": "testing@123"
 }
+
+
+### put user profile
+
+PUT {{baseUrl}}/users/profile

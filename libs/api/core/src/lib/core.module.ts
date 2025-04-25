@@ -1,10 +1,10 @@
-// libs/api/core/src/lib/core.module.ts
 import { Module } from '@nestjs/common';
+import { ModelsModule } from './schemas/models.module';
 import { DatabaseModule } from './database/database.module';
-import { FeaturesModule } from '@wyecare-monorepo/features';
+import { FirebaseModule } from '../../../features/src/lib/firebase/firebase.module';
 
 @Module({
-  imports: [DatabaseModule, FeaturesModule],
-  exports: [DatabaseModule, FeaturesModule],
+  imports: [DatabaseModule, ModelsModule, FirebaseModule],
+  exports: [ModelsModule, FirebaseModule],
 })
 export class CoreModule {}

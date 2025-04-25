@@ -8,6 +8,7 @@ import RegisterWithInvitation from '@/app/features/auth/components/register-with
 import AuthWrapper from '@/app/features/auth/components/AuthWrapper';
 import OrganizationForm from '@/app/features/auth/components/forms/organization-form';
 import CreateOrganization from '@/app/features/auth/components/forms/create-organization';
+import StaffInvitationVerify from '@/app/features/organization/components/staff-invitation-verify';
 
 export const authRoutes: RouteObject[] = [
     {
@@ -53,6 +54,14 @@ export const authRoutes: RouteObject[] = [
                 element: (
                     <AuthGuard requireAuth={true} requiredPermissions={['create_organization']}>
                         <CreateOrganization />
+                    </AuthGuard>
+                )
+            },
+            {
+                path: 'verify-staff-invitation',
+                element: (
+                    <AuthGuard requireAuth={false}>
+                        <StaffInvitationVerify />
                     </AuthGuard>
                 )
             },

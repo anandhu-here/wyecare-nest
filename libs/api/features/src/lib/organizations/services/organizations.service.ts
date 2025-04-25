@@ -9,9 +9,9 @@ import { Model, Types } from 'mongoose';
 import {
   Organization,
   OrganizationDocument,
-} from '../schemas/organization.schema';
+} from '../../../../../core/src/lib/schemas';
 
-import { User, UserDocument } from '../../users/schemas/user.schema';
+import { User, UserDocument } from '../../../../../core/src/lib/schemas';
 import { EmailService } from 'libs/shared/utils/src/lib/services/email.service';
 import { CreateOrganizationDto } from '../dto/create-organization.dto';
 import { UpdateOrganizationDto } from '../dto/update-organization.dto';
@@ -19,13 +19,13 @@ import { NotificationService } from 'libs/shared/utils/src/lib/services/notifica
 import {
   OrganizationRole,
   OrganizationRoleDocument,
-} from '../../authorization/schemas/organization-role.schema';
-import { Role, RoleDocument } from '../../authorization/schemas/role.schema';
+} from '../../../../../core/src/lib/schemas';
+import { Role, RoleDocument } from '../../../../../core/src/lib/schemas';
 import { AuthorizationService } from '../../authorization/services/authorization.service';
 import {
   UserMetadata,
   UserMetadataDocument,
-} from '../../super-admin/schemas/user-metadata.schema';
+} from '../../../../../core/src/lib/schemas';
 
 // Role hierarchy from highest to lowest authority
 const ROLE_HIERARCHY = [

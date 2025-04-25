@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Shift, ShiftDocument } from '../schemas/shift.schema';
+import { Shift, ShiftDocument } from '../../../../../core/src/lib/schemas';
 import { CreateShiftDto } from '../dto/create-shift.dto';
 import { UpdateShiftDto } from '../dto/update-shift.dto';
 import * as moment from 'moment';
@@ -15,7 +15,7 @@ import {
   ShiftAssignment,
   ShiftAssignmentDocument,
   ShiftAssignmentStatus,
-} from '../schemas/shift-assignment.schema';
+} from '../../../../../core/src/lib/schemas';
 import { CreateShiftAssignmentDto } from '../dto/create-shift-assignment.dto';
 import { UpdateShiftAssignmentDto } from '../dto/update-shift-assignment.dto';
 

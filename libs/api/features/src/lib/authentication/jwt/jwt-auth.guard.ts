@@ -24,13 +24,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     }
     const organizationId = request.currentOrganization?._id;
     const contextType = organizationId ? 'ORGANIZATION' : 'SYSTEM';
-    console.log(
-      'current org in request:',
-      request.currentOrganization,
-      'contextType:',
-      contextType
-    );
-    console.log('user in request:', user, 'user._id:', user._id);
     const permissions = await this.authorizationService.getAllUserPermissions(
       user._id?.toString(),
       {

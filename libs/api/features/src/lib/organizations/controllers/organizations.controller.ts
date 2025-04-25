@@ -11,6 +11,7 @@ import {
   Req,
   HttpStatus,
   Res,
+  All,
 } from '@nestjs/common';
 
 import { Response } from 'express';
@@ -31,9 +32,6 @@ export class OrganizationsController {
   @Get('/test')
   @UseGuards(JwtAuthGuard)
   testEndpoint(@Req() req: any) {
-    console.log(req, 'anandhu');
-    console.log('Organization test endpoint reached');
-    console.log('User in request:', req.user);
     return {
       success: true,
       message: 'Test endpoint',
@@ -100,16 +98,21 @@ export class OrganizationsController {
     }
   }
 
-  @Patch()
+  @Patch(':id')
   @Auth('edit_organization')
   async updateOrganization(
+    @Param('id') id: string,
     @Body() updateOrganizationDto: UpdateOrganizationDto,
     @Req() req: any,
     @Res() res: Response
   ) {
     try {
+      console.log('Received ID:', id);
+      console.log('Received DTO:', JSON.stringify(updateOrganizationDto));
+
+      // Use the ID from the URL parameter instead of req.currentOrganization
       const result = await this.organizationsService.updateOrganization(
-        req.currentOrganization._id,
+        id as any,
         updateOrganizationDto
       );
 

@@ -99,6 +99,9 @@ export class OrganizationStaffController {
         });
       }
 
+      console.log(req.currentOrganization?._id, 'mairu org');
+      console.log(shiftPatternId, 'mairu pattern');
+
       const availableStaff =
         await this.organizationStaffService.getAvailableStaffForShift(
           req.currentOrganization?._id,

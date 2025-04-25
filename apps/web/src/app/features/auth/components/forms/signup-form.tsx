@@ -54,7 +54,7 @@ import {
 
 import StepIndicator from '../step-indicator';
 import { useDispatch } from 'react-redux';
-import { useRegisterMutation, useRegisterWithOrgInvitationMutation } from '../../authApi';
+import { useRegisterMutation, useRegisterWithOrgInvitationMutation, useRegisterWithStaffInvitationMutation } from '../../authApi';
 import { setCredentials } from '../../AuthSlice';
 
 // Data constants - keeping the same data structures
@@ -113,6 +113,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
 
     // Use RTK Query mutation hook
     const [registerOrg, { isLoading: isRegistering }] = useRegisterWithOrgInvitationMutation();
+    const [registerStaff, { isLoading: isStaffRegistering }] = useRegisterWithStaffInvitationMutation();
     const [registerUser] = useRegisterMutation();
 
     // Mobile detection
@@ -178,11 +179,12 @@ const SignupForm: React.FC<SignupFormProps> = ({
             // }).unwrap();
 
             if (invitationType === 'staff') {
-                const response = await registerUser({
+                const response = await registerStaff({
                     ...data,
                     token: invitationToken,
                     type: invitationType
                 }).unwrap();
+
                 // Store token in Redux
                 dispatch(setCredentials({
                     token: response.token,

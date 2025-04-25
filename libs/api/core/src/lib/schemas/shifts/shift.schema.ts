@@ -145,6 +145,13 @@ export class Shift {
 
   @Prop({
     type: String,
+    enum: ['pending', 'partial', 'done', 'invalidated'],
+    default: 'pending',
+  })
+  status!: string;
+
+  @Prop({
+    type: String,
     enum: ['pending', 'approved', 'rejected', 'invalidated'],
     default: 'pending',
   })

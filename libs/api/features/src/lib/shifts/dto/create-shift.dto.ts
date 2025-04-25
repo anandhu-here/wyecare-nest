@@ -116,6 +116,9 @@ export class CreateShiftDto {
   @IsEnum(['pending', 'approved', 'rejected', 'invalidated'])
   @IsOptional()
   bookingStatus?: string;
+  @IsEnum(['pending', 'partial', 'done', 'invalidated'])
+  @IsOptional()
+  status?: string;
 
   @IsObject()
   @IsOptional()

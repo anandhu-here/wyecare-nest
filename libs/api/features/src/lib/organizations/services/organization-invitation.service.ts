@@ -11,18 +11,18 @@ import * as crypto from 'crypto';
 import {
   Organization,
   OrganizationDocument,
-} from '../schemas/organization.schema';
-import { User, UserDocument } from '../../users/schemas/user.schema';
+} from '../../../../../core/src/lib/schemas';
+import { User, UserDocument } from '../../../../../core/src/lib/schemas';
 import { EmailService } from 'libs/shared/utils/src/lib/services/email.service';
 import { CreateOrganizationInvitationDto } from '../dto/create-organization-invitation.dto';
 import {
   OrganizationRole,
   OrganizationRoleDocument,
-} from '../../authorization/schemas/organization-role.schema';
+} from '../../../../../core/src/lib/schemas';
 import {
   OrganizationInvitation,
   OrganizationInvitationDocument,
-} from '../schemas/organization.invitation.schema';
+} from '../../../../../core/src/lib/schemas';
 
 @Injectable()
 export class OrganizationInvitationService {

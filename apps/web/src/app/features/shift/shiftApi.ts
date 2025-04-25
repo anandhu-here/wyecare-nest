@@ -213,6 +213,15 @@ export const shiftsApi = baseApi.injectEndpoints({
       ],
     }),
 
+    getQuickStats: builder.query({
+      query: ({ month, year }) => ({
+        url: 'shifts/dashboard/quick-stats',
+        method: 'GET',
+        params: { month, year },
+      }),
+      providesTags: ['QuickStats'],
+    }),
+
     // Shift assignment endpoints
     createShiftAssignment: builder.mutation<
       IShiftAssignment,
@@ -358,4 +367,5 @@ export const {
   useDeleteShiftAssignmentMutation,
   useAssignMultipleUsersMutation,
   useSwapAssignedUsersMutation,
+  useGetQuickStatsQuery,
 } = shiftsApi;

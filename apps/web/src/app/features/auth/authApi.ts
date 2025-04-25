@@ -21,7 +21,15 @@ export const authApi = baseApi.injectEndpoints({
 
     registerWithOrgInvitation: builder.mutation({
       query: (data) => ({
-        url: 'auth/register-with-invitation?token=' + data.token,
+        url: `auth/register-with-invitation?token=${data.token}&type=${data.type}`,
+        method: 'POST',
+        body: data,
+      }),
+    }),
+
+    registerWithStaffInvitation: builder.mutation({
+      query: (data) => ({
+        url: `auth/register-with-staff-invitation?token=${data.token}&type=${data.type}`,
         method: 'POST',
         body: data,
       }),
@@ -234,4 +242,6 @@ export const {
   useDeleteTimesheetAdminMutation,
   useGetTimesheetaAdminsQuery,
   useResetTimesheetAdminPassMutation,
+
+  useRegisterWithStaffInvitationMutation,
 } = authApi;

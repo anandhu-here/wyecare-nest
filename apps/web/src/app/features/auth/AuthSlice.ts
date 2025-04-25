@@ -222,7 +222,68 @@ export const selectIsOrganizationAdmin = (state: { auth: AuthState }) =>
   state?.auth?.permissions.some((p) =>
     ['delete_organization', 'edit_organization'].includes(p)
   );
-export const selectStaffType = (state: { auth: AuthState }) =>
-  state?.auth?.staffType;
+
+export const selectStaffType = (state: { auth: AuthState }) => {
+  if (
+    ['carer', 'senior_carer', 'nurse'].includes(state?.auth?.user?.role as any)
+  ) {
+    return 'care';
+  } else if (['owner', 'admin'].includes(state?.auth?.user?.role as any)) {
+    return 'admin';
+  } else {
+    return 'staff';
+  }
+};
 export const selectUnreadNotificationCount = (state: { auth: AuthState }) =>
   state?.auth?.unReadNotificationCount;
+
+export interface ICountryCodes {
+  code: string;
+  label: string;
+}
+
+export const countryPhoneCodes: ICountryCodes[] = [
+  { code: '+1', label: 'United States/Canada (+1)' },
+  { code: '+44', label: 'United Kingdom (+44)' },
+  { code: '+61', label: 'Australia (+61)' },
+  { code: '+64', label: 'New Zealand (+64)' },
+  { code: '+353', label: 'Ireland (+353)' },
+  { code: '+91', label: 'India (+91)' },
+  { code: '+65', label: 'Singapore (+65)' },
+  { code: '+60', label: 'Malaysia (+60)' },
+  { code: '+63', label: 'Philippines (+63)' },
+  { code: '+852', label: 'Hong Kong (+852)' },
+  { code: '+971', label: 'UAE (+971)' },
+  { code: '+966', label: 'Saudi Arabia (+966)' },
+  { code: '+974', label: 'Qatar (+974)' },
+  { code: '+49', label: 'Germany (+49)' },
+  { code: '+33', label: 'France (+33)' },
+  { code: '+34', label: 'Spain (+34)' },
+  { code: '+39', label: 'Italy (+39)' },
+  { code: '+31', label: 'Netherlands (+31)' },
+  { code: '+46', label: 'Sweden (+46)' },
+  { code: '+47', label: 'Norway (+47)' },
+];
+
+export const countries = [
+  { name: 'India', code: 'IN', currency: 'INR' },
+  { name: 'United States', code: 'US', currency: 'USD' },
+  { name: 'United Kingdom', code: 'GB', currency: 'GBP' },
+  { name: 'Australia', code: 'AU', currency: 'AUD' },
+  { name: 'Canada', code: 'CA', currency: 'CAD' },
+  { name: 'Germany', code: 'DE', currency: 'EUR' },
+  { name: 'France', code: 'FR', currency: 'EUR' },
+  { name: 'Italy', code: 'IT', currency: 'EUR' },
+  { name: 'Spain', code: 'ES', currency: 'EUR' },
+  { name: 'Netherlands', code: 'NL', currency: 'EUR' },
+  { name: 'Singapore', code: 'SG', currency: 'SGD' },
+  { name: 'Japan', code: 'JP', currency: 'JPY' },
+  { name: 'South Korea', code: 'KR', currency: 'KRW' },
+  { name: 'United Arab Emirates', code: 'AE', currency: 'AED' },
+  { name: 'Saudi Arabia', code: 'SA', currency: 'SAR' },
+  { name: 'South Africa', code: 'ZA', currency: 'ZAR' },
+  { name: 'Brazil', code: 'BR', currency: 'BRL' },
+  { name: 'Mexico', code: 'MX', currency: 'MXN' },
+  { name: 'New Zealand', code: 'NZ', currency: 'NZD' },
+  { name: 'Ireland', code: 'IE', currency: 'EUR' },
+].sort((a, b) => a.name.localeCompare(b.name));

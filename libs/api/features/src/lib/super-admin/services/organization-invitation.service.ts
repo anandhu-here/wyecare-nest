@@ -13,10 +13,10 @@ import { CreateOrgInvitationDto } from '../dto/create-org-invitation.dto';
 import {
   OrganizationCreationInvitation,
   OrganizationCreationInvitationDocument,
-} from '../schemas/organization-creation-invitation.schema';
-import { User, UserDocument } from '../../users/schemas/user.schema';
+} from '../../../../../core/src/lib/schemas';
+import { User, UserDocument } from '../../../../../core/src/lib/schemas';
 import { AuthorizationService } from '../../authorization/services/authorization.service';
-import { UserMetadata } from '../schemas/user-metadata.schema';
+import { UserMetadata } from '../../../../../core/src/lib/schemas';
 
 @Injectable()
 export class OrganizationInvitationService {
@@ -123,10 +123,10 @@ export class OrganizationInvitationService {
   async getInvitationByToken(
     token: string
   ): Promise<OrganizationCreationInvitation> {
-    const invitation = await this.invitationModel
-      .findOne({ token })
-      .populate('invitedBy', 'firstName lastName email')
-      .exec();
+    console.log(token, 'tokkk');
+    const invitation = await this.invitationModel.findOne({ token }).exec();
+
+    console.log(invitation, 'innnn');
 
     if (!invitation) {
       throw new NotFoundException('Invitation not found');

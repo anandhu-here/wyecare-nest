@@ -7,15 +7,17 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
+  LeaveRequest,
+  LeaveRequestDocument,
   Organization,
   OrganizationDocument,
-} from '../schemas/organization.schema';
+} from '../../../../../core/src/lib/schemas';
 import {
   OrganizationRole,
   OrganizationRoleDocument,
-} from '../../authorization/schemas/organization-role.schema';
-import { User, UserDocument } from '../../users/schemas/user.schema';
-import { Role, RoleDocument } from '../../authorization/schemas/role.schema';
+} from '../../../../../core/src/lib/schemas';
+import { User, UserDocument } from '../../../../../core/src/lib/schemas';
+import { Role, RoleDocument } from '../../../../../core/src/lib/schemas';
 import { EmailService } from 'libs/shared/utils/src/lib/services/email.service';
 import { AuthorizationService } from '../../authorization/services/authorization.service';
 import { AddUserToOrganizationDto } from '../dto/add-user-to-organization.dto';
@@ -26,19 +28,19 @@ import { CreateStaffInvitationDto } from '../dto/create-staff-invitation.dto';
 import {
   StaffInvitation,
   StaffInvitationDocument,
-} from '../schemas/staff-invitation.schema';
+} from '../../../../../core/src/lib/schemas';
 import {
   EmployeeAvailability,
   EmployeeAvailabilityDocument,
-} from '../schemas/employee.schema';
+} from '../../../../../core/src/lib/schemas';
 import {
   ShiftPattern,
   ShiftPatternDocument,
-} from '../../shift-patterns/schemas/shift-pattern.schema';
+} from '../../../../../core/src/lib/schemas';
 import {
   ShiftAssignment,
   ShiftAssignmentDocument,
-} from '../../shifts/schemas/shift-assignment.schema';
+} from '../../../../../core/src/lib/schemas';
 
 @Injectable()
 export class OrganizationStaffService {
@@ -65,6 +67,8 @@ export class OrganizationStaffService {
 
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
+    @InjectModel(LeaveRequest.name)
+    private leaveRequestModel: Model<LeaveRequestDocument>,
 
     @InjectModel(Role.name)
     private roleModel: Model<RoleDocument>,
@@ -214,7 +218,9 @@ export class OrganizationStaffService {
       const careStaff = await this.organizationRoleModel
         .find({
           organizationId: new Types.ObjectId(organizationId),
-          staffType: 'care',
+          roleId: {
+            $in: ['carer', 'nurse', 'senior_carer'],
+          },
         })
         .populate('userId', 'firstName lastName avatarUrl');
 
@@ -422,25 +428,19 @@ export class OrganizationStaffService {
     startTime: string,
     endTime: string
   ): Promise<boolean> {
-    // Note: This is commented out as per instructions since leave management isn't implemented yet
-    /*
-  const shiftDateTime = new Date(shiftDate);
-  const shiftStart = new Date(`${shiftDate}T${startTime}`);
-  const shiftEnd = new Date(`${shiftDate}T${endTime}`);
+    const shiftDateTime = new Date(shiftDate);
+    const shiftStart = new Date(`${shiftDate}T${startTime}`);
+    const shiftEnd = new Date(`${shiftDate}T${endTime}`);
 
-  // Find any approved leave that overlaps with the shift date
-  const leave = await this.leaveRequestModel.findOne({
-    user: new Types.ObjectId(userId),
-    status: 'approved',
-    startDate: { $lte: shiftEnd },
-    endDate: { $gte: shiftStart },
-  });
+    // Find any approved leave that overlaps with the shift date
+    const leave = await this.leaveRequestModel.findOne({
+      user: new Types.ObjectId(userId),
+      status: 'approved',
+      startDate: { $lte: shiftEnd },
+      endDate: { $gte: shiftStart },
+    });
 
-  return !leave; // Return true if no leave found (staff is available)
-  */
-
-    // Temporarily return true until leave management is implemented
-    return true;
+    return !leave;
   }
 
   /**
