@@ -49,6 +49,7 @@ export class EmployeeApplicationController {
   ) {}
 
   @Get()
+  @UseGuards(JwtAuthGuard, OrganizationContextGuard)
   async getApplication(
     @Req() req: any,
     @Res() res: Response,
@@ -80,7 +81,7 @@ export class EmployeeApplicationController {
       }
 
       // If the user is care staff, return the full application
-      if (req.staffType === 'care') {
+      if (['carer', 'senior_carer', 'nurse'].includes(currentUser.role)) {
         const application =
           await this.employeeApplicationService.getApplicationFull(userId);
         return res.status(HttpStatus.OK).json({
@@ -231,8 +232,9 @@ export class EmployeeApplicationController {
         employeeId = carerId;
       }
 
+      console.log(index, 'index');
       // Parse index if provided
-      if (index !== undefined) {
+      if (index) {
         const parsedIndex = Number(index);
         if (
           !isNaN(parsedIndex) &&
@@ -268,7 +270,7 @@ export class EmployeeApplicationController {
     }
   }
 
-  @Post(':arrayField')
+  @Post('add-to-array/:arrayField')
   async addToArray(
     @Param('arrayField') arrayField: string,
     @Body() addToArrayDto: AddToArrayDto,
@@ -395,8 +397,10 @@ export class EmployeeApplicationController {
         employeeId = carerId;
       }
 
+      console.log(index, 'index');
+
       // Parse index if provided
-      if (index !== undefined) {
+      if (index) {
         const parsedIndex = Number(index);
         if (!isNaN(parsedIndex)) {
           indexNumber = parsedIndex;
@@ -435,6 +439,7 @@ export class EmployeeApplicationController {
   }
 
   @Post('upload-document')
+  @UseGuards(JwtAuthGuard, OrganizationContextGuard)
   @UseInterceptors(FileInterceptor('file'))
   async uploadDocument(
     @UploadedFile() file: any,
@@ -444,6 +449,9 @@ export class EmployeeApplicationController {
     @Query('carerId') carerId?: string
   ) {
     try {
+      console.log(req.user, 'req.user');
+      console.log(file, 'file');
+      console.log(uploadDocumentDto, 'uploadDocumentDto');
       let employeeId = req.user._id.toString();
 
       // Handle admin uploads

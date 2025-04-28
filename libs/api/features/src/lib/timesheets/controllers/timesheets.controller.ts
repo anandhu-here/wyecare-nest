@@ -22,6 +22,7 @@ import { OrganizationContextGuard } from '../../organizations/organization-conte
 import { TimesheetsService } from '../services/timesheets.service';
 import { CreateTimesheetDto } from '../dto/create-timesheet.dto';
 import { UpdateTimesheetDto } from '../dto/update-timesheet.dto';
+import { Auth } from '../../authorization/auth.decorator';
 
 @Controller('timesheets')
 export class TimesheetsController {
@@ -82,8 +83,14 @@ export class TimesheetsController {
           .split('T')[0];
       }
 
+      let staffType = 'care';
+
+      if (['admin', 'manager', 'owner'].includes(accountType)) {
+        staffType = 'admin';
+      }
+
       const result = await this.timesheetsService.getTimesheetsByRole(
-        req.staffType,
+        staffType,
         _id.toString(),
         orgType,
         orgId,
@@ -104,6 +111,7 @@ export class TimesheetsController {
         ...result,
       });
     } catch (error: any) {
+      console.log('Error getting timesheets:', error);
       this.logger.error('Error getting timesheets:', error);
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
@@ -112,9 +120,42 @@ export class TimesheetsController {
     }
   }
 
-  @Get('stats')
+  //get user timesheet by shift id
+  @Get('user/:shiftId')
   @UseGuards(JwtAuthGuard, OrganizationContextGuard)
-  @RequirePermission('view_timesheets')
+  async getUserTimesheetByShiftId(
+    @Param('shiftId') shiftId: string,
+    @Req() req: any,
+    @Res() res: Response
+  ) {
+    try {
+      const timesheet = await this.timesheetsService.getUserTimesheetByShiftId(
+        req.user._id.toString(),
+        shiftId
+      );
+
+      if (!timesheet) {
+        return res.status(HttpStatus.NOT_FOUND).json({
+          success: false,
+          message: 'Timesheet not found',
+        });
+      }
+
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        data: timesheet,
+      });
+    } catch (error: any) {
+      this.logger.error('Error getting user timesheet by shift ID:', error);
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message || 'Failed to get user timesheet',
+      });
+    }
+  }
+
+  @Get('stats')
+  @Auth('view_timesheets')
   async getTimesheetCounts(
     @Query() query: any,
     @Req() req: any,

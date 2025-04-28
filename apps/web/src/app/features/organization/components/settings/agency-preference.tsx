@@ -44,6 +44,8 @@ import { selectUser } from '@/app/features/auth/AuthSlice'
 import { IShiftPattern } from '@wyecare-monorepo/shared-types'
 import ShiftTypeDialog from '@/app/features/shift/components/shift-pattern/home-add-shift-pattern'
 import { useCreateShiftPatternMutation, useDeleteShiftPatternMutation, useGetShiftPatternsQuery, useUpdateShiftPatternMutation } from '@/app/features/shift-pattern/shiftPatternsApi'
+import TemporaryHomeSection from './temporary-home'
+import AgencyShiftPatternDialog from '@/app/features/shift/components/shift-pattern/agency-add-shift-pattern'
 
 // Shift color variants with improved styling for Shadcn
 const SHIFT_COLORS = [
@@ -71,8 +73,9 @@ const AgencyPreferences = () => {
     const [deleteShiftPattern] = useDeleteShiftPatternMutation()
 
     // Dialog handlers
-    const handleOpenDialog = (shiftType?: IShiftPattern) => {
-        setSelectedShiftType(shiftType || null)
+    const handleOpenDialog = (shiftType?: any) => {
+        console.log('Opening dialog for shift type:', shiftType)
+        setSelectedShiftType(shiftType)
         setOpenDialog(true)
     }
 
@@ -255,7 +258,7 @@ const AgencyPreferences = () => {
                 />
                 <div className="p-4">
                     {/* Comment out the component if not available yet */}
-                    {/* <TemporaryHomeSection /> */}
+                    <TemporaryHomeSection />
                     <div className="text-sm text-muted-foreground p-4 bg-muted/30 rounded-md text-center">
                         Temporary home management coming soon
                     </div>
@@ -323,11 +326,11 @@ const AgencyPreferences = () => {
             </section>
 
             {/* Shift Type Dialog */}
-            <ShiftTypeDialog
+            <AgencyShiftPatternDialog
                 open={openDialog}
                 onClose={handleCloseDialog}
+                selectedShiftPattern={selectedShiftType as any}
                 onSave={handleSaveShiftType}
-                selectedShiftType={selectedShiftType}
             />
         </div>
     )

@@ -40,46 +40,46 @@ export const ShiftDistributionChart = ({
     let categories = [];
 
     if (type === 'agency') {
-        const dates = Object.keys(data.shifts.received.distribution.byDate).sort();
+        const dates = Object.keys(data.shifts.received.distribution?.byDate).sort();
         categories = dates;
         series = [
             {
                 name: 'Received',
-                data: dates.map(date => data.shifts.received.distribution.byDate[date] || 0)
+                data: dates.map(date => data.shifts.received.distribution?.byDate[date] || 0)
             },
             {
                 name: 'Assigned',
-                data: dates.map(date => data.shifts.assigned.distribution.byDate[date] || 0)
+                data: dates.map(date => data.shifts.assigned.distribution?.byDate[date] || 0)
             },
             {
                 name: 'Completed',
-                data: dates.map(date => data.shifts.completed.distribution.byDate[date] || 0)
+                data: dates.map(date => data.shifts.completed.distribution?.byDate[date] || 0)
             }
         ];
     } else if (type === 'staff') {
-        const dates = Object.keys(data.shifts.distribution.byDate).sort();
-        categories = dates;
+        const dates = Object.keys(data.shifts.distribution?.byDate || {}).sort();
+        categories = dates || [];
         series = [
             {
                 name: 'Shifts',
-                data: dates.map(date => data.shifts.distribution.byDate[date] || 0)
+                data: dates.map(date => data.shifts.distribution?.byDate[date] || 0)
             }
         ];
     } else {
-        const dates = Object.keys(data.shifts.published.distribution.byDate).sort();
+        const dates = Object.keys(data.shifts.published.distribution?.byDate).sort();
         categories = dates;
         series = [
             {
                 name: 'Published',
-                data: dates.map(date => data.shifts.published.distribution.byDate[date] || 0)
+                data: dates.map(date => data.shifts.published.distribution?.byDate[date] || 0)
             },
             {
                 name: 'Direct',
-                data: dates.map(date => data.shifts.direct.distribution.byDate[date] || 0)
+                data: dates.map(date => data.shifts.direct.distribution?.byDate[date] || 0)
             },
             {
                 name: 'Agency',
-                data: dates.map(date => data.shifts.agency.distribution.byDate[date] || 0)
+                data: dates.map(date => data.shifts.agency.distribution?.byDate[date] || 0)
             }
         ];
     }

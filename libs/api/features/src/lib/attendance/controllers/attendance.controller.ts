@@ -31,6 +31,7 @@ import {
 } from '../dto/attendance.dto';
 import { Types } from 'mongoose';
 import { OrganizationLinkingService } from '../../organizations/services/organization-linking.service';
+import { OrganizationContextGuard } from '../../organizations/organization-context.guard';
 
 @Controller('attendance')
 @UseGuards(JwtAuthGuard)
@@ -512,6 +513,7 @@ export class AttendanceController {
    * Get attendance registry
    */
   @Get('registry')
+  @UseGuards(JwtAuthGuard, OrganizationContextGuard)
   async getAttendanceRegistry(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
@@ -550,10 +552,7 @@ export class AttendanceController {
         limit: pageSize,
       });
 
-      return {
-        success: true,
-        data: result,
-      };
+      return result;
     } catch (error) {
       this.logger.error(
         `Error getting attendance registry: ${error.message}`,

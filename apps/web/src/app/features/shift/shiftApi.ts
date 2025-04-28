@@ -242,13 +242,9 @@ export const shiftsApi = baseApi.injectEndpoints({
       ],
     }),
 
-    getUserAssignments: builder.query<
-      IShiftAssignment[],
-      { userId: string; orgId?: string }
-    >({
-      query: ({ userId, orgId }) => {
+    getUserAssignments: builder.query({
+      query: ({ userId }: { userId: string; orgId?: string }) => {
         let url = `shifts/assignments/user/${userId}`;
-        if (orgId) url += `?orgId=${orgId}`;
         return url;
       },
       providesTags: (result, error, { userId }) => [

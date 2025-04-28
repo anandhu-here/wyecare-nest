@@ -32,6 +32,7 @@ import {
 import { IShiftPattern } from '@wyecare-monorepo/shared-types'
 import ShiftTypeDialog from '@/app/features/shift/components/shift-pattern/home-add-shift-pattern'
 import { useCreateShiftPatternMutation, useDeleteShiftPatternMutation, useGetShiftPatternsQuery, useUpdateShiftPatternMutation } from '@/app/features/shift-pattern/shiftPatternsApi'
+import ClaimTemporaryHomeCard from './temperoryhome-claim'
 // import ClaimTemporaryHomeCard from './ClaimtempHomeCard'
 
 // Shift color variants
@@ -268,7 +269,7 @@ const CareHomePreferences = () => {
             </CardContent>
           </Card>
 
-          {/* <ClaimTemporaryHomeCard /> */}
+          <ClaimTemporaryHomeCard />
         </div>
       </div>
 

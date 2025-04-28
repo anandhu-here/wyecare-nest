@@ -1,6 +1,47 @@
 // src/redux/api/organizationApi.ts
 import { baseApi } from '@/redux/baseApi';
 import { IOrganization } from '@wyecare-monorepo/shared-types';
+// Define the types for request and response data
+interface TemporaryHome {
+  _id: string;
+  name: string;
+  createdByAgency: string;
+  temporaryId: string;
+  isClaimed: boolean;
+  claimedBy?: string;
+  metadata?: any;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface CreateTemporaryHomeRequest {
+  name: string;
+}
+
+interface UpdateTemporaryHomeRequest {
+  tempHomeId: string;
+  name?: string;
+  metadata?: any;
+}
+
+interface ClaimTemporaryHomeRequest {
+  temporaryId: string;
+}
+
+interface TemporaryHomeStatsResponse {
+  tempHome: TemporaryHome;
+  stats: {
+    shifts: number;
+    timesheets: number;
+    invoices: number;
+  };
+}
+
+interface VerifyTemporaryIdResponse {
+  isValid: boolean;
+  tempHome?: TemporaryHome;
+  agency?: any;
+}
 
 export const organizationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -346,6 +387,89 @@ export const organizationApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['StaffInvitations', 'OrganizationStaff', 'Profile'],
     }),
+
+    //temp homes
+
+    createTemporaryHome: builder.mutation<
+      TemporaryHome,
+      CreateTemporaryHomeRequest
+    >({
+      query: (body) => ({
+        url: 'temporary-homes/',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['TemporaryHomes'],
+    }),
+
+    getAgencyTemporaryHomes: builder.query({
+      query: () => 'temporary-homes/',
+      providesTags: ['TemporaryHomes'],
+    }),
+
+    getTemporaryHomeById: builder.query({
+      query: (id) => `temporary-homes/${id}`,
+      providesTags: (result, error, id) => [{ type: 'TemporaryHome', id }],
+    }),
+
+    getTemporaryHomeByTempId: builder.query({
+      query: (temporaryId) => `temporary-homes/temp/${temporaryId}`,
+      providesTags: (result, error, temporaryId) => [
+        { type: 'TemporaryHome', id: temporaryId },
+      ],
+    }),
+
+    unclaimTemporaryHome: builder.mutation<any, string>({
+      query: (tempHomeId) => ({
+        url: `temporary-homes/${tempHomeId}/unclaim`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['TemporaryHomes', 'Organizations'],
+    }),
+
+    updateTemporaryHome: builder.mutation({
+      query: (body) => ({
+        url: 'temporary-homes/',
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: (result, error, { tempHomeId }) => [
+        { type: 'TemporaryHome', id: tempHomeId },
+        'TemporaryHomes',
+      ],
+    }),
+
+    deleteTemporaryHome: builder.mutation<
+      { success: boolean; message: string },
+      string
+    >({
+      query: (tempHomeId) => ({
+        url: `temporary-homes/${tempHomeId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['TemporaryHomes'],
+    }),
+
+    claimTemporaryHome: builder.mutation({
+      query: (body) => ({
+        url: 'temporary-homes/claim',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['TemporaryHomes', 'Organizations'],
+    }),
+
+    verifyTemporaryId: builder.query({
+      query: (temporaryId) =>
+        `temporary-homes/verify-claiming-token?temporaryId=${temporaryId}`,
+    }),
+
+    getTemporaryHomeStats: builder.query({
+      query: (tempHomeId) => `temporary-homes/stats/${tempHomeId}`,
+      providesTags: (result, error, tempHomeId) => [
+        { type: 'TemporaryHomeStats', id: tempHomeId },
+      ],
+    }),
   }),
 });
 
@@ -390,4 +514,15 @@ export const {
 
   useVerifyStaffInvitationQuery,
   useAcceptStaffInvitationMutation,
+
+  //temp homes
+  useCreateTemporaryHomeMutation,
+  useGetAgencyTemporaryHomesQuery,
+  useGetTemporaryHomeByIdQuery,
+  useVerifyTemporaryIdQuery,
+  useGetTemporaryHomeByTempIdQuery,
+  useUnclaimTemporaryHomeMutation,
+  useUpdateTemporaryHomeMutation,
+  useDeleteTemporaryHomeMutation,
+  useClaimTemporaryHomeMutation,
 } = organizationApi;

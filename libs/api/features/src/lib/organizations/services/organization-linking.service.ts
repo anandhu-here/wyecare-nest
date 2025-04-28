@@ -172,11 +172,12 @@ export class OrganizationLinkingService {
       .select('_id name email type logoUrl')
       .exec();
 
-    // Find organizations with admins/owners having the email
+    // Update role IDs to match what's actually in your database
     const adminRoles = await this.organizationRoleModel
       .find({
         organizationId: { $ne: currentOrgId }, // Exclude current organization
-        roleId: { $in: ['ORGANIZATION_ADMIN', 'ORGANIZATION_OWNER'] },
+        roleId: { $in: ['owner', 'ORGANIZATION_ADMIN', 'ORGANIZATION_OWNER', 'admin'] }, // Include both formats
+        userId: { $ne: null }, // Ensure userId is not null
       })
       .populate('userId', 'email')
       .populate('organizationId', '_id name email type logoUrl')
@@ -186,11 +187,15 @@ export class OrganizationLinkingService {
     const orgsByAdminEmail = adminRoles
       .filter((role: any) => {
         const user = role.userId as any;
+        // Add null check before attempting to access email
         return (
-          user.email && user.email.toLowerCase().includes(email.toLowerCase())
+          user &&
+          user.email &&
+          user.email.toLowerCase().includes(email.toLowerCase())
         );
       })
-      .map((role: any) => role.organizationId);
+      .map((role: any) => role.organizationId)
+      .filter((org) => org !== null); // Ensure we don't have null organizations
 
     // Combine results, removing duplicates
     const allOrgs = [...orgsByDirectEmail];

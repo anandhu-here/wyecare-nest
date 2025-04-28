@@ -8,6 +8,7 @@ import {
   RequireAnyPermission,
 } from './permissions.decorator';
 import { OrganizationContextGuard } from '../organizations/organization-context.guard';
+import { OrganizationAccessGuard } from './organization-access.guard';
 
 export function Auth(permission?: string) {
   const decorators = [

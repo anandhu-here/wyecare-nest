@@ -6,7 +6,7 @@ interface AuthState {
   isAuthenticated: boolean;
   token: string | null;
   user: Partial<IUser> | null;
-  currentOrganization: IOrganization | null;
+  currentOrganization: (IOrganization & { _id: string }) | null;
   permissions: string[];
   redirectUrl: string | null;
   organizationRoles: any[] | null;
@@ -224,6 +224,7 @@ export const selectIsOrganizationAdmin = (state: { auth: AuthState }) =>
   );
 
 export const selectStaffType = (state: { auth: AuthState }) => {
+  console.log(state, './////');
   if (
     ['carer', 'senior_carer', 'nurse'].includes(state?.auth?.user?.role as any)
   ) {

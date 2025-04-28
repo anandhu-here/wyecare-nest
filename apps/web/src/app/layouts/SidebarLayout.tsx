@@ -20,6 +20,8 @@ export const SidebarLayout = ({ children }: SidebarLayoutProps) => {
     const { isMobile, isTablet, isDesktop } = useDeviceType();
     const user = useSelector(selectUser);
     const staffType = useSelector(selectStaffType);
+    console.log('user', user);
+    console.log('staffType', staffType);
     const isCareStaff = staffType === 'care';
 
     // Only show sidebar on desktop

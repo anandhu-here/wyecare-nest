@@ -123,7 +123,7 @@ export class AuthService {
         firstName: registerDto.firstName.trim(),
         lastName: registerDto.lastName.trim(),
         email,
-        role: registerDto.role,
+        role: invitation.role,
         password: registerDto.password,
         countryCode: registerDto.countryCode,
         phone: registerDto.phone.trim(),

@@ -4,6 +4,12 @@ import React, { useRef, useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { App, BackButtonListenerEvent } from '@capacitor/app'
 import { agency_items, home_items } from './components/settings/settings-items'
+import {
+    useNavigate,
+    useLocation,
+    Outlet,
+    Navigate
+} from 'react-router-dom'
 
 // Shadcn Components
 import { Button } from "@/components/ui/button"
@@ -30,23 +36,60 @@ import {
 import { selectCurrentOrganization, selectUser } from '../auth/AuthSlice'
 import { current } from '@reduxjs/toolkit'
 
+// Map menu items to routes for URL-based navigation
+const getRouteFromLabel = (label) => {
+    const routeMap = {
+        'Profile': 'profile',
+        'Shift Settings': 'shift-settings',
+        'Account Settings': 'account',
+        'Overview': 'account'
+    };
+    return routeMap[label] || label.toLowerCase().replace(/\s+/g, '-');
+};
+
+// Map routes back to menu items for highlighting active item
+const getIndexFromRoute = (route, items) => {
+    const routePath = route.split('/').pop();
+
+    // Default to first item if on the index route
+    if (!routePath || routePath === 'settings') {
+        return 0;
+    }
+
+    for (let i = 0; i < items.length; i++) {
+        const itemRoute = getRouteFromLabel(items[i].label);
+        if (itemRoute === routePath) {
+            return i;
+        }
+    }
+
+    return 0; // Default to first item if no match found
+};
+
 const SettingsLayout = () => {
-    const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+    const navigate = useNavigate();
+    const location = useLocation();
+
     const [showDetailPanel, setShowDetailPanel] = useState(false)
 
     // Track window size for responsive design
     const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0)
 
-    // const orgType = useAppSelector((state) => state.userState.currentOrganization.type)
-    // const dispatch = useDispatch()
-    // const userState = useAppSelector((state) => state.userState)
     const currentOrganization = useSelector(selectCurrentOrganization)
     const orgType = currentOrganization?.type;
     const userState = useSelector(selectUser);
+
     // Determine if we're on mobile, tablet, or desktop
     const isMobile = windowWidth < 640
     const isTablet = windowWidth >= 640 && windowWidth < 1024
     const needsSheet = isMobile || isTablet
+
+    // Get appropriate menu items based on organization type
+    const menuItems = orgType === 'agency' ? [...agency_items] : [...home_items]
+
+    // Get the current active index based on route
+    const currentPath = location.pathname;
+    const selectedIndex = getIndexFromRoute(currentPath, menuItems);
 
     useEffect(() => {
         const handleResize = () => {
@@ -58,12 +101,12 @@ const SettingsLayout = () => {
     }, [])
 
     useEffect(() => {
-        // If desktop, auto-select first item
-        if (!needsSheet && selectedIndex === null) {
-            setSelectedIndex(0)
-            setShowDetailPanel(true)
+        // If desktop and on the index route, auto-navigate to first item
+        if (!needsSheet && (currentPath.endsWith('/settings') || currentPath.endsWith('/settings/'))) {
+            const firstItemRoute = getRouteFromLabel(menuItems[0].label);
+            navigate(`profile`, { replace: true });
         }
-    }, [needsSheet, selectedIndex])
+    }, [needsSheet, currentPath, navigate, menuItems]);
 
     // Set up back button handling for mobile/tablet
     useEffect(() => {
@@ -72,7 +115,7 @@ const SettingsLayout = () => {
         const setupBackButtonListener = async () => {
             try {
                 backButtonListener = await App.addListener('backButton', (e: BackButtonListenerEvent) => {
-                    if (selectedIndex !== null && showDetailPanel) {
+                    if (showDetailPanel && needsSheet) {
                         e.canGoBack = false
                         handleBack()
                     } else {
@@ -84,38 +127,26 @@ const SettingsLayout = () => {
             }
         }
 
-        const handleBrowserBack = (e: PopStateEvent) => {
-            if (selectedIndex !== null && showDetailPanel && needsSheet) {
-                e.preventDefault()
-                handleBack()
-                window.history.pushState(null, '', window.location.pathname)
-            }
-        }
-
         setupBackButtonListener()
-        window.history.pushState(null, '', window.location.pathname)
-        window.addEventListener('popstate', handleBrowserBack)
 
         return () => {
             if (backButtonListener) {
                 backButtonListener.remove()
             }
-            window.removeEventListener('popstate', handleBrowserBack)
         }
-    }, [selectedIndex, showDetailPanel, needsSheet])
+    }, [showDetailPanel, needsSheet])
 
     const handleSettingSelect = (index: number) => {
-        setSelectedIndex(index)
-        setShowDetailPanel(true)
+        const route = getRouteFromLabel(menuItems[index].label);
+        navigate(route);
+        if (needsSheet) {
+            setShowDetailPanel(true);
+        }
     }
 
     const handleBack = () => {
-        setSelectedIndex(null)
         setShowDetailPanel(false)
     }
-
-    const menuItems = orgType === 'agency' ? [...agency_items] : [...home_items]
-    const CurrentComponent = selectedIndex !== null ? menuItems[selectedIndex].component : null
 
     // Mobile/Tablet Layout
     if (needsSheet) {
@@ -188,32 +219,30 @@ const SettingsLayout = () => {
                 </div>
 
                 {/* Mobile Detail Panel */}
-                {selectedIndex !== null && CurrentComponent && (
-                    <Sheet open={showDetailPanel} onOpenChange={setShowDetailPanel}>
-                        <SheetContent side="bottom" className="w-full p-0 h-[100dvh] border-none">
-                            <SheetHeader className="sticky top-0 bg-background border-b px-4 py-3 flex flex-row items-center">
-                                <Button variant="ghost" size="icon" onClick={handleBack} className="mr-2">
-                                    <ArrowLeft className="h-5 w-5" />
-                                </Button>
-                                <SheetTitle className="text-left">
-                                    <div>
-                                        <h2 className="text-lg font-semibold">
-                                            {menuItems[selectedIndex].label}
-                                        </h2>
-                                        <p className="text-sm text-muted-foreground font-normal">
-                                            {menuItems[selectedIndex].description || "Manage your settings"}
-                                        </p>
-                                    </div>
-                                </SheetTitle>
-                            </SheetHeader>
-                            <ScrollArea className="h-[calc(100dvh-4rem)]">
-                                <div className="p-6">
-                                    <CurrentComponent />
+                <Sheet open={showDetailPanel} onOpenChange={setShowDetailPanel}>
+                    <SheetContent side="bottom" className="w-full p-0 h-[100dvh] border-none">
+                        <SheetHeader className="sticky top-0 bg-background border-b px-4 py-3 flex flex-row items-center">
+                            <Button variant="ghost" size="icon" onClick={handleBack} className="mr-2">
+                                <ArrowLeft className="h-5 w-5" />
+                            </Button>
+                            <SheetTitle className="text-left">
+                                <div>
+                                    <h2 className="text-lg font-semibold">
+                                        {menuItems[selectedIndex]?.label}
+                                    </h2>
+                                    <p className="text-sm text-muted-foreground font-normal">
+                                        {menuItems[selectedIndex]?.description || "Manage your settings"}
+                                    </p>
                                 </div>
-                            </ScrollArea>
-                        </SheetContent>
-                    </Sheet>
-                )}
+                            </SheetTitle>
+                        </SheetHeader>
+                        <ScrollArea className="h-[calc(100dvh-4rem)]">
+                            <div className="p-6">
+                                <Outlet />
+                            </div>
+                        </ScrollArea>
+                    </SheetContent>
+                </Sheet>
             </div>
         );
     }
@@ -290,40 +319,28 @@ const SettingsLayout = () => {
 
             {/* Main Content Area */}
             <div className="flex-1 overflow-hidden">
-                {selectedIndex !== null && CurrentComponent ? (
-                    <div className="h-full flex flex-col">
-                        {/* Panel Header */}
-                        <div className="border-b px-6 py-4">
-                            <div className="flex items-center">
-                                <div>
-                                    <h1 className="text-xl font-semibold">
-                                        {menuItems[selectedIndex].label}
-                                    </h1>
-                                    <p className="text-sm text-muted-foreground">
-                                        {menuItems[selectedIndex].description || "Manage your settings"}
-                                    </p>
-                                </div>
+                <div className="h-full flex flex-col">
+                    {/* Panel Header */}
+                    <div className="border-b px-6 py-4">
+                        <div className="flex items-center">
+                            <div>
+                                <h1 className="text-xl font-semibold">
+                                    {menuItems[selectedIndex]?.label}
+                                </h1>
+                                <p className="text-sm text-muted-foreground">
+                                    {menuItems[selectedIndex]?.description || "Manage your settings"}
+                                </p>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Panel Content */}
-                        <div className="flex-1 overflow-auto p-6">
-                            <div className="mx-auto">
-                                <CurrentComponent />
-                            </div>
+                    {/* Panel Content */}
+                    <div className="flex-1 overflow-auto p-6">
+                        <div className="mx-auto">
+                            <Outlet />
                         </div>
                     </div>
-                ) : (
-                    <div className="h-full flex items-center justify-center">
-                        <div className="text-center max-w-md">
-                            <Settings className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                            <h3 className="text-xl font-medium mb-2">Organization Settings</h3>
-                            <p className="text-muted-foreground">
-                                Select an option from the sidebar to configure your organization settings and preferences.
-                            </p>
-                        </div>
-                    </div>
-                )}
+                </div>
             </div>
         </div>
     );

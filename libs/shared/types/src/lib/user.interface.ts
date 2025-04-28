@@ -20,6 +20,7 @@ export interface ICountryMetadata {
 
 // Main User interface
 export interface IUser {
+  _id?: string;
   avatarUrl?: string;
   firstName: string;
   lastName: string;
@@ -44,11 +45,4 @@ export interface IUser {
   fcmTokens?: string[];
   createdAt?: Date;
   updatedAt?: Date;
-}
-
-// Document interface that extends the base interface with Mongoose Document properties
-// and adds the custom methods defined in the schema
-export interface IUserDocument extends IUser, Document {
-  comparePassword(candidatePassword: string): Promise<boolean>;
-  generateAuthToken(): string;
 }

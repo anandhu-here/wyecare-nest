@@ -8,16 +8,19 @@ import { ShiftPatternsModule } from '../shift-patterns/shift-patterns.module';
 import { UsersModule } from '../users/users.module';
 import { CoreModule } from '../../../../core/src/lib/core.module';
 import { OrganizationsModule } from '../organizations/organizations.module';
+import { AuthorizationModule } from '../authorization/authorization.module';
 @Module({
   imports: [
     CoreModule,
+    OrganizationsModule,
+    AuthorizationModule,
+    UsersModule,
     ShiftsModule,
     ShiftPatternsModule,
-    UsersModule,
-    OrganizationsModule,
   ],
   controllers: [TimesheetsController],
   providers: [TimesheetsService],
   exports: [TimesheetsService],
 })
 export class TimesheetsModule {}
+

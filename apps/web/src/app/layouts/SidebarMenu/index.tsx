@@ -5,7 +5,21 @@ import { cn } from '@/lib/util';
 
 const SidebarMenuItem = ({ item, isDrawer = false }: any) => {
     const { selectedPath, handleItemClick } = useSidebarMenu();
-    const isSelected = selectedPath === item.link;
+
+    // More precise selection logic that prevents "/" or "/dashboard" from matching everything
+    const isSelected =
+        // Exact match case
+        selectedPath === item.link ||
+        // Nested routes case with special handling for home/dashboard
+        (item.link &&
+            item.link !== '/dashboard' && // Special case for dashboard home link
+            selectedPath.startsWith(`${item.link}/`));
+
+    // Special case for home/dashboard - only select if it's exactly /dashboard or empty
+    const isDashboardHome = item.link === '/dashboard' &&
+        (selectedPath === '/dashboard' ||
+            selectedPath === '/' ||
+            selectedPath === '');
 
     return (
         <button
@@ -15,7 +29,7 @@ const SidebarMenuItem = ({ item, isDrawer = false }: any) => {
                 isDrawer
                     ? "flex items-center w-full px-4 py-2.5 my-1"
                     : "flex flex-col items-center justify-center w-[64px] h-14 mx-auto my-[2px]",
-                isSelected
+                (isSelected || isDashboardHome)
                     ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
             )}
@@ -32,7 +46,7 @@ const SidebarMenuItem = ({ item, isDrawer = false }: any) => {
                     icon={item.icon}
                     className={cn(
                         "w-5 h-5",
-                        isSelected ? "text-white" : "text-gray-700 dark:text-gray-300"
+                        (isSelected || isDashboardHome) ? "text-white" : "text-gray-700 dark:text-gray-300"
                     )}
                 />
             </div>
@@ -41,7 +55,7 @@ const SidebarMenuItem = ({ item, isDrawer = false }: any) => {
             <span
                 className={cn(
                     isDrawer ? "ml-3 text-sm" : "text-[11px] mt-1",
-                    isSelected ? "text-white" : "text-gray-700 dark:text-gray-300",
+                    (isSelected || isDashboardHome) ? "text-white" : "text-gray-700 dark:text-gray-300",
                     !isDrawer && "font-medium"
                 )}
             >

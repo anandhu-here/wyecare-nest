@@ -41,9 +41,9 @@ export class ShiftPatternsService {
     agencyId: string
   ): Promise<ShiftPatternDocument> {
     try {
-      // Transform the agency-specific DTO into the standard format
-      const rates = [];
-      const userTypeRates = [] as any[];
+      console.log(createAgencyShiftPatternDto, 'andi');
+      // Initialize the rates array first
+      const rates: any = [];
 
       // Process home rates for each home and user type
       for (const homeRate of createAgencyShiftPatternDto.homeRates) {
@@ -84,6 +84,71 @@ export class ShiftPatternsService {
         });
       }
 
+      // Now calculate userTypeRates from the populated rates array
+      let userTypeRates = [];
+
+      // Check if userTypeRates is provided in the DTO
+      if (
+        createAgencyShiftPatternDto.userTypeRates &&
+        createAgencyShiftPatternDto.userTypeRates.length > 0
+      ) {
+        // Use the provided userTypeRates
+        userTypeRates = createAgencyShiftPatternDto.userTypeRates;
+      } else {
+        // Calculate userTypeRates from the rates
+        const userTypes = [...new Set(rates.map((rate: any) => rate.userType))];
+
+        for (const userType of userTypes) {
+          const userTypeRatesForType = rates.filter(
+            (rate: any) => rate.userType === userType
+          );
+
+          if (userTypeRatesForType.length === 0) continue;
+
+          // Calculate average rates
+          const weekdayRates = userTypeRatesForType.map(
+            (rate: any) => rate.weekdayRate
+          );
+          const weekendRates = userTypeRatesForType.map(
+            (rate: any) => rate.weekendRate
+          );
+          const holidayRates = userTypeRatesForType.map(
+            (rate: any) => rate.holidayRate
+          );
+          const emergencyWeekdayRates = userTypeRatesForType.map(
+            (rate: any) => rate.emergencyWeekdayRate
+          );
+          const emergencyWeekendRates = userTypeRatesForType.map(
+            (rate: any) => rate.emergencyWeekendRate
+          );
+          const emergencyHolidayRates = userTypeRatesForType.map(
+            (rate: any) => rate.emergencyHolidayRate
+          );
+
+          userTypeRates.push({
+            userType,
+            weekdayRate:
+              weekdayRates.reduce((a: number, b: number) => a + b, 0) /
+              weekdayRates.length,
+            weekendRate:
+              weekendRates.reduce((a: number, b: number) => a + b, 0) /
+              weekendRates.length,
+            holidayRate:
+              holidayRates.reduce((a: number, b: number) => a + b, 0) /
+              holidayRates.length,
+            emergencyWeekdayRate:
+              emergencyWeekdayRates.reduce((a: number, b: number) => a + b, 0) /
+              emergencyWeekdayRates.length,
+            emergencyWeekendRate:
+              emergencyWeekendRates.reduce((a: number, b: number) => a + b, 0) /
+              emergencyWeekendRates.length,
+            emergencyHolidayRate:
+              emergencyHolidayRates.reduce((a: number, b: number) => a + b, 0) /
+              emergencyHolidayRates.length,
+          });
+        }
+      }
+
       // Create and save the shift pattern
       const newShiftPattern = new this.shiftPatternModel({
         name: createAgencyShiftPatternDto.name,
@@ -103,10 +168,10 @@ export class ShiftPatternsService {
     }
   }
 
-  async findAll(userId: string): Promise<ShiftPatternDocument[]> {
+  async findAll(orgId: string): Promise<ShiftPatternDocument[]> {
     try {
       return await this.shiftPatternModel
-        .find({ userId: new Types.ObjectId(userId) })
+        .find({ userId: new Types.ObjectId(orgId) })
         .lean()
         .exec();
     } catch (error: any) {

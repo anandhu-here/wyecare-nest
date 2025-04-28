@@ -116,6 +116,37 @@ class HomeTimingDto {
   breakHours?: number;
 }
 
+// New class for UserTypeRate
+class UserTypeRateDto {
+  @IsNotEmpty()
+  @IsString()
+  userType!: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  weekdayRate!: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  weekendRate!: number;
+
+  @IsOptional()
+  @IsNumber()
+  holidayRate?: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  emergencyWeekdayRate!: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  emergencyWeekendRate!: number;
+
+  @IsOptional()
+  @IsNumber()
+  emergencyHolidayRate?: number;
+}
+
 export class CreateAgencyShiftPatternDto {
   @IsNotEmpty()
   @IsString()
@@ -132,4 +163,10 @@ export class CreateAgencyShiftPatternDto {
   @ValidateNested({ each: true })
   @Type(() => HomeTimingDto)
   timings!: HomeTimingDto[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UserTypeRateDto)
+  userTypeRates?: UserTypeRateDto[];
 }

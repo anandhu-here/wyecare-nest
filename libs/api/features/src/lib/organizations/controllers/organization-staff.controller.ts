@@ -571,6 +571,7 @@ async checkStaffLeave(
         invitation,
       });
     } catch (error: any) {
+      console.error('Error creating staff invitation:', error);
       if (error instanceof BadRequestException) {
         return res.status(HttpStatus.BAD_REQUEST).json({
           success: false,

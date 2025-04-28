@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:4205/api/v1
-@testEmail = anandhusathe@gmail.com
+@testEmail = annusathee@gmail.com
 @testPassword = testing@123
 
 ### Login first to get token
@@ -61,7 +61,7 @@ Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-  "name": "Updated Organization Name",
+  "name": "Kundi Agency",
   "address": {
     "street": "456 Main St",
     "city": "New City",

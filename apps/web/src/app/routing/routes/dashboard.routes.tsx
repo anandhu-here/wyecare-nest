@@ -10,6 +10,15 @@ import StaffInvitationVerify from '@/app/features/organization/components/staff-
 import AcceptStaffInvitation from '@/app/features/organization/components/accept-staff-invitation';
 import LegacyDashBoardLayout from '@/app/layouts/dashboard/LegacyLayout';
 import SettingsLayout from '@/app/features/organization/Settings';
+import ProfileTab from '@/app/features/organization/components/settings/profile';
+import AgencyPreferences from '@/app/features/organization/components/settings/agency-preference';
+import AccountSettingsTab from '@/app/features/organization/components/settings/account-settings';
+import OrgInvoices from '@/app/features/invoice';
+import LeaveAdminDashboard from '@/app/features/leave-management/leave-admin';
+import OrganizationTimesheets from '@/app/features/timesheets/organization';
+import AttendanceRegistry from '@/app/features/attendance';
+import EmployeeProfilePage from '@/app/features/employee';
+
 
 // Placeholder for Dashboard - replace with actual component when ready
 const Dashboard = () => <div>Dashboard Component</div>;
@@ -56,29 +65,50 @@ export const dashboardRoutes: RouteObject[] = [
             },
             {
                 path: 'invoices',
-                element: <PlaceholderPage title="Invoices" />
+                element: <OrgInvoices />
             },
+
+            // Settings routes with nested structure
             {
                 path: 'settings',
-                element: <SettingsLayout />
+                element: <SettingsLayout />,
+                children: [
+                    {
+                        index: true,
+                        element: <ProfileTab />
+                    },
+                    {
+                        path: 'profile',
+                        element: <ProfileTab />
+                    },
+                    {
+                        path: 'shift-settings',
+                        element: <AgencyPreferences />
+                    },
+                    {
+                        path: 'account',
+                        element: <AccountSettingsTab />
+                    }
+                ]
             },
+
             {
                 path: 'leave-management',
-                element: <PlaceholderPage title="Leave Management" />
+                element: <LeaveAdminDashboard />
             },
 
             // Care staff routes
             {
                 path: 'carer-profile',
-                element: <PlaceholderPage title="Carer Profile" />
+                element: <EmployeeProfilePage />
             },
             {
                 path: 'nurse-profile',
                 element: <PlaceholderPage title="Nurse Profile" />
             },
             {
-                path: 'timesheets',
-                element: <PlaceholderPage title="Timesheets" />
+                path: 'org-timesheets',
+                element: <OrganizationTimesheets />
             },
             {
                 path: 'employee-leave',
@@ -110,7 +140,7 @@ export const dashboardRoutes: RouteObject[] = [
             },
             {
                 path: 'attendance-registry',
-                element: <PlaceholderPage title="Attendance Registry" />
+                element: <AttendanceRegistry />
             },
             {
                 path: 'agency-users',
@@ -125,8 +155,6 @@ export const dashboardRoutes: RouteObject[] = [
                 path: 'organizations/link',
                 element: <OrganizationLinkVerify />
             },
-
-
         ]
     }
 ];

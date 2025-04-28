@@ -299,6 +299,7 @@ export class OrganizationLinkingController {
         data: organizations,
       });
     } catch (error: any) {
+      console.log('Error finding organizations by email:', error);
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: error.message || 'Failed to find organizations',

@@ -107,9 +107,6 @@ export class OrganizationsController {
     @Res() res: Response
   ) {
     try {
-      console.log('Received ID:', id);
-      console.log('Received DTO:', JSON.stringify(updateOrganizationDto));
-
       // Use the ID from the URL parameter instead of req.currentOrganization
       const result = await this.organizationsService.updateOrganization(
         id as any,

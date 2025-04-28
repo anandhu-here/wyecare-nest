@@ -14,8 +14,8 @@ export const renderStaffAnalytics = (data: any) => {
         },
         {
             title: 'Earnings',
-            value: `£${data.financials.totalEarnings.toLocaleString()}`,
-            subtitle: `£${data.financials.averagePerShift} per shift`,
+            value: `£${data.financials?.totalEarnings.toLocaleString()}`,
+            subtitle: `£${data.financials?.averagePerShift} per shift`,
             icon: DollarSign,
             color: 'success'
         },
@@ -27,7 +27,7 @@ export const renderStaffAnalytics = (data: any) => {
         },
         {
             title: 'Care Homes',
-            value: data.homeRelations.length,
+            value: data.homeRelations?.length,
             subtitle: `Active relationships`,
             icon: Building2,
             color: 'warning'

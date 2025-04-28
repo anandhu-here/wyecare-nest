@@ -166,6 +166,12 @@ export class EmployeeApplicationService {
     index?: number
   ): Promise<any> {
     try {
+      console.log(
+        `Updating section ${path} for user ${userId} with data:`,
+        data,
+        index
+      );
+
       if (path === 'personalInfo' && data.email) {
         // Normalize email
         data.email = data.email.trim().toLowerCase();
@@ -185,48 +191,35 @@ export class EmployeeApplicationService {
         }
       }
 
+      // Get or create the application
       const application = await this.getOrCreateApplication(userId);
 
-      let updateQuery: any = { $set: {}, $unset: {} };
-
-      // Get the current array for the given path
-      const currentArray = _.get(application, path, []);
-
-      if (typeof index === 'number') {
-        // Array update
-        if (index >= currentArray.length) {
-          // If index is out of bounds, push to the array
-          updateQuery.$push = { [path]: data };
-        } else {
-          // Otherwise, set the specific index
-          updateQuery.$set[`${path}.${index}`] = data;
-        }
-      } else if (Array.isArray(currentArray)) {
-        // If it's an array field but no index provided, append to the array
-        updateQuery.$push = { [path]: data };
-      } else if (_.isPlainObject(data)) {
-        // Object update
-        updateQuery.$set[path] = data;
+      // Approach 1: Direct find and update (most reliable)
+      if (index !== undefined && typeof index === 'number') {
+        // Handle array updates with specific index
+        const result = await this.employeeApplicationModel.findOneAndUpdate(
+          { userId: new Types.ObjectId(userId) },
+          { $set: { [`${path}.${index}`]: data } },
+          { new: true, runValidators: true }
+        );
+        return result;
+      } else if (Array.isArray(_.get(application, path))) {
+        // Handle array push
+        const result = await this.employeeApplicationModel.findOneAndUpdate(
+          { userId: new Types.ObjectId(userId) },
+          { $push: { [path]: data } },
+          { new: true, runValidators: true }
+        );
+        return result;
       } else {
-        // Simple field update
-        updateQuery.$set[path] = data;
+        // Handle object or field update
+        const result = await this.employeeApplicationModel.findOneAndUpdate(
+          { userId: new Types.ObjectId(userId) },
+          { $set: { [path]: data } },
+          { new: true, runValidators: true }
+        );
+        return result;
       }
-
-      // Remove empty operators
-      updateQuery = _.omitBy(
-        updateQuery,
-        (obj) => Object.keys(obj).length === 0
-      );
-
-      await this.employeeApplicationModel.updateOne(
-        { userId: new Types.ObjectId(userId) },
-        updateQuery,
-        { runValidators: true }
-      );
-
-      return await this.employeeApplicationModel.findOne({
-        userId: new Types.ObjectId(userId),
-      });
     } catch (error) {
       this.logger.error(
         `Error in updateSection: ${error.message}`,
@@ -235,7 +228,6 @@ export class EmployeeApplicationService {
       throw error;
     }
   }
-
   async addToArray(userId: string, arrayPath: string, item: any): Promise<any> {
     try {
       const updateQuery = { $push: { [arrayPath]: item } };
@@ -303,6 +295,7 @@ export class EmployeeApplicationService {
     side?: 'front' | 'back'
   ): Promise<any> {
     try {
+      console.log('Uploading document:', file, path, documentType, index, side);
       const application = await this.getOrCreateApplication(userId);
 
       // Upload file to storage

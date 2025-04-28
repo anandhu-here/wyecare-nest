@@ -214,7 +214,27 @@ export class ShiftsService {
               ? true
               : false,
           });
-          return newShift.save();
+          const savedShift = await newShift.save();
+
+          // Create ShiftAssignment records for each assigned user
+          if (shiftData.assignedUsers && shiftData.assignedUsers.length > 0) {
+            await Promise.all(
+              shiftData.assignedUsers.map(async (userId) => {
+                const newAssignment = new this.shiftAssignmentModel({
+                  shift: savedShift._id,
+                  user: new Types.ObjectId(userId),
+                  status: ShiftAssignmentStatus.ASSIGNED,
+                });
+                return newAssignment.save();
+              })
+            );
+
+            // Since we've assigned users, mark the shift as accepted
+            savedShift.isAccepted = true;
+            await savedShift.save();
+          }
+
+          return savedShift;
         })
       );
 

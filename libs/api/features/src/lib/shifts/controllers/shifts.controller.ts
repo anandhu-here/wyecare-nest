@@ -391,6 +391,10 @@ export class ShiftsController {
       const yearNum = year ? parseInt(year, 10) : currentDate.getFullYear();
 
       let stats;
+      console.log(
+        'Is staff user',
+        ['carer', 'nurse', 'senior_carer'].includes(currentUser.role)
+      );
       if (['carer', 'nurse', 'senior_carer'].includes(currentUser.role)) {
         stats = await this.dashboardService.getCarerQuickStats(
           currentUser._id.toString(),

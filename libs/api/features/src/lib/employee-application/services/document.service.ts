@@ -52,6 +52,7 @@ export class DocumentService {
       }`;
 
       const url = await this.uploadFile(file, fileName);
+      console.log(url, 'urllllll');
 
       const document = {
         name: file.originalname,

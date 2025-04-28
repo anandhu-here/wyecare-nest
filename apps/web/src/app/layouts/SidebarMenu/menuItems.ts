@@ -72,11 +72,6 @@ export const calculateMenuItems = (
 
     carer: [
       {
-        label: 'Profile',
-        icon: 'fluent:scan-person-20-regular',
-        link: '/dashboard/carer-profile',
-      },
-      {
         label: 'timesheets',
         icon: 'hugeicons:google-sheet',
         link: '/dashboard/timesheets',
@@ -85,6 +80,11 @@ export const calculateMenuItems = (
         label: 'Leave',
         icon: 'fluent:calendar-20-regular',
         link: '/dashboard/employee-leave',
+      },
+      {
+        label: 'Profile',
+        icon: 'fluent:scan-person-20-regular',
+        link: '/dashboard/carer-profile',
       },
     ],
     nurse: [
@@ -128,7 +128,7 @@ export const calculateMenuItems = (
       {
         label: 'Timesheets',
         icon: 'hugeicons:google-sheet',
-        link: '/dashboard/agency-timesheets',
+        link: '/dashboard/org-timesheets',
       },
       {
         label: 'Homes',
@@ -145,7 +145,7 @@ export const calculateMenuItems = (
       {
         label: 'Timesheets',
         icon: 'hugeicons:google-sheet',
-        link: '/dashboard/agency-timesheets',
+        link: '/dashboard/org-timesheets',
       },
       {
         label: 'Homes',
@@ -168,7 +168,7 @@ export const calculateMenuItems = (
       {
         label: 'Timesheets',
         icon: 'hugeicons:google-sheet',
-        link: '/dashboard/home-timesheets',
+        link: '/dashboard/org-timesheets',
       },
       {
         label: 'Attendance',
@@ -195,7 +195,7 @@ export const calculateMenuItems = (
       {
         label: 'Timesheets',
         icon: 'hugeicons:google-sheet',
-        link: '/dashboard/home-timesheets',
+        link: '/dashboard/org-timesheets',
       },
       {
         label: 'Attendance',

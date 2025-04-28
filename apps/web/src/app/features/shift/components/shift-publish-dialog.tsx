@@ -54,6 +54,7 @@ import { useGetOtherOrganizationShiftPatternsQuery, useGetShiftPatternsQuery } f
 import { useGetLinkedOrganizationsQuery } from '../../organization/organizationApi';
 import { toast } from 'react-toastify';
 import ShiftTypeDialog from './shift-pattern/home-add-shift-pattern';
+import AssignStaffDialog from './assign-internal-staffs';
 
 // Commented out components that will be implemented later
 // import AssignStaffDialog from './calendar-views/assign-staffs';
@@ -1312,25 +1313,25 @@ const IntegratedShiftDialog = ({
             {currentShiftIndex !== null && (
                 <>
                     {/* AssignStaffDialog component will be implemented later */}
-                    {/* <AssignStaffDialog
-            open={openAssignStaffDialog}
-            onClose={() => {
-              setOpenAssignStaffDialog(false);
-              setCurrentShiftIndex(null);
-            }}
-            selectedStaff={shifts[currentShiftIndex]?.assignedStaff || []}
-            maxSelections={Number(shifts[currentShiftIndex]?.count) || 0}
-            onConfirm={(selected) => {
-              setValue(`shifts.${currentShiftIndex}.assignedStaff`, selected);
-              setOpenAssignStaffDialog(false);
-              setCurrentShiftIndex(null);
-            }}
-            shiftDetails={{
-              date: selectedDate?.format('YYYY-MM-DD') || '',
-              careHomeId: currentOrganization?._id || '',
-              shiftPatternId: shifts[currentShiftIndex]?.shiftPatternId || ''
-            }}
-          /> */}
+                    <AssignStaffDialog
+                        open={openAssignStaffDialog}
+                        onClose={() => {
+                            setOpenAssignStaffDialog(false);
+                            setCurrentShiftIndex(null);
+                        }}
+                        selectedStaff={shifts[currentShiftIndex]?.assignedStaff || []}
+                        maxSelections={Number(shifts[currentShiftIndex]?.count) || 0}
+                        onConfirm={(selected) => {
+                            setValue(`shifts.${currentShiftIndex}.assignedStaff`, selected);
+                            setOpenAssignStaffDialog(false);
+                            setCurrentShiftIndex(null);
+                        }}
+                        shiftDetails={{
+                            date: selectedDate?.format('YYYY-MM-DD') || '',
+                            careHomeId: currentOrganization?._id || '',
+                            shiftPatternId: shifts[currentShiftIndex]?.shiftPatternId || ''
+                        }}
+                    />
 
                     {/* PreferredStaffDialog component will be implemented later */}
                     {/* <PreferredStaffDialog

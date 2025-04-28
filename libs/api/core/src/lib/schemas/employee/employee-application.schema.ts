@@ -15,6 +15,8 @@ class Address {
 
   @Prop({ type: String })
   country?: string;
+  @Prop({ type: String })
+  county?: string;
 
   @Prop({ type: String, uppercase: true })
   zipCode?: string;

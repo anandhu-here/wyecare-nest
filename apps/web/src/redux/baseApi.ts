@@ -161,6 +161,7 @@ export const baseApi = createApi({
     'StaffsForChat',
     'Staffs',
     'Timesheets',
+    'TimesheetStats',
     'Invitations',
     'Agencies',
     'LinkedOrganizations',

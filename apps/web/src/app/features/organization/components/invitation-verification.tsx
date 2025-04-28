@@ -19,7 +19,6 @@ const OrganizationLinkVerify = () => {
     const [sourceOrganization, setSourceOrganization] = useState<any>(null);
 
     const currentOrganization = useSelector(selectCurrentOrganization);
-    console.log(currentOrganization, 'currrrrrr')
 
     const [verifyLinkToken, { isLoading: isVerifying }] = useVerifyLinkTokenMutation();
     const [acceptLinkToken, { isLoading: isAccepting }] = useAcceptLinkTokenMutation();

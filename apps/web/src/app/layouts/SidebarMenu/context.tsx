@@ -30,10 +30,6 @@ export const SidebarMenuProvider = ({ children }: SidebarMenuProviderProps) => {
     const homeSettings = { allowResident3rdParty: false };
 
 
-
-    console.log('user', user);
-    console.log('currentOrganization', currentOrganization);
-
     const [selectedPath, setSelectedPath] = useState('/dashboard');
 
     // Update selected path when location changes

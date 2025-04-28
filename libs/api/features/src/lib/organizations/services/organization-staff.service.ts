@@ -228,22 +228,21 @@ export class OrganizationStaffService {
       const staffAvailabilityPromises = careStaff.map(async (staff) => {
         const [availability, metadata, isNotOnLeave] = await Promise.all([
           this.checkCarerAvailability(
-            (staff.userId as any)._id.toString(),
+            staff.userId as any,
             shiftDate,
             timing.startTime,
             timing.endTime
           ),
-          this.getCarerMetadata(
-            (staff.userId as any)._id.toString(),
-            shiftDate
-          ),
+          this.getCarerMetadata(staff.userId as any, shiftDate),
           this.checkStaffLeave(
-            (staff.userId as any)._id.toString(),
+            staff.userId as any,
             shiftDate,
             timing.startTime,
             timing.endTime
           ),
         ]);
+
+        console.log(staff, 'fucking');
 
         return {
           _id: staff._id,
@@ -1054,6 +1053,10 @@ export class OrganizationStaffService {
       });
 
       if (existingRole) {
+        // delete the role temporarily to allow re-invitation
+        await this.organizationRoleModel.deleteOne({
+          _id: existingRole._id,
+        });
         throw new BadRequestException(
           'This user is already a member of this organization'
         );
@@ -1251,7 +1254,7 @@ export class OrganizationStaffService {
     // Create URL based on user existence
     const invitationUrl = existingUser
       ? `${process.env['FRONTEND_URL']}/auth/accept-invitation?token=${invitation.token}&type=staff`
-      : `${process.env['FRONTEND_URL']}/auth/register-with-invitation?token=${invitation.token}&type=staff`;
+      : `${process.env['FRONTEND_URL']}/auth/register-with-staff-invitation?token=${invitation.token}&type=staff`;
 
     const actionText = existingUser
       ? 'Accept Invitation'

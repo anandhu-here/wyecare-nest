@@ -31,12 +31,14 @@ export class ShiftPatternsController {
   @UseGuards(PermissionGuard)
   @Auth('create_shift_pattern')
   async create(
-    @Body() createShiftPatternDto: CreateShiftPatternDto,
+    @Body()
+    createShiftPatternDto: CreateShiftPatternDto | CreateAgencyShiftPatternDto,
     @Req() req: any
   ) {
     try {
       const userTimezone = req.user.timezone || 'Europe/London';
       const organizationId = req.currentOrganization._id.toString();
+      const organizationType = req.currentOrganization.type;
 
       // Convert timings from user timezone to server timezone (Europe/London)
       const convertedDto = {
@@ -47,10 +49,22 @@ export class ShiftPatternsController {
         ),
       };
 
-      const result = await this.shiftPatternsService.create(
-        convertedDto,
-        organizationId
-      );
+      let result;
+
+      // Check if the organization is an agency
+      if (organizationType === 'agency') {
+        // Call the agency-specific service method
+        result = await this.shiftPatternsService.createAgencyShiftPattern(
+          convertedDto as CreateAgencyShiftPatternDto,
+          organizationId
+        );
+      } else {
+        // Call the standard service method for other organization types
+        result = await this.shiftPatternsService.create(
+          convertedDto,
+          organizationId
+        );
+      }
 
       // Convert timings back to user timezone for response
       return {
@@ -68,6 +82,7 @@ export class ShiftPatternsController {
       throw error;
     }
   }
+
   @Post('agency')
   @Auth('create_shift_pattern')
   async createAgencyShiftPattern(
@@ -131,17 +146,17 @@ export class ShiftPatternsController {
     }
   }
 
-  @Get('other/:userId')
+  @Get('other/:orgId')
   @UseGuards(JwtAuthGuard, OrganizationContextGuard)
-  async findByUserId(@Param('userId') userId: string, @Req() req: any) {
+  async findByUserId(@Param('orgId') orgId: string, @Req() req: any) {
     try {
       const userTimezone = req.user.timezone || 'Europe/London';
 
-      const results = await this.shiftPatternsService.findAll(userId);
+      const results = await this.shiftPatternsService.findAll(orgId);
 
       // Convert all timings back to user timezone for response
       return results.map((pattern) => ({
-        ...pattern.toJSON(),
+        ...pattern,
         timings: this.convertTimingsToUserTime(
           pattern.timings as any,
           userTimezone
