@@ -1,0 +1,263 @@
+### Authorization Management API Test File
+### Base URL and Authentication
+@baseUrl = http://localhost:4205/api/v1
+@authToken = {{superAdminLogin.response.body.token}}
+
+### Login as Super Admin
+# @name superAdminLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "anandhu@wyecare.com",
+  "password": "testing@123"
+}
+
+### Get All Permissions
+GET {{baseUrl}}/super-admin/permissions/permissions?page=1&limit=50
+Authorization: Bearer {{authToken}}
+
+### Get Permissions by Category
+GET {{baseUrl}}/super-admin/permissions/permissions?category=system&limit=20
+Authorization: Bearer {{authToken}}
+
+### Get Permissions by Context Type
+GET {{baseUrl}}/super-admin/permissions/permissions?contextType=ORGANIZATION&limit=20
+Authorization: Bearer {{authToken}}
+
+### Get Permission by ID
+GET {{baseUrl}}/super-admin/permissions/permissions/view_staff
+Authorization: Bearer {{authToken}}
+
+### Create New Permission
+POST {{baseUrl}}/super-admin/permissions/permissions
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "id": "custom_permission",
+  "name": "Custom Permission",
+  "description": "A test custom permission",
+  "category": "system",
+  "contextType": "ORGANIZATION",
+  "isSystem": false
+}
+
+### 
+
+POST {{baseUrl}}/super-admin/permissions/permissions
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "id": "edit_shift",
+  "name": "Edit Shift",
+  "description": "Ability to edit and update shifts",
+  "category": "shift",
+  "contextType": "ORGANIZATION",
+  "isSystem": true
+}
+
+
+### Update Permission
+PUT {{baseUrl}}/super-admin/permissions/permissions/custom_permission
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "Updated Custom Permission",
+  "description": "An updated test custom permission"
+}
+
+### Delete Permission
+DELETE {{baseUrl}}/super-admin/permissions/permissions/custom_permission
+Authorization: Bearer {{authToken}}
+
+### Get All Roles
+GET {{baseUrl}}/super-admin/permissions/roles?page=1&limit=20
+Authorization: Bearer {{authToken}}
+
+### Get Roles by Context Type
+GET {{baseUrl}}/super-admin/permissions/roles?contextType=ORGANIZATION&limit=20
+Authorization: Bearer {{authToken}}
+
+### Get Role by ID
+GET {{baseUrl}}/super-admin/permissions/roles/admin
+Authorization: Bearer {{authToken}}
+
+### Create New Role
+POST {{baseUrl}}/super-admin/permissions/roles
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "id": "custom_role",
+  "name": "Custom Role",
+  "description": "A test custom role",
+  "contextType": "ORGANIZATION",
+  "isSystem": false,
+  "hierarchyLevel": 5
+}
+
+### Create Role Based on Existing Role
+POST {{baseUrl}}/super-admin/permissions/roles
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "id": "derived_role",
+  "name": "Derived Role",
+  "description": "A role derived from admin",
+  "contextType": "ORGANIZATION",
+  "isSystem": false,
+  "baseRoleId": "admin",
+  "hierarchyLevel": 4
+}
+
+### Update Role
+PUT {{baseUrl}}/super-admin/permissions/roles/custom_role
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "Updated Custom Role",
+  "description": "An updated test custom role"
+}
+
+### Delete Role
+DELETE {{baseUrl}}/super-admin/permissions/roles/custom_role
+Authorization: Bearer {{authToken}}
+
+### Get Role Permissions
+GET {{baseUrl}}/super-admin/permissions/roles/admin/permissions
+Authorization: Bearer {{authToken}}
+
+### Assign Permissions to Role
+POST {{baseUrl}}/super-admin/permissions/roles/custom_role/permissions
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "permissionIds": ["view_staff", "invite_staff", "view_dashboard"]
+}
+
+### Remove Permission from Role
+DELETE {{baseUrl}}/super-admin/permissions/roles/custom_role/permissions/view_staff
+Authorization: Bearer {{authToken}}
+
+### Get User Organization Roles
+GET {{baseUrl}}/super-admin/permissions/users/{{userId}}/organization-roles
+Authorization: Bearer {{authToken}}
+
+### Get User Organization Roles for Specific Organization
+GET {{baseUrl}}/super-admin/permissions/users/{{userId}}/organization-roles?organizationId={{organizationId}}
+Authorization: Bearer {{authToken}}
+
+### Assign Role to User
+POST {{baseUrl}}/super-admin/permissions/users/{{userId}}/organization-roles
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "roleId": "admin",
+  "organizationId": "{{organizationId}}",
+  "isPrimary": true
+}
+
+### Remove Role from User
+DELETE {{baseUrl}}/super-admin/permissions/users/{{userId}}/organization-roles/admin?organizationId={{organizationId}}
+Authorization: Bearer {{authToken}}
+
+### Get User Custom Permissions
+GET {{baseUrl}}/super-admin/permissions/users/{{userId}}/custom-permissions
+Authorization: Bearer {{authToken}}
+
+### Get User Custom Permissions by Context
+GET {{baseUrl}}/super-admin/permissions/users/{{userId}}/custom-permissions?contextType=ORGANIZATION&organizationId={{organizationId}}
+Authorization: Bearer {{authToken}}
+
+### Assign Custom Permission to User
+POST {{baseUrl}}/super-admin/permissions/users/{{userId}}/custom-permissions
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "permissionId": "view_dashboard",
+  "contextType": "ORGANIZATION",
+  "contextId": "{{organizationId}}"
+}
+
+### 
+
+GET {{baseUrl}}/super-admin/permissions/permissions/edit_shift
+Authorization: Bearer {{authToken}}
+
+### assign to role
+POST {{baseUrl}}/super-admin/permissions/roles/owner/permissions
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "permissionIds": ["edit_shift"]
+}
+
+
+### bgetttt
+
+
+GET {{baseUrl}}/super-admin/permissions/roles/owner/permissions
+Authorization: Bearer {{authToken}}
+
+### Assign Temporary Custom Permission to User (with expiration)
+POST {{baseUrl}}/super-admin/permissions/users/{{userId}}/custom-permissions
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "permissionId": "approve_timesheets",
+  "contextType": "ORGANIZATION",
+  "contextId": "{{organizationId}}",
+  "expiresAt": "2025-12-31T23:59:59Z"
+}
+
+### Remove Custom Permission from User
+DELETE {{baseUrl}}/super-admin/permissions/users/{{userId}}/custom-permissions/view_dashboard?contextType=ORGANIZATION&contextId={{organizationId}}
+Authorization: Bearer {{authToken}}
+
+### Get Permission Implications
+GET {{baseUrl}}/super-admin/permissions/permission-implications
+Authorization: Bearer {{authToken}}
+
+### Get Permission Implications for a Specific Permission (as parent)
+GET {{baseUrl}}/super-admin/permissions/permission-implications?parentId=manage_system
+Authorization: Bearer {{authToken}}
+
+### Get Permission Implications for a Specific Permission (as child)
+GET {{baseUrl}}/super-admin/permissions/permission-implications?childId=view_dashboard
+Authorization: Bearer {{authToken}}
+
+### Create Permission Implication
+POST {{baseUrl}}/super-admin/permissions/permission-implications
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "parentPermissionId": "view_all_tasks",
+  "childPermissionId": "view_overdue_tasks"
+}
+
+### Remove Permission Implication
+DELETE {{baseUrl}}/super-admin/permissions/permission-implications/view_all_tasks/view_overdue_tasks
+Authorization: Bearer {{authToken}}
+
+### Get User Effective Permissions
+GET {{baseUrl}}/super-admin/permissions/users/{{userId}}/effective-permissions
+Authorization: Bearer {{authToken}}
+
+### Get User Effective Permissions for Specific Organization
+GET {{baseUrl}}/super-admin/permissions/users/{{userId}}/effective-permissions?organizationId={{organizationId}}
+Authorization: Bearer {{authToken}}
+
+### Get User Effective Permissions for Specific Context
+GET {{baseUrl}}/super-admin/permissions/users/{{userId}}/effective-permissions?contextType=ORGANIZATION&organizationId={{organizationId}}
+Authorization: Bearer {{authToken}}

@@ -45,7 +45,7 @@ export interface IShift {
   temporaryHomeId?: string | MongooseSchema.Types.ObjectId;
   count: number;
   date: string;
-  assignedUsers?: (string | MongooseSchema.Types.ObjectId | IUser)[];
+  assignedUsers?: IUser[];
   privateKey?: string;
   signedCarers: Record<string, any>;
   shiftPattern?: string | MongooseSchema.Types.ObjectId;

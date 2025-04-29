@@ -215,8 +215,8 @@ const ViewShiftDialog: React.FC<ViewShiftDialogProps> = ({
         ?.filter(shift => {
             if (filterType === 'all') return true;
             if (filterType === 'emergency') return shift.isEmergency;
-            if (filterType === 'unassigned') return shift.shiftAssignments?.length === 0;
-            if (filterType === 'assigned') return shift.shiftAssignments?.length > 0;
+            if (filterType === 'unassigned') return shift.assignedUsers?.length === 0;
+            if (filterType === 'assigned') return shift.assignedUsers?.length > 0;
             return true;
         });
 
@@ -325,7 +325,7 @@ const ViewShiftDialog: React.FC<ViewShiftDialogProps> = ({
 
     // Render status badge with hover tooltip for detailed info
     const renderStatus = (shift: any) => {
-        const assignedStaffCount = shift.shiftAssignments?.length || 0;
+        const assignedStaffCount = shift.assignedUsers?.length || 0;
 
         let status = '';
         let variant: "default" | "destructive" | "outline" | "secondary" | "success" | "warning" = "default";
@@ -411,7 +411,7 @@ const ViewShiftDialog: React.FC<ViewShiftDialogProps> = ({
             timing => timing.careHomeId === shift?.homeId?._id
         );
         const companyName = isAgency ? shift?.homeId?.name : shift?.agentId?.name;
-        const assignedStaffCount = shift.shiftAssignments?.length || 0;
+        const assignedStaffCount = shift.assignedUsers?.length || 0;
 
         // Find the appropriate rate
         const rate = shift.shiftPattern?.rates?.find(r =>
@@ -643,7 +643,7 @@ const ViewShiftDialog: React.FC<ViewShiftDialogProps> = ({
         );
     };
     const renderMobileStatus = (shift) => {
-        const assignedStaffCount = shift.shiftAssignments?.length || 0;
+        const assignedStaffCount = shift.assignedUsers?.length || 0;
 
         if (shift.needsApproval && !shift.isTemporaryHome) {
             switch (shift.bookingStatus) {
@@ -712,7 +712,7 @@ const ViewShiftDialog: React.FC<ViewShiftDialogProps> = ({
 
     // Render shift actions menu
     const renderShiftActions = (shift: any) => {
-        const assignedStaffCount = shift.shiftAssignments?.length || 0;
+        const assignedStaffCount = shift.assignedUsers?.length || 0;
 
         // For home users with shifts needing approval
         if (isHome && shift.needsApproval && shift.bookingStatus !== 'approved' && shift.bookingStatus !== 'rejected') {
@@ -858,7 +858,7 @@ const ViewShiftDialog: React.FC<ViewShiftDialogProps> = ({
 
     // Mobile-optimized action buttons
     const renderMobileActions = (shift: any) => {
-        const assignedStaffCount = shift.shiftAssignments?.length || 0;
+        const assignedStaffCount = shift.assignedUsers?.length || 0;
 
         // For home users with shifts needing approval
         if (isHome && shift.needsApproval && shift.bookingStatus !== 'approved' && shift.bookingStatus !== 'rejected') {
@@ -1002,7 +1002,8 @@ const ViewShiftDialog: React.FC<ViewShiftDialogProps> = ({
             timing => timing.careHomeId === shift?.homeId?._id
         );
         const companyName = isAgency ? shift?.homeId?.name : shift?.agentId?.name;
-        const assignedStaffCount = shift.shiftAssignments?.length || 0;
+        console.log('shift andi', shift);
+        const assignedStaffCount = shift.assignedUsers?.length || 0;
 
         // Find the appropriate rate based on user type (Carer as default)
         const rate = shift.shiftPattern?.rates?.find(r =>

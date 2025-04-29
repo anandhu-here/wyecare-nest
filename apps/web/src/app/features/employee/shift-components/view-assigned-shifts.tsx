@@ -1,87 +1,106 @@
 import React, { useState, useEffect } from 'react';
-import { QrCodeIcon, X, MapPin, Navigation, Pen, HomeIcon, TimerIcon, Paperclip, Loader2 } from 'lucide-react';
+import {
+    QrCodeIcon,
+    Navigation,
+    HomeIcon,
+    TimerIcon,
+    Paperclip,
+    Loader2,
+    X,
+    MapPinIcon,
+    Building2,
+    User,
+    CalendarClock,
+    Clock,
+    ArrowRight,
+    CheckCircle2,
+    AlertCircle,
+    ClockIcon,
+    ChevronDown,
+    Calendar
+} from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import moment from 'moment';
 
 // Import shadcn components
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { IShiftAssignment } from '@wyecare-monorepo/shared-types';
-import { useDispatch } from 'react-redux';
-import ApprovalOptionsDialog from './approval-action';
-import { useGetUserTimesheetByShiftIdQuery } from '../../timesheets/timesheetApi';
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { LoadingOverlay } from '@/components/loading-overlay';
+import { Separator } from "@/components/ui/separator";
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger
+} from "@/components/ui/collapsible";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import TimesheetStepperFlow from './timesheet-stepper';
+import { useGetUserTimesheetByShiftIdQuery } from '../../timesheets/timesheetApi';
 
-interface ShiftViewDialogProps {
-    open: boolean;
-    onClose: () => void;
-    selectedDate: moment.Moment | null;
-    selectedShifts: IShiftAssignment[];
-    onRequestTimesheet: (shift: IShiftAssignment) => void;
-    onRequestAttendance: (shift: IShiftAssignment) => void;
-    refetch?: () => void; // Added optional refetch prop
-}
-
-const ShiftViewDialog: React.FC<ShiftViewDialogProps> = ({
+/**
+ * ShiftViewDialog - Shows shift details and provides access to timesheet approval
+ * Redesigned for a more modern and professional look
+ */
+const ShiftViewDialog = ({
     open,
     onClose,
     selectedDate,
     selectedShifts,
-    onRequestTimesheet,
-    onRequestAttendance,
     refetch
+}: {
+    open: boolean;
+    onClose: () => void;
+    selectedDate: moment.Moment | null;
+    selectedShifts: any[]; // Replace with appropriate type
+    refetch: () => void;
 }) => {
-    const dispatch = useDispatch();
-    const isMobile = window.matchMedia('(max-width: 640px)').matches;
-    const isTablet = window.matchMedia('(max-width: 768px)').matches;
-
-    // State for approval options dialog
-    const [timesheetOptionsOpen, setTimesheetOptionsOpen] = useState(false);
-    const [selectedShift, setSelectedShift] = useState<IShiftAssignment | null>(null);
+    // State
+    const [isTimesheetStepperOpen, setIsTimesheetStepperOpen] = useState(false);
     const [processingShiftId, setProcessingShiftId] = useState<string | null>(null);
     const [isLoadingUI, setIsLoadingUI] = useState(false);
+    const [timesheetDataMap, setTimesheetDataMap] = useState<Record<string, any>>({});
+    const [selectedShift, setSelectedShift] = useState<any | null>(null);
+    const [expandedAddress, setExpandedAddress] = useState<Record<string, boolean>>({});
 
-    // Local state to track selected shifts
-    const [localSelectedShifts, setLocalSelectedShifts] = useState<IShiftAssignment[]>([]);
+    // UI responsive detection
+    const isMobile = typeof window !== 'undefined' ? window.matchMedia('(max-width: 640px)').matches : false;
+    const isTablet = typeof window !== 'undefined' ? window.matchMedia('(max-width: 768px)').matches : false;
 
-    // State to store timesheet data
-    const [timesheetData, setTimesheetData] = useState<any>(null);
-
-    // Get timesheet data for the selected shift
     const {
-        data: fetchedTimesheetData,
-        isLoading: timesheetLoading,
-        isError: timesheetError,
-        refetch: refetchTimesheet
-    } = useGetUserTimesheetByShiftIdQuery({
-        shiftId: selectedShift?.shift?._id || '',
-        userId: selectedShift?.user?._id || ''
-    }, {
-        // Only run query when there's a selected shift
-        skip: !selectedShift?.shift?._id,
-        // When the query data changes, update our local state
-        onSuccess: (data) => {
-            if (data?.success && data?.data) {
-                setTimesheetData(data.data);
-            }
+        data: timesheetData,
+        isLoading: isTimesheetLoading,
+        error: timesheetError
+    } = useGetUserTimesheetByShiftIdQuery(
+        {
+            shiftId: selectedShift?.shift?._id || '',
+            userId: selectedShift?.user?._id || ''
+        },
+        {
+            skip: !selectedShift?.shift?._id || !selectedShift?.user?._id,
+            refetchOnMountOrArgChange: true
         }
-    });
+    );
 
-    // Update timesheet data when query result changes
+
     useEffect(() => {
-        if (fetchedTimesheetData?.success && fetchedTimesheetData?.data) {
-            setTimesheetData(fetchedTimesheetData.data);
+        if (timesheetData?.success && timesheetData?.data && selectedShift) {
+            setTimesheetDataMap(prev => ({
+                ...prev,
+                [selectedShift.shift?._id]: timesheetData.data
+            }));
         }
-    }, [fetchedTimesheetData]);
+    }, [timesheetData, selectedShift]);
 
-    // Update local shifts when prop changes
+
+    // Effect to select the first shift by default
     useEffect(() => {
-        setLocalSelectedShifts(selectedShifts);
-    }, [selectedShifts]);
+        if (selectedShifts && selectedShifts.length > 0 && !selectedShift) {
+            setSelectedShift(selectedShifts[0]);
+        }
+    }, [selectedShifts, selectedShift]);
 
     // Function to open navigation in device's native maps app
     const openNavigation = (address: any) => {
@@ -108,213 +127,385 @@ const ShiftViewDialog: React.FC<ShiftViewDialogProps> = ({
         }
     };
 
+
+
     // Handler for timesheet request button click
-    const handleTimesheetRequest = async (shift: IShiftAssignment) => {
-        // Start loading UI
-        setIsLoadingUI(true);
-        setProcessingShiftId(shift._id);
+    const handleTimesheetRequest = (shift: any) => {
         setSelectedShift(shift);
-
-        try {
-            // If we're fetching timesheet data for this shift, wait for it to complete
-            if (shift.shift?._id) {
-                // Trigger timesheet data fetch if needed
-                await refetchTimesheet().unwrap();
-            }
-
-            // Show options dialog after we have the latest data
-            setTimesheetOptionsOpen(true);
-        } catch (error) {
-            console.error("Error fetching timesheet data:", error);
-        } finally {
-            // Allow a small delay for smooth transition
-            setTimeout(() => {
-                setIsLoadingUI(false);
-                setProcessingShiftId(null);
-            }, 300);
-        }
+        setIsTimesheetStepperOpen(true);
     };
 
-    // Handler for when a timesheet is approved via signature
-    const handleTimesheetApproved = (approvedShift: IShiftAssignment) => {
-        // Update the local shifts array with the approved timesheet
-        const updatedShifts = localSelectedShifts.map(shift =>
-            shift._id === approvedShift._id ? approvedShift : shift
-        );
-
-        setLocalSelectedShifts(updatedShifts);
-
-        // Also trigger a refetch if available to ensure backend syncing
-        if (refetch) {
-            refetch();
-        }
+    // Toggle address expansion
+    const toggleAddressExpansion = (id: string) => {
+        setExpandedAddress(prev => ({
+            ...prev,
+            [id]: !prev[id]
+        }));
     };
 
+    // Utility functions for UI styling
     const getTimesheetStatusColor = (status?: string) => {
         switch (status) {
-            case 'pending':
-                return 'warning';
-            case 'approved':
-                return 'success';
-            case 'rejected':
-                return 'destructive';
-            default:
-                return 'secondary';
+            case 'pending': return 'warning';
+            case 'approved': return 'success';
+            case 'rejected': return 'destructive';
+            default: return 'secondary';
         }
     };
 
     const getAssignmentStatusColor = (status?: string) => {
         switch (status) {
-            case 'pending':
-                return 'warning';
-            case 'assigned':
-                return 'success';
-            case 'rejected':
-                return 'destructive';
-            default:
-                return 'secondary';
+            case 'pending': return 'warning';
+            case 'assigned': return 'success';
+            case 'signed': return 'success';
+            case 'rejected': return 'destructive';
+            default: return 'secondary';
         }
     };
 
-    const getShiftColor = (shiftName: string): string => {
+    const getShiftColor = (shiftName?: string) => {
+        if (!shiftName) return 'hsl(210, 85%, 55%)';
+
         let hash = 0;
-        for (let i = 0; i < shiftName?.length; i++) {
-            hash = shiftName?.charCodeAt(i) + ((hash << 5) - hash);
+        for (let i = 0; i < shiftName.length; i++) {
+            hash = shiftName.charCodeAt(i) + ((hash << 5) - hash);
         }
         const hue = hash % 360;
         return `hsl(${hue}, 85%, 55%)`;
     };
 
-    const StatusBadge = ({ status, size = 'sm' }: { status: string; size?: 'sm' | 'default' }) => (
+    // Handler for QR code generation - used by the stepper component
+    const handleGenerateQRCode = async (shift: any) => {
+        try {
+            // Placeholder for actual API call
+            // const response = await createQRCode({
+            //   shiftId: shift.shift?._id,
+            //   shiftPattern: shift.shift?.shiftPattern?._id,
+            //   homeId: shift.shift?.homeId?._id,
+            // }).unwrap();
+
+            // Mock response for demo
+            const response = {
+                barcode: "mockBarcode123",
+                success: true
+            };
+
+            return response;
+        } catch (error) {
+            console.error('Error generating QR code:', error);
+            throw error;
+        }
+    };
+
+    // UI Components
+    const StatusBadge = ({ status, size = 'sm' }: { status?: string, size?: 'sm' | 'default' }) => (
         <Badge variant={getTimesheetStatusColor(status)} className={`capitalize ${size === 'sm' ? 'text-xs' : 'text-sm'}`}>
-            {status}
+            {status || 'Unknown'}
         </Badge>
     );
 
-    const AStatusBadge = ({ status, size = 'sm' }: { status: string; size?: 'sm' | 'default' }) => (
+    const AStatusBadge = ({ status, size = 'sm' }: { status?: string, size?: 'sm' | 'default' }) => (
         <Badge variant={getAssignmentStatusColor(status)} className={`capitalize ${size === 'sm' ? 'text-xs' : 'text-sm'}`}>
-            {status}
+            {status || 'pending'}
         </Badge>
-    );
-
-    const InfoRow = ({ icon: Icon, text, badge }: any) => (
-        <div className="flex items-center gap-2 text-muted-foreground">
-            <Icon className="h-4 w-4" />
-            <span className={`flex-1 ${isMobile ? 'text-sm' : 'text-base'}`}>
-                {text}
-            </span>
-            {badge && badge}
-        </div>
-    );
-
-    // New component for timesheet options dialog
-    const TimesheetOptionsDialog = () => (
-        <Dialog open={timesheetOptionsOpen} onOpenChange={() => setTimesheetOptionsOpen(false)}>
-            <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle className="text-xl font-semibold">
-                        Choose Timesheet Creation Method
-                    </DialogTitle>
-                </DialogHeader>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-                    <Card
-                        className="cursor-pointer hover:shadow-md transition-all"
-                        onClick={() => {
-                            if (selectedShift) {
-                                onRequestTimesheet(selectedShift);
-                                setTimesheetOptionsOpen(false);
-                            }
-                        }}
-                    >
-                        <CardHeader className="pb-2">
-                            <div className="flex justify-center p-2">
-                                <QrCodeIcon className="h-12 w-12 md:h-16 md:w-16 text-primary" />
-                            </div>
-                            <CardTitle className="text-center">QR Code</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <CardDescription className="text-center text-xs md:text-sm">
-                                Generate a QR code for the care home admin to scan and approve
-                            </CardDescription>
-                        </CardContent>
-                        <CardFooter className="flex justify-center">
-                            <Button variant="secondary" className="w-full">
-                                <QrCodeIcon className="mr-2 h-4 w-4" />
-                                Use QR Code
-                            </Button>
-                        </CardFooter>
-                    </Card>
-
-                    <Card
-                        className="cursor-pointer hover:shadow-md transition-all"
-                        onClick={() => {
-                            if (selectedShift) {
-                                // Open the approval options dialog for signature
-                                setTimesheetOptionsOpen(false);
-                                setTimeout(() => {
-                                    // Give time for first dialog to close to avoid stacking
-                                    setSelectedShift(selectedShift);
-                                    // Now we pass to the ApprovalOptionsDialog to handle signature
-                                    const approvalOptionsDialog = document.getElementById('approval-options-dialog');
-                                    if (approvalOptionsDialog) {
-                                        approvalOptionsDialog.click();
-                                    }
-                                }, 100);
-                            }
-                        }}
-                    >
-                        <CardHeader className="pb-2">
-                            <div className="flex justify-center p-2">
-                                <Pen className="h-12 w-12 md:h-16 md:w-16 text-primary" />
-                            </div>
-                            <CardTitle className="text-center">Signature</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <CardDescription className="text-center text-xs md:text-sm">
-                                Let the care home admin sign directly on the device screen
-                            </CardDescription>
-                        </CardContent>
-                        <CardFooter className="flex justify-center">
-                            <Button variant="secondary" className="w-full">
-                                <Pen className="mr-2 h-4 w-4" />
-                                Use Signature
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                </div>
-
-                <DialogFooter>
-                    <Button
-                        variant="outline"
-                        onClick={() => setTimesheetOptionsOpen(false)}
-                        className={`${isMobile ? 'w-full' : ''}`}
-                    >
-                        <X className="mr-2 h-4 w-4" />
-                        Cancel
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
     );
 
     // Get the current timesheet status for a shift
-    const getTimesheetStatus = (shift: IShiftAssignment) => {
-        // If this is the currently selected shift and we have timesheetData
-        if (selectedShift && selectedShift._id === shift._id && timesheetData) {
+    const getTimesheetStatus = (shift: any) => {
+        // Check if we have timesheet data for this shift in our map
+        const timesheetData = timesheetDataMap[shift.shift?._id || ''];
+        if (timesheetData) {
             return timesheetData.status;
         }
 
-        // Otherwise use shift's timesheet status if available
-        return shift.timesheet?.status;
+        // If no timesheet data and shift has a timesheet field
+        if (shift.timesheet?.status) {
+            return shift.timesheet.status;
+        }
+
+        return null;
     };
 
     // Determine if a shift has a timesheet
-    const hasTimesheet = (shift: IShiftAssignment) => {
-        if (selectedShift && selectedShift._id === shift._id && timesheetData) {
-            return true;
+    const hasTimesheet = (shift: any) => {
+        return !!timesheetDataMap[shift.shift?._id || ''] || !!shift.timesheet;
+    };
+
+    // Get the shift timing
+    const getShiftTiming = (assignment: any) => {
+        const startTime = assignment.shift?.shiftPattern?.timings?.find(
+            (timing: any) => timing.careHomeId === assignment.shift?.homeId?._id
+        )?.startTime || '00:00';
+
+        const endTime = assignment.shift?.shiftPattern?.timings?.find(
+            (timing: any) => timing.careHomeId === assignment.shift?.homeId?._id
+        )?.endTime || '00:00';
+
+        return { startTime, endTime };
+    };
+
+    // Calculate shift duration in hours
+    const calculateShiftDuration = (startTime: string, endTime: string) => {
+        const [startHour, startMinute] = startTime.split(':').map(Number);
+        const [endHour, endMinute] = endTime.split(':').map(Number);
+
+        let hours = endHour - startHour;
+        let minutes = endMinute - startMinute;
+
+        if (minutes < 0) {
+            hours -= 1;
+            minutes += 60;
         }
-        return !!shift.timesheet;
+
+        if (hours < 0) {
+            hours += 24; // Handle overnight shifts
+        }
+
+        return hours + (minutes / 60);
+    };
+
+    // Check if shift is signed
+    const isShiftSigned = (shift: any) => {
+        return shift.status === 'signed';
+    };
+
+    // Get the appropriate button text and icon based on shift status
+    const getTimesheetButtonConfig = (shift: any) => {
+        const timesheetStatus = getTimesheetStatus(shift);
+        const isSigned = isShiftSigned(shift);
+
+        if (processingShiftId === shift._id) {
+            return {
+                icon: <Loader2 className="h-4 w-4 animate-spin" />,
+                text: 'Processing...',
+                disabled: true
+            };
+        }
+
+        if (timesheetStatus === 'approved') {
+            return {
+                icon: <CheckCircle2 className="h-4 w-4" />,
+                text: 'Timesheet Approved',
+                disabled: true
+            };
+        }
+
+        if (timesheetStatus === 'pending') {
+            return {
+                icon: <QrCodeIcon className="h-4 w-4" />,
+                text: 'Update Timesheet',
+                disabled: false
+            };
+        }
+
+        if (isSigned) {
+            return {
+                icon: <QrCodeIcon className="h-4 w-4" />,
+                text: 'Create Timesheet',
+                disabled: false
+            };
+        }
+
+        return {
+            icon: <QrCodeIcon className="h-4 w-4" />,
+            text: 'Request Timesheet',
+            disabled: false
+        };
+    };
+
+    // Shift selection component for mobile
+    const renderShiftSelector = () => {
+        if (selectedShifts.length <= 1) return null;
+
+        return (
+            <div className="mb-4">
+                <Tabs
+                    defaultValue={selectedShifts[0]?._id}
+                    value={selectedShift?._id}
+                    onValueChange={(value) => {
+                        const shift = selectedShifts.find(s => s._id === value);
+                        if (shift) setSelectedShift(shift);
+                    }}
+                >
+                    <TabsList className="w-full grid grid-flow-col">
+                        {selectedShifts.map(shift => (
+                            <TabsTrigger key={shift._id} value={shift._id} className="text-sm">
+                                <div className="flex flex-col items-center">
+                                    <span className="font-medium">{shift.shift?.shiftPattern?.name?.substring(0, 8) || 'Shift'}</span>
+                                    <span className="text-xs">{getShiftTiming(shift).startTime}</span>
+                                </div>
+                            </TabsTrigger>
+                        ))}
+                    </TabsList>
+                </Tabs>
+            </div>
+        );
+    };
+
+    // Detailed view of a shift
+    const renderShiftDetail = (assignment: any) => {
+        if (!assignment) return null;
+
+        const { startTime, endTime } = getShiftTiming(assignment);
+        const shiftDuration = calculateShiftDuration(startTime, endTime);
+        const currentTimesheetStatus = getTimesheetStatus(assignment);
+        const shiftHasTimesheet = hasTimesheet(assignment);
+        const shiftDate = selectedDate?.format('dddd, MMMM D, YYYY') || '';
+
+        // Calculate shift progress if it's the current day
+        const now = moment();
+        const shiftStartTime = moment(assignment.shift?.date).set({
+            hour: parseInt(startTime.split(':')[0]),
+            minute: parseInt(startTime.split(':')[1])
+        });
+
+        const shiftEndTime = moment(assignment.shift?.date).set({
+            hour: parseInt(endTime.split(':')[0]),
+            minute: parseInt(endTime.split(':')[1])
+        });
+
+        // Handle overnight shifts
+        if (shiftEndTime.isBefore(shiftStartTime)) {
+            shiftEndTime.add(1, 'day');
+        }
+
+        let shiftProgress = 0;
+        let shiftStatus = '';
+
+        if (now.isBefore(shiftStartTime)) {
+            shiftStatus = 'Upcoming';
+        } else if (now.isAfter(shiftEndTime)) {
+            shiftStatus = 'Completed';
+            shiftProgress = 100;
+        } else {
+            shiftStatus = 'In Progress';
+            const totalDuration = shiftEndTime.diff(shiftStartTime, 'minutes');
+            const elapsed = now.diff(shiftStartTime, 'minutes');
+            shiftProgress = Math.min(100, Math.round((elapsed / totalDuration) * 100));
+        }
+
+        return (
+            <div className="space-y-6">
+                {/* Header with timing and status */}
+                <div className="flex items-start justify-between">
+                    <div>
+                        <h2 className="text-2xl font-bold">{assignment.shift?.shiftPattern?.name}</h2>
+                        <div className="flex items-center gap-2 mt-1">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-muted-foreground">{shiftDate}</span>
+                        </div>
+                    </div>
+                    <div className="flex flex-col items-end">
+                        <AStatusBadge status={assignment?.status} size="default" />
+                        {shiftHasTimesheet && (
+                            <span className="text-xs text-muted-foreground mt-1">
+                                Timesheet: <StatusBadge status={currentTimesheetStatus} />
+                            </span>
+                        )}
+                    </div>
+                </div>
+
+                <Separator />
+
+                {/* Shift time and progress */}
+                <div className="bg-muted/50 rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-2">
+                        <div className="flex items-center gap-2">
+                            <Clock className="h-5 w-5 text-primary" />
+                            <span className="font-medium">Shift Hours</span>
+                        </div>
+                        <div className="font-medium">
+                            {startTime} - {endTime} ({shiftDuration.toFixed(1)} hrs)
+                        </div>
+                    </div>
+
+                    {moment().isSame(moment(assignment.shift?.date), 'day') && (
+                        <div className="mt-3">
+                            <div className="flex justify-between text-sm mb-1">
+                                <span className="font-medium">{shiftStatus}</span>
+                                <span>{shiftProgress}%</span>
+                            </div>
+                            <Progress value={shiftProgress} className="h-2" />
+                        </div>
+                    )}
+                </div>
+
+                {/* Location details */}
+                <div className="rounded-lg border p-4">
+                    <div className="flex justify-between items-start">
+                        <div className="flex items-start gap-3">
+                            <div className="bg-primary/10 p-2 rounded-full">
+                                <Building2 className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                                <h3 className="font-medium">{assignment.shift?.homeId?.name}</h3>
+                                <Collapsible
+                                    open={expandedAddress[assignment._id] || false}
+                                    onOpenChange={() => toggleAddressExpansion(assignment._id)}
+                                >
+                                    <CollapsibleTrigger asChild>
+                                        <Button variant="link" className="p-0 h-auto text-xs">
+                                            Show Address <ChevronDown className="h-3 w-3 ml-1" />
+                                        </Button>
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent className="text-sm text-muted-foreground mt-2 space-y-1">
+                                        {assignment.shift?.homeId?.address && (
+                                            <>
+                                                <p>{assignment.shift.homeId.address.street}</p>
+                                                <p>{assignment.shift.homeId.address.city}, {assignment.shift.homeId.address.zipCode}</p>
+                                            </>
+                                        )}
+                                    </CollapsibleContent>
+                                </Collapsible>
+                            </div>
+                        </div>
+                        {assignment.shift?.homeId?.address && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openNavigation(assignment.shift?.homeId?.address)}
+                                className="gap-1"
+                            >
+                                <MapPinIcon className="h-4 w-4" />
+                                Directions
+                            </Button>
+                        )}
+                    </div>
+                </div>
+
+                {/* Actions */}
+                <div>
+                    <Button
+                        className="w-full gap-2"
+                        size="lg"
+                        disabled={currentTimesheetStatus === 'approved' || processingShiftId === assignment._id}
+                        onClick={() => handleTimesheetRequest(assignment)}
+                    >
+                        {processingShiftId === assignment._id ? (
+                            <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Processing...
+                            </>
+                        ) : currentTimesheetStatus === 'approved' ? (
+                            <>
+                                <CheckCircle2 className="h-4 w-4" />
+                                Timesheet Approved
+                            </>
+                        ) : currentTimesheetStatus === 'pending' ? (
+                            <>
+                                <QrCodeIcon className="h-4 w-4" />
+                                Update Timesheet
+                            </>
+                        ) : (
+                            <>
+                                <QrCodeIcon className="h-4 w-4" />
+                                Request Timesheet
+                            </>
+                        )}
+                    </Button>
+                </div>
+            </div>
+        );
     };
 
     return (
@@ -322,115 +513,26 @@ const ShiftViewDialog: React.FC<ShiftViewDialogProps> = ({
             {/* Global loading overlay */}
             {isLoadingUI && <LoadingOverlay isVisible={isLoadingUI} message="Processing request..." />}
 
+            {/* Main shift details dialog */}
             <Dialog open={open} onOpenChange={() => onClose()}>
-                <DialogContent className="sm:max-w-[768px]">
+                <DialogContent className="sm:max-w-[550px]">
                     <DialogHeader>
-                        <div className="flex items-center gap-4">
-                            <div className="flex-1">
-                                <DialogTitle className="text-xl font-semibold">
-                                    Shifts Overview
-                                </DialogTitle>
-                                <p className="text-sm text-muted-foreground">
-                                    {selectedDate?.format('dddd, MMMM D, YYYY')}
-                                </p>
+                        <div className="flex items-center gap-2">
+                            <div className="bg-primary/10 rounded-full p-2">
+                                <CalendarClock className="h-5 w-5 text-primary" />
                             </div>
+                            <h2 className="text-xl font-semibold">
+                                Shift Details
+                            </h2>
                         </div>
                     </DialogHeader>
 
-                    <div className="grid gap-4">
-                        {localSelectedShifts.map((assignment) => {
-                            const currentTimesheetStatus = getTimesheetStatus(assignment);
-                            const shiftHasTimesheet = hasTimesheet(assignment);
+                    <div>
+                        {/* Mobile shift selector tabs */}
+                        {isMobile && renderShiftSelector()}
 
-                            return (
-                                <Card key={assignment._id} className="transition-all duration-200 hover:-translate-y-0.5">
-                                    <CardContent className="p-6">
-                                        <div className="grid gap-6">
-                                            <div className="flex items-center gap-4">
-                                                <Avatar className="h-12 w-12" style={{ backgroundColor: getShiftColor(assignment.shift?.shiftPattern?.name) }}>
-                                                    <AvatarFallback className="font-semibold">
-                                                        {assignment.shift?.shiftPattern?.name.substring(0, 2).toUpperCase()}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                <div className="flex-1">
-                                                    <h3 className="text-lg font-semibold mb-2">
-                                                        {assignment.shift?.shiftPattern?.name}
-                                                    </h3>
-
-                                                    <AStatusBadge status={assignment?.status} size={isMobile ? 'sm' : 'default'} />
-                                                </div>
-                                            </div>
-
-                                            <div className="grid md:grid-cols-2 gap-6">
-                                                <div className="space-y-3">
-                                                    <InfoRow
-                                                        icon={HomeIcon}
-                                                        text={assignment.shift?.homeId?.name}
-                                                    />
-                                                    {/* Show Address Info */}
-                                                    {assignment.shift?.homeId?.address && (
-                                                        <div className="pl-6 text-sm text-muted-foreground space-y-1">
-                                                            <p>{assignment.shift.homeId.address.street}</p>
-                                                            <p>{assignment.shift.homeId.address.city}, {assignment.shift.homeId.address.zipCode}</p>
-                                                        </div>
-                                                    )}
-                                                    <InfoRow
-                                                        icon={TimerIcon}
-                                                        text={`${assignment.shift?.shiftPattern?.timings?.find(
-                                                            (timing) => timing.careHomeId === assignment.shift?.homeId?._id
-                                                        )?.startTime} - ${assignment.shift?.shiftPattern?.timings?.find(
-                                                            (timing) => timing.careHomeId === assignment.shift?.homeId?._id
-                                                        )?.endTime}`}
-                                                    />
-                                                    {shiftHasTimesheet && (
-                                                        <InfoRow
-                                                            icon={Paperclip}
-                                                            text="Timesheet Status:"
-                                                            badge={
-                                                                <StatusBadge
-                                                                    status={currentTimesheetStatus}
-                                                                    size={isMobile ? 'sm' : 'default'}
-                                                                />
-                                                            }
-                                                        />
-                                                    )}
-                                                </div>
-
-                                                <div className={`flex ${isTablet ? 'flex-col' : 'justify-end'} gap-2`}>
-                                                    <Button
-                                                        variant='default'
-                                                        className="w-full md:w-auto"
-                                                        disabled={currentTimesheetStatus === 'approved' || processingShiftId === assignment._id}
-                                                        onClick={() => handleTimesheetRequest(assignment)}
-                                                    >
-                                                        <QrCodeIcon className="mr-2 h-4 w-4" />
-                                                        {processingShiftId === assignment._id
-                                                            ? 'Processing...'
-                                                            : currentTimesheetStatus === 'approved'
-                                                                ? 'Timesheet Approved'
-                                                                : currentTimesheetStatus === 'pending'
-                                                                    ? 'Update Timesheet'
-                                                                    : 'Request Timesheet'}
-                                                    </Button>
-
-                                                    {/* Navigation Button */}
-                                                    {assignment.shift?.homeId?.address && (
-                                                        <Button
-                                                            variant='outline'
-                                                            className="w-full md:w-auto"
-                                                            onClick={() => openNavigation(assignment.shift?.homeId?.address)}
-                                                        >
-                                                            <Navigation className="mr-2 h-4 w-4" />
-                                                            Open in Maps
-                                                        </Button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            );
-                        })}
+                        {/* Detailed shift view */}
+                        {renderShiftDetail(selectedShift)}
                     </div>
 
                     <DialogFooter>
@@ -445,20 +547,14 @@ const ShiftViewDialog: React.FC<ShiftViewDialogProps> = ({
                 </DialogContent>
             </Dialog>
 
-            {/* Options dialog for choosing between QR code and signature */}
-            <TimesheetOptionsDialog />
-
-            {/* Hidden button to trigger the approval options dialog for signature */}
-            <span id="approval-options-dialog" className="hidden" />
-
-            {/* ApprovalOptionsDialog for the signature flow */}
-            <ApprovalOptionsDialog
-                open={false} // We'll control this dialog programmatically
-                onClose={() => setSelectedShift(null)}
-                shift={selectedShift}
-                timesheetData={timesheetData} // Pass the fetched timesheet data
-                onRequestQRCode={onRequestTimesheet}
-                onTimesheetApproved={handleTimesheetApproved} // Pass the new callback
+            {/* Timesheet stepper dialog */}
+            <TimesheetStepperFlow
+                open={isTimesheetStepperOpen}
+                onClose={() => setIsTimesheetStepperOpen(false)}
+                selectedDate={selectedDate}
+                selectedShifts={selectedShift ? [selectedShift] : []}
+                onRequestQRCode={handleGenerateQRCode}
+                refetch={refetch}
             />
         </>
     );

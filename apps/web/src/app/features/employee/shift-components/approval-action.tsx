@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
-import SignaturePadModal from './signature-pad'; // Import your new SignaturePadModal
+import SignaturePadModal from './signature-pad';
 import { IShiftAssignment } from '@wyecare-monorepo/shared-types';
 import { useDispatch } from 'react-redux';
 import { useApproveTimesheetWithSignatureMutation, useCreateTimesheetForSignatureMutation } from '../../timesheets/timesheetApi';
@@ -15,9 +15,9 @@ interface ApprovalOptionsDialogProps {
     open: boolean;
     onClose: () => void;
     shift: IShiftAssignment | null;
-    timesheetData?: any; // Add prop for timesheet data from parent
+    timesheetData?: any; // Added prop for timesheet data
     onRequestQRCode: (shift: IShiftAssignment) => void;
-    onTimesheetApproved?: (shift: IShiftAssignment) => void; // Added callback for refresh
+    onTimesheetApproved?: (shift: IShiftAssignment) => void;
 }
 
 const ApprovalOptionsDialog: React.FC<ApprovalOptionsDialogProps> = ({
@@ -50,10 +50,6 @@ const ApprovalOptionsDialog: React.FC<ApprovalOptionsDialogProps> = ({
             // First try to get timesheet ID from the passed timesheetData
             if (timesheetData && timesheetData._id) {
                 setTimesheetId(timesheetData._id);
-            }
-            // Fallback to shift's timesheet ID if available
-            else if (shift.timesheet?._id) {
-                setTimesheetId(shift.timesheet._id);
             } else {
                 setTimesheetId(null);
             }
@@ -96,11 +92,6 @@ const ApprovalOptionsDialog: React.FC<ApprovalOptionsDialogProps> = ({
                 if (result.success && result.timesheet) {
                     // Store the timesheet ID for later use
                     setTimesheetId(result.timesheet._id);
-
-                    // Update the local copy of the shift
-                    const updatedShift = { ...currentShift };
-                    updatedShift.timesheet = result.timesheet;
-                    setCurrentShift(updatedShift);
                 }
             }
 
@@ -149,15 +140,9 @@ const ApprovalOptionsDialog: React.FC<ApprovalOptionsDialogProps> = ({
                 signerRole,
             }).unwrap();
 
-            // Create a proper deep copy of the nested object
-            const updatedShift = {
-                ...currentShift,
-                timesheet: {
-                    ...(currentShift?.timesheet || {}),
-                    _id: timesheetId,
-                    status: 'approved'
-                }
-            };
+            // Since we can't directly modify the timesheet property on the shift (it doesn't exist),
+            // we'll create a copy of the current shift to pass back to the parent component
+            const updatedShift = JSON.parse(JSON.stringify(currentShift));
 
             if (onTimesheetApproved && updatedShift) {
                 onTimesheetApproved(updatedShift);

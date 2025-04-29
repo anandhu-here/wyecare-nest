@@ -345,6 +345,10 @@ export class TimesheetsService {
       const limit = pagination?.limit || 10;
       const skip = (page - 1) * limit;
       let matchStage: Record<string, any> = {};
+
+      // Handle undefined accountType
+      const effectiveAccountType = accountType || 'admin';
+
       if (invoiceStatus) {
         matchStage['invoiceStatus'] = invoiceStatus;
       }
@@ -354,20 +358,9 @@ export class TimesheetsService {
       if (careUserId) {
         matchStage['carer'] = new Types.ObjectId(careUserId);
       }
-      switch (accountType) {
+
+      switch (effectiveAccountType) {
         case 'admin':
-          if (orgType === 'agency') {
-            matchStage['agency'] = new Types.ObjectId(orgId);
-            if (organizationIdQuery) {
-              matchStage['home'] = new Types.ObjectId(organizationIdQuery);
-            }
-          } else if (orgType === 'home') {
-            if (organizationIdQuery) {
-              matchStage['agency'] = new Types.ObjectId(organizationIdQuery);
-            }
-            matchStage['home'] = new Types.ObjectId(orgId);
-          }
-          break;
         case 'owner':
           if (orgType === 'agency') {
             matchStage['agency'] = new Types.ObjectId(orgId);
@@ -375,10 +368,20 @@ export class TimesheetsService {
               matchStage['home'] = new Types.ObjectId(organizationIdQuery);
             }
           } else if (orgType === 'home') {
+            matchStage['home'] = new Types.ObjectId(orgId);
             if (organizationIdQuery) {
               matchStage['agency'] = new Types.ObjectId(organizationIdQuery);
+            } else {
+              // If no agency is specified, also match timesheets with null agency
+              matchStage = {
+                ...matchStage,
+                $or: [
+                  { agency: { $exists: true, $ne: null } },
+                  { agency: null },
+                  { agency: { $exists: false } },
+                ],
+              };
             }
-            matchStage['home'] = new Types.ObjectId(orgId);
           }
           break;
         case 'care':
@@ -389,10 +392,11 @@ export class TimesheetsService {
         default:
           matchStage['carer'] = new Types.ObjectId(userId);
       }
+
       const pipeline: any[] = [];
       pipeline.push({ $match: matchStage });
 
-      // Fixed lookup stage: Using 'shift' instead of 'shift_'
+      // Lookup shift data
       pipeline.push({
         $lookup: {
           from: 'shifts',
@@ -402,19 +406,22 @@ export class TimesheetsService {
         },
       });
 
-      // Fixed unwind stage: Using 'shiftData' instead of 'shift'
+      // Modified unwind to preserve documents even if there's no matching shift
       pipeline.push({
         $unwind: {
           path: '$shiftData',
-          preserveNullAndEmptyArrays: false,
+          preserveNullAndEmptyArrays: true, // Changed to true to keep timesheets even without shifts
         },
       });
 
-      // Updated all references to 'shift.' to 'shiftData.'
+      // Only apply shift filters when shiftData exists
       if (isEmergency !== null && isEmergency !== undefined) {
         pipeline.push({
           $match: {
-            'shiftData.isEmergency': isEmergency,
+            $or: [
+              { 'shiftData.isEmergency': isEmergency },
+              { shiftData: { $exists: false } },
+            ],
           },
         });
       }
@@ -422,7 +429,10 @@ export class TimesheetsService {
       if (shiftPatternId) {
         pipeline.push({
           $match: {
-            'shiftData.shiftPattern': new Types.ObjectId(shiftPatternId),
+            $or: [
+              { 'shiftData.shiftPattern': new Types.ObjectId(shiftPatternId) },
+              { shiftData: { $exists: false } },
+            ],
           },
         });
       }
@@ -430,15 +440,20 @@ export class TimesheetsService {
       if (startDate && endDate) {
         pipeline.push({
           $match: {
-            'shiftData.date': {
-              $gte: startDate,
-              $lte: endDate,
-            },
+            $or: [
+              {
+                'shiftData.date': {
+                  $gte: startDate,
+                  $lte: endDate,
+                },
+              },
+              { shiftData: { $exists: false } },
+            ],
           },
         });
       }
 
-      // Updated lookup to use shiftData.shiftPattern
+      // Lookup shift pattern data
       pipeline.push({
         $lookup: {
           from: 'shiftpatterns',
@@ -455,6 +470,7 @@ export class TimesheetsService {
         },
       });
 
+      // Lookup carer details
       pipeline.push({
         $lookup: {
           from: 'users',
@@ -479,6 +495,7 @@ export class TimesheetsService {
         });
       }
 
+      // Lookup home organization
       pipeline.push({
         $lookup: {
           from: 'organizations',
@@ -488,7 +505,7 @@ export class TimesheetsService {
         },
       });
 
-      // Updated to use shiftData.temporaryHomeId
+      // Lookup temporary home
       pipeline.push({
         $lookup: {
           from: 'temporaryhomes',
@@ -498,15 +515,22 @@ export class TimesheetsService {
         },
       });
 
+      // Save the pipeline for count
       const countPipeline = [...pipeline];
       countPipeline.push({ $count: 'total' });
 
-      // Updated to use shiftData.date for sorting
-      pipeline.push({ $sort: { 'shiftData.date': -1 } });
+      // Sort with fallback on createdAt
+      pipeline.push({
+        $sort: {
+          'shiftData.date': -1,
+          createdAt: -1,
+        },
+      });
+
       pipeline.push({ $skip: skip });
       pipeline.push({ $limit: limit });
 
-      // Add a project stage to restructure the document to maintain backward compatibility
+      // Project only the fields needed without duplicates
       pipeline.push({
         $project: {
           _id: 1,
@@ -515,17 +539,33 @@ export class TimesheetsService {
           carer: 1,
           status: 1,
           invoiceStatus: 1,
+          requestType: 1,
+          review: 1,
+          rating: 1,
+          signature: 1, // Include signature data
+          invoiceId: 1,
+          invoiceNumber: 1,
+          invoicedAt: 1,
+          paidAt: 1,
+          paymentReference: 1,
+          approvedBy: 1,
+          createdAt: 1,
+          updatedAt: 1,
+
+          // Include lookups
           carerDetails: 1,
           regularHome: 1,
           tempHome: 1,
           shiftPatternData: 1,
-          // Map shiftData back to shift for compatibility with frontend
-          shift: '$shiftData',
-          // Include other fields as needed
-          createdAt: 1,
-          updatedAt: 1,
-          // Keep original data too
-          shiftData: 1,
+
+          // Map shiftData to shift (without duplication)
+          shift: {
+            $cond: {
+              if: { $ifNull: ['$shiftData', false] },
+              then: '$shiftData',
+              else: null,
+            },
+          },
         },
       });
 
@@ -533,6 +573,12 @@ export class TimesheetsService {
         this.timesheetModel.aggregate(countPipeline),
         this.timesheetModel.aggregate(pipeline),
       ]);
+
+      // Log the result count
+      console.log(`Found ${timesheets.length} timesheet results`);
+
+      console.log(timesheets, 'Timesheets:', timesheets.length);
+
       const total = countResult[0]?.total || 0;
       return {
         data: timesheets,
@@ -548,7 +594,6 @@ export class TimesheetsService {
       throw error;
     }
   }
-
   getUserTimesheetByShiftId(userId: string, shiftId: string): Promise<any> {
     console.log(`Fetching timesheet for user ${userId} and shift ${shiftId}`);
     return this.timesheetModel.findOne({

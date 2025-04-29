@@ -9,6 +9,8 @@ import { EmailService } from 'libs/shared/utils/src/lib/services/email.service';
 import { AuthorizationService } from '../authorization/services/authorization.service';
 import { AuthorizationModule } from '../authorization/authorization.module';
 import { CoreModule } from '@wyecare-monorepo/core';
+import { SuperAdminPermissionsController } from './controllers/permissions.controller';
+import { SuperAdminPermissionsService } from './services/super-admin-permissions.service';
 
 @Module({
   imports: [
@@ -20,8 +22,16 @@ import { CoreModule } from '@wyecare-monorepo/core';
 
     AuthorizationModule,
   ],
-  controllers: [OrganizationInvitationController],
-  providers: [OrganizationInvitationService, SuperAdminGuard, EmailService],
+  controllers: [
+    OrganizationInvitationController,
+    SuperAdminPermissionsController,
+  ],
+  providers: [
+    OrganizationInvitationService,
+    SuperAdminGuard,
+    EmailService,
+    SuperAdminPermissionsService,
+  ],
   exports: [OrganizationInvitationService],
 })
 export class SuperAdminModule {}

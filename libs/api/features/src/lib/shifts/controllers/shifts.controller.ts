@@ -266,6 +266,8 @@ export class ShiftsController {
     }
   }
 
+  // get assigned users
+
   @Get('assignments/user/:userId')
   async getAssignmentsByUser(
     @Param('userId') userId: string,

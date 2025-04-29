@@ -10,6 +10,7 @@ import { QuickStats } from './components/quick-stats';
 import { Button } from '@/components/ui/button';
 import AnalyticsDashboard from './components/legacy/DashboardV2';
 import StaffShiftCalendar from '@/app/features/employee/employee-shift-calendar';
+import StaffScheduleView from '@/app/features/employee/shift-schedule-view';
 interface TabPanelProps {
     children?: React.ReactNode;
     value: string;
@@ -69,7 +70,7 @@ export default function LegacyDashBoardLayout() {
 
     const renderCalendar = () => {
         if (staffType === 'care') {
-            return <StaffShiftCalendar onMonthChange={handleMonthChange} />;
+            return <StaffScheduleView onMonthChange={handleMonthChange} />;
         }
         return <ModernShiftCalendar onMonthChange={handleMonthChange} />;
     };
