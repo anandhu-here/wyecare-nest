@@ -25,7 +25,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { IShiftAssignment } from '@wyecare-monorepo/shared-types';
+import { IShift, IShiftAssignment } from '@wyecare-monorepo/shared-types';
 import { toast } from 'react-toastify';
 import ShiftViewDialog from './shift-components/view-assigned-shifts';
 import { selectUser } from '../auth/AuthSlice';
@@ -85,13 +85,15 @@ const StaffShiftCalendar: React.FC<StaffShiftCalendarProps> = ({
 
     // Helper function to determine background color and styling for a day based on shift status
     // Helper function to determine if a shift is a night shift based on its timing
-    const isNightShift = (shift) => {
+    const isNightShift = (shift: {
+        shift?: IShift
+    }) => {
         // Try to get the timing information
         if (!shift.shift?.shiftPattern?.timings) return false;
 
         // Find the applicable timing for this shift
         const timing = shift.shift.shiftPattern.timings.find(
-            t => t.careHomeId === shift.shift.homeId._id
+            t => t.careHomeId === shift.shift?.homeId
         );
 
         if (!timing) return false;

@@ -74,7 +74,7 @@ export const calculateMenuItems = (
       {
         label: 'timesheets',
         icon: 'hugeicons:google-sheet',
-        link: '/dashboard/timesheets',
+        link: '/dashboard/staff-timesheets',
       },
       {
         label: 'Leave',

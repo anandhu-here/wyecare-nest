@@ -195,7 +195,7 @@ const TimesheetTable = ({
                                     let carerPay = 0;
                                     let homeRate = 0;
 
-                                    if (userState?.role === 'admin') {
+                                    if (userState?.role === 'admin' || userState?.role === 'owner') {
                                         // Normalize the carer role to handle different formats
                                         const carerRoleRaw = timesheet?.carerDetails?.role || '';
                                         const homeId = timesheet?.shift?.homeId;
@@ -207,7 +207,7 @@ const TimesheetTable = ({
                                         }
 
                                         // Find the home rate specifically for this carer's role and home
-                                        const homeRateObj = timesheet?.shift?.shiftPattern?.rates?.find(
+                                        const homeRateObj = timesheet?.shiftPatternData?.rates?.find(
                                             (rate) => {
                                                 const rateUserType = (rate?.userType || '').toLowerCase();
                                                 return rate?.careHomeId === homeId && rateUserType === carerRole;
@@ -221,7 +221,7 @@ const TimesheetTable = ({
                                         }
 
                                         // Find the staff payment rate for this carer's role
-                                        const userRateObj = timesheet?.shift?.shiftPattern?.userTypeRates?.find(
+                                        const userRateObj = timesheet?.shiftPatternData?.userTypeRates?.find(
                                             (rate) => {
                                                 const rateUserType = (rate.userType || '').toLowerCase();
                                                 return rateUserType === carerRole;
@@ -262,7 +262,7 @@ const TimesheetTable = ({
                                                 <div>
                                                     {format(new Date(timesheet?.shift?.date), 'dd MMM yyyy')}
                                                     <div className="text-sm text-gray-500">
-                                                        {timesheet?.shift?.shiftPattern?.name}
+                                                        {timesheet?.shiftPatternData?.name}
                                                     </div>
                                                 </div>
                                             </TableCell>
@@ -468,7 +468,7 @@ const TimesheetCard = ({
         }
 
         // Find the home rate specifically for this carer's role and home
-        const homeRateObj = timesheet?.shift?.shiftPattern?.rates?.find(
+        const homeRateObj = timesheet?.shiftPatternData?.rates?.find(
             (rate) => {
                 const rateUserType = (rate?.userType || '').toLowerCase();
                 return rate?.careHomeId === homeId && rateUserType === carerRole;
@@ -482,7 +482,7 @@ const TimesheetCard = ({
         }
 
         // Find the staff payment rate for this carer's role
-        const userRateObj = timesheet?.shift?.shiftPattern?.userTypeRates?.find(
+        const userRateObj = timesheet?.shiftPatternData?.userTypeRates?.find(
             (rate) => {
                 const rateUserType = (rate.userType || '').toLowerCase();
                 return rateUserType === carerRole;
@@ -576,7 +576,7 @@ const TimesheetCard = ({
                             <div className="flex flex-col">
                                 <span className="text-gray-500">Shift</span>
                                 <span className="font-medium">
-                                    {timesheet?.shift?.shiftPattern?.name}
+                                    {timesheet?.shiftPatternData?.name}
                                 </span>
                             </div>
                             <div className="flex flex-col">
@@ -942,7 +942,7 @@ export function OrganizationTimesheets() {
                 isEmergency: filterOptions.isEmergency === null ? undefined : filterOptions.isEmergency,
                 carerRole: filterOptions.carerRole === 'all' ? undefined : filterOptions.carerRole,
                 careUserId: filterOptions.careUserId === 'all' ? undefined : filterOptions.careUserId,
-                shiftPatternId: filterOptions.shiftPatternId || undefined,
+                shiftPatternId: filterOptions.shiftPatternDataId || undefined,
             };
 
             await getTimesheets(params).unwrap();
@@ -965,7 +965,7 @@ export function OrganizationTimesheets() {
         filterOptions.isEmergency,
         filterOptions.carerRole,
         filterOptions.careUserId,
-        filterOptions.shiftPatternId,
+        filterOptions.shiftPatternDataId,
         filterOptions.status
     ]);
 
@@ -1168,7 +1168,7 @@ export function OrganizationTimesheets() {
                                     filterOptions.invoiceStatus !== 'all' ||
                                     filterOptions.isEmergency !== null ||
                                     filterOptions.carerRole !== 'all' ||
-                                    filterOptions.shiftPatternId !== '' ||
+                                    filterOptions.shiftPatternDataId !== '' ||
                                     format(filterOptions.startDate, 'yyyy-MM-dd') !== format(startOfMonth(new Date()), 'yyyy-MM-dd') ||
                                     format(filterOptions.endDate, 'yyyy-MM-dd') !== format(endOfMonth(new Date()), 'yyyy-MM-dd')) && (
                                         <span className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-xs">

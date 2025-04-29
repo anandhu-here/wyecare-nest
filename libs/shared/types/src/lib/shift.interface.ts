@@ -2,6 +2,7 @@
 import { Schema as MongooseSchema } from 'mongoose';
 import { IUser } from './user.interface';
 import { IOrganization } from './organization.interface';
+import { IShiftPattern } from './shift-pattern.interface';
 
 export interface IMatchDetails {
   experienceMatch?: boolean;
@@ -48,7 +49,7 @@ export interface IShift {
   assignedUsers?: IUser[];
   privateKey?: string;
   signedCarers: Record<string, any>;
-  shiftPattern?: string | MongooseSchema.Types.ObjectId;
+  shiftPattern?: IShiftPattern;
   agencyAccepted: boolean;
   qrCodeToken?: string;
   qrCodeTokenExpiry?: Date;

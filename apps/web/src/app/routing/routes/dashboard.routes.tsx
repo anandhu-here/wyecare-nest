@@ -18,6 +18,7 @@ import LeaveAdminDashboard from '@/app/features/leave-management/leave-admin';
 import OrganizationTimesheets from '@/app/features/timesheets/organization';
 import AttendanceRegistry from '@/app/features/attendance';
 import EmployeeProfilePage from '@/app/features/employee';
+import EmployeeTimesheets from '@/app/features/employee/timesheets';
 
 
 // Placeholder for Dashboard - replace with actual component when ready
@@ -109,6 +110,10 @@ export const dashboardRoutes: RouteObject[] = [
             {
                 path: 'org-timesheets',
                 element: <OrganizationTimesheets />
+            },
+            {
+                path: 'staff-timesheets',
+                element: <EmployeeTimesheets />
             },
             {
                 path: 'employee-leave',
