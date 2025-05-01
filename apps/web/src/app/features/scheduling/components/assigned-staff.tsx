@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { selectUser } from '../../auth/AuthSlice';
 import { toast } from 'react-toastify';
-import { useUnassignUserFromShiftMutation } from '../shiftApi';
+import { useUnassignUserFromShiftMutation } from '@/app/features/shift/shiftApi';
 import { IShift } from '@wyecare-monorepo/shared-types';
 
 interface ViewAssignedStaffDialogProps {

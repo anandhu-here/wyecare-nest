@@ -720,16 +720,18 @@ async checkStaffLeave(
   }
 
   // Additional endpoints
-  @Get(':organizationId/staff/care')
+  @Get(':organizationId/staff/specialized')
   @UseGuards(OrganizationAccessGuard)
   @RequirePermission('view_staff')
-  async getCareStaff(
+  async getSpecializedStaff(
     @Param('organizationId') organizationId: string,
+    @Query('organizationType') organizationType: string,
     @Res() res: Response
   ) {
     try {
-      const staff = await this.organizationStaffService.getCareStaff(
-        new Types.ObjectId(organizationId)
+      const staff = await this.organizationStaffService.getSpecializedStaff(
+        new Types.ObjectId(organizationId),
+        organizationType
       );
 
       return res.status(HttpStatus.OK).json({
@@ -739,7 +741,7 @@ async checkStaffLeave(
     } catch (error: any) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
-        message: error.message || 'Failed to get care staff',
+        message: error.message || 'Failed to get specialized staff',
       });
     }
   }

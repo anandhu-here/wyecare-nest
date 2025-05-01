@@ -1,26 +1,10 @@
-// libs/web/features/src/lib/auth/views/signup-form.tsx
+// libs/web/features/src/lib/auth/forms/signup-form.tsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm, Controller } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
-// Import UI components - adjust paths to match your structure
-// import {
-//     Card,
-//     CardContent,
-//     Button,
-//     Input,
-//     Label,
-//     Select,
-//     SelectContent,
-//     SelectItem,
-//     SelectTrigger,
-//     SelectValue,
-//     Alert,
-//     AlertDescription,
-//     Progress
-// } from '@/components/ui';
-
+// Import UI components
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,10 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Alert } from '@/components/ui/alert';
 import { AlertDescription } from '@/components/ui/alert';
-
 import { Progress } from '@/components/ui/progress';
-import { useSearchParams } from 'react-router-dom';
-
 
 // Import icons
 import {
@@ -57,7 +38,7 @@ import { useDispatch } from 'react-redux';
 import { useRegisterMutation, useRegisterWithOrgInvitationMutation, useRegisterWithStaffInvitationMutation } from '../../authApi';
 import { setCredentials } from '../../AuthSlice';
 
-// Data constants - keeping the same data structures
+// Data constants
 const countryCodes = [
     { code: '+1', country: 'USA' },
     { code: '+44', country: 'UK' },
@@ -97,12 +78,14 @@ interface SignupFormProps {
     onSubmit: (data: any) => void;
     invitationToken: string | null;
     invitationType?: 'organization' | 'staff';
+    organizationType?: string | null;
 }
 
 const SignupForm: React.FC<SignupFormProps> = ({
     onSubmit,
     invitationToken,
-    invitationType = 'organization'
+    invitationType = 'organization',
+    organizationType = null
 }) => {
     const [step, setStep] = useState(0);
     const [loading, setLoading] = useState(false);
@@ -123,7 +106,6 @@ const SignupForm: React.FC<SignupFormProps> = ({
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
-
 
     const {
         control,
@@ -166,24 +148,19 @@ const SignupForm: React.FC<SignupFormProps> = ({
         setErrorMessage('');
 
         try {
-            // Determine the endpoint based on invitation type
-            const endpoint = invitationType === 'staff'
-                ? 'register-with-staff-invitation'
-                : 'register-with-invitation';
+            // Include organizationType if available
+            const registrationData = {
+                ...data,
+                token: invitationToken,
+                type: invitationType
+            };
 
-            // Use RTK Query mutation
-            // const response = await registerUser({
-            //     ...data,
-            //     token: invitationToken,
-            //     type: invitationType
-            // }).unwrap();
+            if (organizationType) {
+                registrationData.organizationType = organizationType;
+            }
 
             if (invitationType === 'staff') {
-                const response = await registerStaff({
-                    ...data,
-                    token: invitationToken,
-                    type: invitationType
-                }).unwrap();
+                const response = await registerStaff(registrationData).unwrap();
 
                 // Store token in Redux
                 dispatch(setCredentials({
@@ -195,11 +172,8 @@ const SignupForm: React.FC<SignupFormProps> = ({
                 onSubmit(response);
             }
             else {
-                const response = await registerOrg({
-                    ...data,
-                    token: invitationToken,
-                    type: invitationType
-                }).unwrap();
+                const response = await registerOrg(registrationData).unwrap();
+
                 // Store token in Redux
                 dispatch(setCredentials({
                     token: response.token,
@@ -209,9 +183,6 @@ const SignupForm: React.FC<SignupFormProps> = ({
                 // Call the onSubmit callback with the response data
                 onSubmit(response);
             }
-
-
-
         } catch (error: any) {
             setErrorMessage(error.data?.message || error.message || 'Registration failed');
         } finally {
@@ -300,7 +271,6 @@ const SignupForm: React.FC<SignupFormProps> = ({
             transition={pageTransition}
             className="space-y-6"
         >
-            {/* Content remains the same */}
             <div className="text-center space-y-2">
                 <h2 className="text-2xl font-semibold">Tell us about yourself</h2>
                 <p className="text-muted-foreground">
@@ -310,7 +280,6 @@ const SignupForm: React.FC<SignupFormProps> = ({
 
             {renderErrorMessage()}
 
-            {/* Form fields remain the same */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* First Name */}
                 <div className="space-y-2">

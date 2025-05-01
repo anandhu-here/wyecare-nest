@@ -13,6 +13,7 @@ import { CreateOrgInvitationDto } from '../dto/create-org-invitation.dto';
 import {
   OrganizationCreationInvitation,
   OrganizationCreationInvitationDocument,
+  Role,
 } from '../../../../../core/src/lib/schemas';
 import { User, UserDocument } from '../../../../../core/src/lib/schemas';
 import { AuthorizationService } from '../../authorization/services/authorization.service';
@@ -23,6 +24,7 @@ export class OrganizationInvitationService {
   private readonly logger = new Logger(OrganizationInvitationService.name);
 
   constructor(
+    @InjectModel(Role.name) private roleModel: Model<Role>,
     @InjectModel(UserMetadata.name)
     private userMetadataModel: Model<UserMetadata>,
     @InjectModel(OrganizationCreationInvitation.name)
@@ -252,26 +254,44 @@ export class OrganizationInvitationService {
   ): Promise<void> {
     const inviterInfo = await this.userModel.findById(invitation.invitedBy);
 
-    const subject = 'Invitation to Create an Organization';
+    // Get the role with display names
+    const role = await this.roleModel.findOne({ id: invitation.roleToAssign });
 
-    // Create registration URL with token
-    const registrationUrl = `${process.env['FRONTEND_URL']}/auth/register-with-invitation?token=${invitation.token}`;
+    if (!role) {
+      this.logger.error(
+        `Role ${invitation.roleToAssign} not found when sending email`
+      );
+      return;
+    }
 
-    // Build email content
+    // Get appropriate role display name for the organization type
+    let roleName = role.name;
+    if (role.displayNames && role.displayNames[invitation.organizationType]) {
+      roleName = role.displayNames[invitation.organizationType];
+    }
+
+    const subject = `Invitation to Create a ${this.getOrganizationTypeDisplayName(
+      invitation.organizationType
+    )}`;
+
+    // Create registration URL with token and organization type
+    const registrationUrl = `${process.env['FRONTEND_URL']}/auth/register-with-invitation?token=${invitation.token}&orgType=${invitation.organizationType}`;
+
+    // Build email content with context-appropriate terminology
     const html = `
-      <h2>You've been invited to create an organization!</h2>
-      <p>Hello ${invitation.firstName || ''},</p>
-      <p>${
-        inviterInfo?.firstName || 'A system administrator'
-      } has invited you to create an organization as ${
-      invitation.roleToAssign
-    }.</p>
-      ${invitation.message ? `<p>Message: "${invitation.message}"</p>` : ''}
-      <p>To accept this invitation, please register using the link below:</p>
-      <p><a href="${registrationUrl}">Accept Invitation & Register</a></p>
-      <p>This invitation will expire on ${invitation.expiresAt.toLocaleDateString()}.</p>
-      <p>Thank you,<br>The Team</p>
-    `;
+    <h2>You've been invited to create a ${this.getOrganizationTypeDisplayName(
+      invitation.organizationType
+    )}!</h2>
+    <p>Hello ${invitation.firstName || ''},</p>
+    <p>${
+      inviterInfo?.firstName || 'A system administrator'
+    } has invited you to create an organization as ${roleName}.</p>
+    ${invitation.message ? `<p>Message: "${invitation.message}"</p>` : ''}
+    <p>To accept this invitation, please register using the link below:</p>
+    <p><a href="${registrationUrl}">Accept Invitation & Register</a></p>
+    <p>This invitation will expire on ${invitation.expiresAt.toLocaleDateString()}.</p>
+    <p>Thank you,<br>The Team</p>
+  `;
 
     try {
       await this.emailService.sendEmail({
@@ -281,7 +301,21 @@ export class OrganizationInvitationService {
       });
     } catch (error: any) {
       this.logger.error(`Failed to send invitation email: ${error.message}`);
-      // Don't throw error to prevent transaction failure
     }
+  }
+
+  private getOrganizationTypeDisplayName(type: string): string {
+    const displayNames: any = {
+      care_home: 'Care Home',
+      hospital: 'Hospital',
+      education: 'Educational Institution',
+      healthcare: 'Healthcare Provider',
+      social_services: 'Social Services Organization',
+      retail: 'Retail Business',
+      service_provider: 'Service Provider',
+      other: 'Organization',
+    };
+
+    return displayNames[type] || 'Organization';
   }
 }

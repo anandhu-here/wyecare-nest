@@ -1,7 +1,7 @@
 // libs/web/features/src/lib/organizations/components/CreateOrganization.tsx
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 // UI Components
@@ -24,6 +24,8 @@ import {
     Check
 } from 'lucide-react';
 import { useCreateOrganizationMutation } from '@/app/features/organization/organizationApi';
+import { selectUser } from '../../AuthSlice';
+
 
 const countryCodes = [
     { code: '+1', country: 'USA' },
@@ -33,23 +35,38 @@ const countryCodes = [
     { code: '+86', country: 'China' },
 ];
 
+// Organization categories
+const organizationCategories = [
+    { value: 'care_home', label: 'Care Home' },
+    { value: 'hospital', label: 'Hospital' },
+    { value: 'education', label: 'Educational Institution' },
+    { value: 'healthcare', label: 'Healthcare Provider' },
+    { value: 'social_services', label: 'Social Services' },
+    { value: 'retail', label: 'Retail' },
+    { value: 'service_provider', label: 'Service Provider' },
+    { value: 'other', label: 'Other' }
+];
+
 const CreateOrganization: React.FC = () => {
+    const [searchParams] = useSearchParams();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [useUserAddress, setUseUserAddress] = useState(false);
+    const [predefinedCategory, setPredefinedCategory] = useState<string | null>(null);
     const navigate = useNavigate();
 
-    // User data from localStorage
-    const [userData, setUserData] = useState<any>(null);
+    // Get user data from Redux state
+    const user = useSelector(selectUser);
 
-    // Get user data on component mount
+    // Get predefined category on component mount
     useEffect(() => {
-        const userDataString = localStorage.getItem('userData');
-        if (userDataString) {
-            setUserData(JSON.parse(userDataString));
+        // Check for category in URL params (might be passed as 'type' from older parts of the app)
+        const categoryParam = searchParams.get('type') || searchParams.get('category');
+        if (categoryParam) {
+            setPredefinedCategory(categoryParam);
         }
-    }, []);
+    }, [searchParams]);
 
     const {
         control,
@@ -61,10 +78,10 @@ const CreateOrganization: React.FC = () => {
     } = useForm({
         defaultValues: {
             name: '',
-            type: '',
+            category: '',
             staffsRange: '',
-            residentsRange: '',
-            residentManagementEnabled: false,
+            subjectsRange: '',
+            subjectManagementEnabled: false,
             address: {
                 street: '',
                 city: '',
@@ -74,34 +91,43 @@ const CreateOrganization: React.FC = () => {
             },
             countryCode: '',
             phoneNumber: '',
-            email: '',
+            email: user?.email || '',
         },
         mode: 'onChange',
     });
 
+    // Apply predefined category if available
+    useEffect(() => {
+        if (predefinedCategory) {
+            setValue('category', predefinedCategory);
+        }
+
+        // Pre-fill email from user data
+        if (user?.email) {
+            setValue('email', user.email);
+        }
+    }, [predefinedCategory, user, setValue]);
+
     const watchedAddress = watch('address');
-    const watchOrgType = watch('type');
-    const watchResidentManagement = watch('residentManagementEnabled');
+    const watchCategory = watch('category');
+    const watchSubjectManagement = watch('subjectManagementEnabled');
     const [createOrganization, { isLoading: isCreatingOrg }] = useCreateOrganizationMutation();
 
-
-    // Handle using user address for organization
+    // Handle using user address from Redux state
     useEffect(() => {
-        if (useUserAddress && userData?.address) {
-            setValue('address', userData.address);
-            setValue('countryCode', userData.countryCode || '');
-            setValue('phoneNumber', userData.phone || '');
-            setValue('email', userData.email || '');
+        if (useUserAddress && user?.address) {
+            setValue('address', user.address);
+            setValue('countryCode', user.countryCode || '');
+            setValue('phoneNumber', user.phone || '');
         }
-    }, [useUserAddress, userData, setValue]);
+    }, [useUserAddress, user, setValue]);
 
     const handleUseUserAddress = (checked: boolean) => {
         setUseUserAddress(checked);
-        if (checked && userData?.address) {
-            setValue('address', userData.address);
-            setValue('countryCode', userData.countryCode || '');
-            setValue('phoneNumber', userData.phone || '');
-            setValue('email', userData.email || '');
+        if (checked && user?.address) {
+            setValue('address', user.address);
+            setValue('countryCode', user.countryCode || '');
+            setValue('phoneNumber', user.phone || '');
         } else {
             setValue('address', {
                 street: '',
@@ -112,21 +138,45 @@ const CreateOrganization: React.FC = () => {
             });
             setValue('countryCode', '');
             setValue('phoneNumber', '');
-            setValue('email', '');
         }
+    };
+
+    // Get subject label based on organization category
+    const getSubjectLabel = () => {
+        switch (watchCategory) {
+            case 'care_home': return 'Resident';
+            case 'hospital': return 'Patient';
+            case 'education': return 'Student';
+            case 'healthcare': return 'Patient';
+            case 'social_services': return 'Client';
+            default: return 'Subject';
+        }
+    };
+
+    // Check if category supports subject management
+    const categorySupportsSubjects = () => {
+        return ['care_home', 'hospital', 'education', 'healthcare', 'social_services'].includes(watchCategory);
     };
 
     const onSubmit = async (data: any) => {
         try {
             setErrorMessage('');
             setSuccessMessage('');
+            setIsSubmitting(true);
+
+            // Ensure category is set
+            if (!data.category) {
+                setErrorMessage('Organization category is required');
+                setIsSubmitting(false);
+                return;
+            }
 
             // Replace fetch with RTK mutation
             const response = await createOrganization({
                 ...data,
                 phone: data.phoneNumber,
-                ownerId: userData?._id,
-                countryMetadata: userData?.countryMetadata || {},
+                ownerId: user?._id,
+                countryMetadata: user?.countryMetadata || {},
             }).unwrap();
 
             setSuccessMessage('Organization created successfully!');
@@ -137,11 +187,15 @@ const CreateOrganization: React.FC = () => {
             }, 1500);
 
         } catch (error: any) {
+            console.error('Organization creation error:', error);
             setErrorMessage(
                 error.data?.message || error.message || 'Organization creation failed. Please try again.'
             );
+        } finally {
+            setIsSubmitting(false);
         }
     };
+
     return (
         <div className="container max-w-3xl mx-auto py-8 px-4">
             <Card className="shadow-lg">
@@ -192,28 +246,35 @@ const CreateOrganization: React.FC = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="type">Organization Type</Label>
+                                <Label htmlFor="category">Organization Category</Label>
                                 <Controller
-                                    name="type"
+                                    name="category"
                                     control={control}
-                                    rules={{ required: 'Organization type is required' }}
+                                    rules={{ required: 'Organization category is required' }}
                                     render={({ field }) => (
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            defaultValue={field.value}
+                                            disabled={!!predefinedCategory}
+                                        >
                                             <SelectTrigger
-                                                id="type"
-                                                className={errors.type ? 'border-destructive' : ''}
+                                                id="category"
+                                                className={errors.category ? 'border-destructive' : ''}
                                             >
-                                                <SelectValue placeholder="Select organization type" />
+                                                <SelectValue placeholder="Select organization category" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="agency">Agency</SelectItem>
-                                                <SelectItem value="home">Home</SelectItem>
+                                                {organizationCategories.map(category => (
+                                                    <SelectItem key={category.value} value={category.value}>
+                                                        {category.label}
+                                                    </SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                     )}
                                 />
-                                {errors.type && (
-                                    <p className="text-sm text-destructive">{errors.type.message}</p>
+                                {errors.category && (
+                                    <p className="text-sm text-destructive">{errors.category.message}</p>
                                 )}
                             </div>
                         </div>
@@ -253,33 +314,33 @@ const CreateOrganization: React.FC = () => {
                                 )}
                             </div>
 
-                            {watchOrgType === 'home' && (
+                            {categorySupportsSubjects() && (
                                 <div className="flex items-center space-x-2">
                                     <Controller
-                                        name="residentManagementEnabled"
+                                        name="subjectManagementEnabled"
                                         control={control}
                                         render={({ field }) => (
                                             <Checkbox
-                                                id="residentManagementEnabled"
+                                                id="subjectManagementEnabled"
                                                 checked={field.value}
                                                 onCheckedChange={field.onChange}
                                             />
                                         )}
                                     />
-                                    <Label htmlFor="residentManagementEnabled">
-                                        Enable resident management for your care home
+                                    <Label htmlFor="subjectManagementEnabled">
+                                        Enable {getSubjectLabel().toLowerCase()} management for your {watchCategory.replace('_', ' ')}
                                     </Label>
                                 </div>
                             )}
 
-                            {watchOrgType === 'home' && watchResidentManagement && (
+                            {categorySupportsSubjects() && watchSubjectManagement && (
                                 <div className="space-y-2">
                                     <div className="flex items-center">
-                                        <Label htmlFor="residentsRange">Residents Range</Label>
+                                        <Label htmlFor="subjectsRange">{getSubjectLabel()} Range</Label>
                                         <span className="ml-2 text-xs text-amber-600">(Coming Soon)</span>
                                     </div>
                                     <Controller
-                                        name="residentsRange"
+                                        name="subjectsRange"
                                         control={control}
                                         render={({ field }) => (
                                             <Select
@@ -287,8 +348,8 @@ const CreateOrganization: React.FC = () => {
                                                 defaultValue={field.value}
                                                 disabled
                                             >
-                                                <SelectTrigger id="residentsRange">
-                                                    <SelectValue placeholder="Select residents range" />
+                                                <SelectTrigger id="subjectsRange">
+                                                    <SelectValue placeholder={`Select ${getSubjectLabel().toLowerCase()} range`} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem value="1-10">1-10</SelectItem>
@@ -301,7 +362,7 @@ const CreateOrganization: React.FC = () => {
                                         )}
                                     />
                                     <p className="text-sm text-muted-foreground">
-                                        Resident management features will be available in an upcoming update.
+                                        {getSubjectLabel()} management features will be available in an upcoming update.
                                     </p>
                                 </div>
                             )}
@@ -413,10 +474,14 @@ const CreateOrganization: React.FC = () => {
                                             id="useUserAddress"
                                             checked={useUserAddress}
                                             onCheckedChange={handleUseUserAddress}
+                                            disabled={!user?.address}
                                         />
                                     )}
                                 />
-                                <Label htmlFor="useUserAddress">Use my personal address</Label>
+                                <Label htmlFor="useUserAddress">
+                                    Use my personal address
+                                    {!user?.address && <span className="ml-2 text-xs text-muted-foreground">(No address found in your profile)</span>}
+                                </Label>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -553,9 +618,9 @@ const CreateOrganization: React.FC = () => {
                     </Button>
                     <Button
                         onClick={handleSubmit(onSubmit)}
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || isCreatingOrg}
                     >
-                        {isSubmitting ? (
+                        {(isSubmitting || isCreatingOrg) ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 Creating...

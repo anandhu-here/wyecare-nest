@@ -1,38 +1,13 @@
+
+// Sidebar.tsx
 import React, { useContext } from 'react';
-import SidebarMenu from './SidebarMenu';
 import { SidebarContext } from './contexts/SidebarContext';
-import { SidebarMenuProvider } from './SidebarMenu/context';
 import { useDeviceType } from './hook';
-import { ScrollArea } from "@/components/ui/scroll-area"; // Adjust path as needed
-import { Sheet, SheetContent } from "@/components/ui/sheet"; // Adjust path as needed
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { SidebarContent } from './SidebarContent';
 import { cn } from '@/lib/util';
 
-// Import your logo
-// import Logo from '@/assets/logos/logo.png'; // Adjust path as needed
-
 const SIDEBAR_WIDTH = '90px';
-
-const SidebarContent = ({ isDrawer = false }) => {
-    return (
-        <ScrollArea className="h-full">
-            <div className="flex flex-col">
-                {/* Logo only shown in drawer mode, not in desktop sidebar */}
-                {isDrawer && (
-                    <div className="flex justify-start px-2 py-4">
-                        <img
-                            src="/path/to/logo.png" // Update with actual logo path
-                            alt="logo"
-                            className="w-24"
-                        />
-                    </div>
-                )}
-
-                {/* Menu */}
-                <SidebarMenu isDrawer={isDrawer} />
-            </div>
-        </ScrollArea>
-    );
-};
 
 const Sidebar = () => {
     const { sidebarToggle, toggleSidebar } = useContext(SidebarContext);
@@ -42,8 +17,8 @@ const Sidebar = () => {
     const showSidebar = isDesktop;
 
     return (
-        <SidebarMenuProvider>
-            {/* Desktop Sidebar - now positioned below header */}
+        <>
+            {/* Desktop Sidebar - positioned below header */}
             {showSidebar && (
                 <div className={cn(
                     "fixed left-0 z-30",
@@ -62,7 +37,7 @@ const Sidebar = () => {
                     <SidebarContent isDrawer={true} />
                 </SheetContent>
             </Sheet>
-        </SidebarMenuProvider>
+        </>
     );
 };
 

@@ -58,6 +58,17 @@ export class RolesService {
     return organizationRoles.map((orgRole) => orgRole.roleId);
   }
 
+  async getRolesByOrganizationCategory(category: string): Promise<Role[]> {
+    return this.roleModel
+      .find({
+        $or: [
+          { organizationCategories: '*' },
+          { organizationCategories: category },
+        ],
+      })
+      .exec();
+  }
+
   async getUserRolesForOrganization(
     userId: Types.ObjectId,
     organizationId: Types.ObjectId

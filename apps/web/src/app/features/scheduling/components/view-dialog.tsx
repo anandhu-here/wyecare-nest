@@ -12,7 +12,7 @@ import moment from 'moment';
 import AssignStaffDialog from './assign-staff';
 import ViewAssignedStaffDialog from './assigned-staff';
 import DeleteConfirmationDialog from '@/components/delete-confirmation';
-import ShiftDetailsModal from './shift-detail'; // Import the new modal component
+import ShiftDetailsModal from './shift-detail';
 
 // Shadcn UI components
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -54,7 +54,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { IShift } from '@wyecare-monorepo/shared-types';
 import { useMediaQuery } from '@/app/layouts/hook/media-query';
 import { selectCurrentOrganization, selectUser } from '../../auth/AuthSlice';
-import { useAcceptShiftByAgencyMutation, useApproveUnauthorizedShiftMutation, useDeleteShiftMutation, useGetShiftsForaDayQuery } from '../shiftApi';
+import { useAcceptShiftByAgencyMutation, useApproveUnauthorizedShiftMutation, useDeleteShiftMutation, useGetShiftsForaDayQuery } from '@/app/features/shift/shiftApi';
 import { toast } from 'react-toastify';
 import { LoadingOverlay } from '@/components/loading-overlay';
 

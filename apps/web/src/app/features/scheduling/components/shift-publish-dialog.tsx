@@ -49,11 +49,11 @@ import {
 // Types
 import { IShiftPattern } from '@wyecare-monorepo/shared-types';
 import { selectCurrentOrganization } from '../../auth/AuthSlice';
-import { useCreateMultipleShiftsMutation, useUpdateShiftMutation } from '../shiftApi';
-import { useGetOtherOrganizationShiftPatternsQuery, useGetShiftPatternsQuery } from '../../shift-pattern/shiftPatternsApi';
+import { useCreateMultipleShiftsMutation, useUpdateShiftMutation } from '@/app/features/shift/shiftApi';
+import { useGetOtherOrganizationShiftPatternsQuery, useGetShiftPatternsQuery } from '@/app/features/shift-pattern/shiftPatternsApi';
 import { useGetLinkedOrganizationsQuery } from '../../organization/organizationApi';
 import { toast } from 'react-toastify';
-import ShiftTypeDialog from './shift-pattern/home-add-shift-pattern';
+import ShiftTypeDialog from '../../shift/components/shift-pattern/home-add-shift-pattern';
 import AssignStaffDialog from './assign-internal-staffs';
 
 // Commented out components that will be implemented later

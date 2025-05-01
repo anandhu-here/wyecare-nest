@@ -15,7 +15,10 @@
       "@wyecare-monorepo/shadcn": [
         "../../libs/web/ui/src/lib/shadcn-components/*"
       ],
-      "@wyecare-monorepo/shared-types": ["../../libs/shared/types/src/index.ts"]
+      "@wyecare-monorepo/shared-types": [
+        "../../libs/shared/types/src/index.ts"
+      ],
+      "@wyecare-monorepo/web-ui": ["../../libs/web/ui/src/index.ts"]
     }
   },
   "exclude": [

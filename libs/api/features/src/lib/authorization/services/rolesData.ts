@@ -1,12 +1,13 @@
 export const rolesData = [
-  // Management roles
   {
     id: 'owner',
     name: 'Owner',
     description: 'Organization owner with full access',
     contextType: 'ORGANIZATION',
     isSystem: true,
-    hierarchyLevel: 1, // Highest authority
+    hierarchyLevel: 1,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'admin',
@@ -15,6 +16,8 @@ export const rolesData = [
     contextType: 'ORGANIZATION',
     isSystem: true,
     hierarchyLevel: 2,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'manager',
@@ -23,9 +26,9 @@ export const rolesData = [
     contextType: 'ORGANIZATION',
     isSystem: true,
     hierarchyLevel: 3,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
-
-  // Clinical roles
   {
     id: 'nurse',
     name: 'Nurse',
@@ -33,6 +36,8 @@ export const rolesData = [
     contextType: 'ORGANIZATION',
     isSystem: true,
     hierarchyLevel: 3,
+    organizationCategories: ['hospital', 'care_home', 'healthcare'],
+    displayNames: {},
   },
   {
     id: 'senior_carer',
@@ -41,6 +46,10 @@ export const rolesData = [
     contextType: 'ORGANIZATION',
     isSystem: true,
     hierarchyLevel: 4,
+    organizationCategories: ['care_home', 'healthcare'],
+    displayNames: {
+      hospital: 'Senior Healthcare Assistant',
+    },
   },
   {
     id: 'carer',
@@ -49,9 +58,11 @@ export const rolesData = [
     contextType: 'ORGANIZATION',
     isSystem: true,
     hierarchyLevel: 5,
+    organizationCategories: ['care_home', 'healthcare'],
+    displayNames: {
+      hospital: 'Healthcare Assistant',
+    },
   },
-
-  // Administrative roles
   {
     id: 'admin_staff',
     name: 'Administrative Staff',
@@ -59,6 +70,8 @@ export const rolesData = [
     contextType: 'ORGANIZATION',
     isSystem: true,
     hierarchyLevel: 4,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'hr_manager',
@@ -67,6 +80,8 @@ export const rolesData = [
     contextType: 'ORGANIZATION',
     isSystem: true,
     hierarchyLevel: 3,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'accountant',
@@ -75,9 +90,9 @@ export const rolesData = [
     contextType: 'ORGANIZATION',
     isSystem: true,
     hierarchyLevel: 3,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
-
-  // Specialized roles
   {
     id: 'quality_assurance',
     name: 'Quality Assurance',
@@ -85,6 +100,8 @@ export const rolesData = [
     contextType: 'ORGANIZATION',
     isSystem: true,
     hierarchyLevel: 3,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'procurement_officer',
@@ -93,6 +110,8 @@ export const rolesData = [
     contextType: 'ORGANIZATION',
     isSystem: true,
     hierarchyLevel: 4,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'staff',
@@ -101,6 +120,8 @@ export const rolesData = [
     contextType: 'ORGANIZATION',
     isSystem: true,
     hierarchyLevel: 6,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'system_admin',
@@ -109,6 +130,341 @@ export const rolesData = [
       'Top-level system administrator with access to all system functions',
     contextType: 'SYSTEM',
     isSystem: true,
-    hierarchyLevel: 0, // Higher than owner (which is 1)
+    hierarchyLevel: 0,
+    organizationCategories: ['*'],
+    displayNames: {},
+  },
+  {
+    id: 'doctor',
+    name: 'Doctor',
+    description: 'Medical doctor with clinical responsibilities',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 3,
+    organizationCategories: ['hospital', 'healthcare'],
+    displayNames: {},
+  },
+  {
+    id: 'teacher',
+    name: 'Teacher',
+    description: 'Educational instructor',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 3,
+    organizationCategories: ['education', 'school'],
+    displayNames: {},
+  },
+  {
+    id: 'teaching_assistant',
+    name: 'Teaching Assistant',
+    description: 'Assistant providing educational support',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 4,
+    organizationCategories: ['education', 'school'],
+    displayNames: {},
+  },
+  {
+    id: 'counselor',
+    name: 'Counselor',
+    description: 'Professional providing counseling services',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 3,
+    organizationCategories: ['education', 'healthcare', 'social_services'],
+    displayNames: {
+      hospital: 'Clinical Counselor',
+      care_home: 'Resident Counselor',
+      education: 'School Counselor',
+    },
+  },
+  {
+    id: 'social_worker',
+    name: 'Social Worker',
+    description: 'Professional providing social support services',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 3,
+    organizationCategories: ['healthcare', 'social_services', 'care_home'],
+    displayNames: {},
+  },
+  {
+    id: 'sales_associate',
+    name: 'Sales Associate',
+    description: 'Staff responsible for sales',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 5,
+    organizationCategories: ['retail', 'service_provider'],
+    displayNames: {},
+  },
+  {
+    id: 'customer_service',
+    name: 'Customer Service',
+    description: 'Staff providing customer support',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 5,
+    organizationCategories: ['retail', 'service_provider', '*'],
+    displayNames: {},
+  },
+];
+
+export const permissionImplicationsData = [
+  {
+    parentPermissionId: 'manage_system',
+    childPermissionId: 'manage_permissions',
+  },
+  {
+    parentPermissionId: 'manage_system',
+    childPermissionId: 'manage_roles',
+  },
+  {
+    parentPermissionId: 'manage_system',
+    childPermissionId: 'view_all_organizations',
+  },
+  {
+    parentPermissionId: 'manage_system',
+    childPermissionId: 'manage_all_organizations',
+  },
+  {
+    parentPermissionId: 'manage_system',
+    childPermissionId: 'view_all_users',
+  },
+  {
+    parentPermissionId: 'manage_system',
+    childPermissionId: 'manage_all_users',
+  },
+  {
+    parentPermissionId: 'manage_system',
+    childPermissionId: 'create_system_admin',
+  },
+  {
+    parentPermissionId: 'manage_all_organizations',
+    childPermissionId: 'view_all_organizations',
+  },
+  {
+    parentPermissionId: 'manage_all_organizations',
+    childPermissionId: 'create_organization',
+  },
+  {
+    parentPermissionId: 'manage_all_organizations',
+    childPermissionId: 'delete_organization',
+  },
+  {
+    parentPermissionId: 'manage_all_users',
+    childPermissionId: 'view_all_users',
+  },
+  {
+    parentPermissionId: 'manage_permissions',
+    childPermissionId: 'add_permission',
+  },
+  {
+    parentPermissionId: 'manage_permissions',
+    childPermissionId: 'remove_permission',
+  },
+  {
+    parentPermissionId: 'manage_permissions',
+    childPermissionId: 'get_permissions',
+  },
+  {
+    parentPermissionId: 'edit_organization',
+    childPermissionId: 'view_organization',
+  },
+  {
+    parentPermissionId: 'edit_staff_role',
+    childPermissionId: 'view_staff',
+  },
+  {
+    parentPermissionId: 'edit_subjects',
+    childPermissionId: 'view_subjects',
+  },
+  {
+    parentPermissionId: 'edit_timesheets',
+    childPermissionId: 'view_timesheets',
+  },
+  {
+    parentPermissionId: 'approve_timesheets',
+    childPermissionId: 'view_timesheets',
+  },
+  {
+    parentPermissionId: 'reject_timesheets',
+    childPermissionId: 'view_timesheets',
+  },
+  {
+    parentPermissionId: 'edit_locations',
+    childPermissionId: 'view_locations',
+  },
+  {
+    parentPermissionId: 'edit_providers',
+    childPermissionId: 'view_providers',
+  },
+  {
+    parentPermissionId: 'edit_invoices',
+    childPermissionId: 'view_invoices',
+  },
+  {
+    parentPermissionId: 'edit_payments',
+    childPermissionId: 'view_payments',
+  },
+  {
+    parentPermissionId: 'edit_settings',
+    childPermissionId: 'view_settings',
+  },
+  {
+    parentPermissionId: 'edit_schedules',
+    childPermissionId: 'view_schedules',
+  },
+  {
+    parentPermissionId: 'create_tasks',
+    childPermissionId: 'view_tasks',
+  },
+  {
+    parentPermissionId: 'update_tasks',
+    childPermissionId: 'view_tasks',
+  },
+  {
+    parentPermissionId: 'delete_tasks',
+    childPermissionId: 'view_tasks',
+  },
+  {
+    parentPermissionId: 'view_all_tasks',
+    childPermissionId: 'view_tasks',
+  },
+  {
+    parentPermissionId: 'view_all_tasks',
+    childPermissionId: 'view_active_tasks',
+  },
+  {
+    parentPermissionId: 'view_all_tasks',
+    childPermissionId: 'view_pending_tasks',
+  },
+  {
+    parentPermissionId: 'view_all_tasks',
+    childPermissionId: 'view_historical_tasks',
+  },
+  {
+    parentPermissionId: 'view_all_tasks',
+    childPermissionId: 'view_overdue_tasks',
+  },
+  {
+    parentPermissionId: 'assign_task',
+    childPermissionId: 'view_tasks',
+  },
+  {
+    parentPermissionId: 'create_service_plans',
+    childPermissionId: 'view_service_plans',
+  },
+  {
+    parentPermissionId: 'update_service_plans',
+    childPermissionId: 'view_service_plans',
+  },
+  {
+    parentPermissionId: 'delete_service_plans',
+    childPermissionId: 'view_service_plans',
+  },
+  {
+    parentPermissionId: 'create_service_notes',
+    childPermissionId: 'view_service_notes',
+  },
+  {
+    parentPermissionId: 'update_service_notes',
+    childPermissionId: 'view_service_notes',
+  },
+  {
+    parentPermissionId: 'delete_service_notes',
+    childPermissionId: 'view_service_notes',
+  },
+  {
+    parentPermissionId: 'create_health_records',
+    childPermissionId: 'view_health_records',
+  },
+  {
+    parentPermissionId: 'update_health_records',
+    childPermissionId: 'view_health_records',
+  },
+  {
+    parentPermissionId: 'delete_health_records',
+    childPermissionId: 'view_health_records',
+  },
+  {
+    parentPermissionId: 'create_medications',
+    childPermissionId: 'view_medications',
+  },
+  {
+    parentPermissionId: 'update_medications',
+    childPermissionId: 'view_medications',
+  },
+  {
+    parentPermissionId: 'delete_medications',
+    childPermissionId: 'view_medications',
+  },
+  {
+    parentPermissionId: 'create_subject_data',
+    childPermissionId: 'view_subjects',
+  },
+  {
+    parentPermissionId: 'update_subject_data',
+    childPermissionId: 'view_subjects',
+  },
+  {
+    parentPermissionId: 'delete_subject_data',
+    childPermissionId: 'view_subjects',
+  },
+  {
+    parentPermissionId: 'create_shift',
+    childPermissionId: 'view_shift',
+  },
+  {
+    parentPermissionId: 'update_shift',
+    childPermissionId: 'view_shift',
+  },
+  {
+    parentPermissionId: 'delete_shift',
+    childPermissionId: 'view_shift',
+  },
+  {
+    parentPermissionId: 'assign_users',
+    childPermissionId: 'view_shift',
+  },
+  {
+    parentPermissionId: 'create_reports',
+    childPermissionId: 'view_reports',
+  },
+  {
+    parentPermissionId: 'edit_reports',
+    childPermissionId: 'view_reports',
+  },
+  {
+    parentPermissionId: 'delete_reports',
+    childPermissionId: 'view_reports',
+  },
+  {
+    parentPermissionId: 'edit_group',
+    childPermissionId: 'view_group',
+  },
+  {
+    parentPermissionId: 'add_group_member',
+    childPermissionId: 'view_group',
+  },
+  {
+    parentPermissionId: 'update_group',
+    childPermissionId: 'view_group',
+  },
+  {
+    parentPermissionId: 'delete_group',
+    childPermissionId: 'view_group',
+  },
+  {
+    parentPermissionId: 'manage_leave_requests',
+    childPermissionId: 'view_leave_requests',
+  },
+  {
+    parentPermissionId: 'view_all_leave_balances',
+    childPermissionId: 'view_leave_balance',
+  },
+  {
+    parentPermissionId: 'manage_leave_policy',
+    childPermissionId: 'view_leave_policy',
   },
 ];

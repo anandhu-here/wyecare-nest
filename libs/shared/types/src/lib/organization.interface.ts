@@ -1,35 +1,25 @@
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { IAddress, ICountryMetadata } from './user.interface';
-
-// Interface for NotificationProviderTemplate
 export interface INotificationProviderTemplate {
   title?: string;
   body?: string;
   active: boolean;
   subject?: string;
 }
-
-// Interface for SmsProvider
 export interface ISmsProvider {
   enabled: boolean;
   fromNumber?: string;
   templates?: Record<string, any>;
 }
-
-// Interface for PushProvider
 export interface IPushProvider {
   enabled: boolean;
   templates?: Record<string, any>;
 }
-
-// Interface for EmailProvider
 export interface IEmailProvider {
   enabled: boolean;
   fromEmail?: string;
   templates?: Record<string, any>;
 }
-
-// Interface for NotificationSettings
 export interface INotificationSettings {
   sms: {
     enabled: boolean;
@@ -52,12 +42,27 @@ export interface INotificationSettings {
     };
   };
 }
-
-// Main Organization interface
 export interface IOrganization {
   status?: string;
   name: string;
-  type: 'agency' | 'home';
+  type?: 'agency' | 'home' | 'other';
+  category:
+    | 'hospital'
+    | 'staff_provider'
+    | 'software_company'
+    | 'manufacturing'
+    | 'education'
+    | 'retail'
+    | 'logistics'
+    | 'construction'
+    | 'financial'
+    | 'hospitality'
+    | 'healthcare'
+    | 'care_home'
+    | 'social_services'
+    | 'service_provider'
+    | 'other';
+  subCategory?: string;
   address?: IAddress;
   phone?: string;
   countryCode?: string;
@@ -84,6 +89,4 @@ export interface IOrganization {
   createdAt?: Date;
   updatedAt?: Date;
 }
-
-// Document interface that extends the base interface with Mongoose Document properties
 export interface IOrganizationDocument extends IOrganization, Document {}

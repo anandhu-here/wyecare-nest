@@ -104,6 +104,22 @@ export const shiftsApi = baseApi.injectEndpoints({
         { type: 'ShiftsByDate', id: date },
       ],
     }),
+    getPublishedShifts: builder.query<
+      IShift[],
+      { orgId: string; month?: number; year?: number }
+    >({
+      query: ({ orgId, month, year }) => {
+        let url = `shifts/organization/published/${orgId}`;
+        const params = new URLSearchParams();
+        if (month !== undefined) params.append('month', month.toString());
+        if (year !== undefined) params.append('year', year.toString());
+        if (params.toString()) url += `?${params.toString()}`;
+        return url;
+      },
+      providesTags: (result, error, { orgId }) => [
+        { type: 'HomeShifts', id: orgId },
+      ],
+    }),
 
     getHomeShifts: builder.query<
       IShift[],
@@ -364,4 +380,5 @@ export const {
   useAssignMultipleUsersMutation,
   useSwapAssignedUsersMutation,
   useGetQuickStatsQuery,
+  useGetPublishedShiftsQuery,
 } = shiftsApi;

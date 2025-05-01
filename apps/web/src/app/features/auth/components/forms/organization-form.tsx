@@ -1,9 +1,6 @@
-// libs/web/features/src/lib/auth/views/organization-form.tsx
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// Import UI components
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,9 +10,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useNavigate } from 'react-router-dom';
-
-
-// Import icons
 import {
     Briefcase,
     Mail,
@@ -26,21 +20,16 @@ import {
     Building,
     Users
 } from 'lucide-react';
-
 import StepIndicator from '../step-indicator';
-
-// Animation variants
 const pageVariants = {
     initial: { opacity: 0, y: 20 },
     in: { opacity: 1, y: 0 },
     out: { opacity: 0, y: -20 },
 };
-
 const pageTransition = {
     duration: 0.5,
     ease: 'easeInOut',
 };
-
 const countryCodes = [
     { code: '+1', country: 'USA' },
     { code: '+44', country: 'UK' },
@@ -48,36 +37,40 @@ const countryCodes = [
     { code: '+61', country: 'Australia' },
     { code: '+86', country: 'China' },
 ];
-
+const organizationTypes = [
+    { value: 'care_home', label: 'Care Home' },
+    { value: 'hospital', label: 'Hospital' },
+    { value: 'education', label: 'Educational Institution' },
+    { value: 'healthcare', label: 'Healthcare Provider' },
+    { value: 'social_services', label: 'Social Services' },
+    { value: 'retail', label: 'Retail' },
+    { value: 'service_provider', label: 'Service Provider' },
+    { value: 'other', label: 'Other' }
+];
 interface OrganizationFormProps {
     onSubmit: (data: any) => void;
+    predefinedOrgType?: string | null;
 }
-
-const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
+const OrganizationForm: React.FC<OrganizationFormProps> = ({
+    onSubmit,
+    predefinedOrgType = null
+}) => {
     const [step, setStep] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [useUserAddress, setUseUserAddress] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
-
-    // User data from localStorage
     const [userData, setUserData] = useState<any>(null);
-
-    // Mobile detection
     useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 768);
         checkMobile();
         window.addEventListener('resize', checkMobile);
-
-        // Get user data from localStorage
         const userDataString = localStorage.getItem('userData');
         if (userDataString) {
             setUserData(JSON.parse(userDataString));
         }
-
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
-
     const {
         control,
         handleSubmit,
@@ -88,10 +81,10 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
     } = useForm({
         defaultValues: {
             name: '',
-            type: '',
+            type: predefinedOrgType || '',
             staffsRange: '',
-            residentsRange: '',
-            residentManagementEnabled: false,
+            subjectManagementEnabled: false,
+            subjectsRange: '',
             address: {
                 street: '',
                 city: '',
@@ -105,11 +98,14 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
         },
         mode: 'onChange',
     });
-
+    useEffect(() => {
+        if (predefinedOrgType) {
+            setValue('type', predefinedOrgType);
+        }
+    }, [predefinedOrgType, setValue]);
     const watchedAddress = watch('address');
     const watchOrgType = watch('type');
-    const watchResidentManagement = watch('residentManagementEnabled');
-
+    const watchSubjectManagement = watch('subjectManagementEnabled');
     useEffect(() => {
         if (useUserAddress && userData?.address) {
             setValue('address', userData.address);
@@ -118,7 +114,6 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
             setValue('email', userData.email || '');
         }
     }, [useUserAddress, userData, setValue]);
-
     const handleUseUserAddress = (checked: boolean) => {
         setUseUserAddress(checked);
         if (checked && userData?.address) {
@@ -139,7 +134,6 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
             setValue('email', '');
         }
     };
-
     const onFormSubmit = async (data: any) => {
         try {
             const token = localStorage.getItem('token');
@@ -147,11 +141,8 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                 setErrorMessage('Authentication token is missing. Please log in again.');
                 return;
             }
-
             setIsSubmitting(true);
             setErrorMessage('');
-
-            // Replace with your actual API call
             const response = await fetch('/api/v1/organizations', {
                 method: 'POST',
                 headers: {
@@ -165,15 +156,12 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                     countryMetadata: userData?.countryMetadata || {},
                 }),
             });
-
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Organization creation failed');
             }
-
             const responseData = await response.json();
             onSubmit(responseData);
-
         } catch (error) {
             setErrorMessage(
                 error instanceof Error
@@ -184,14 +172,13 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
             setIsSubmitting(false);
         }
     };
-
     const handleNext = async () => {
         const fields = {
             0: ['name', 'type'],
             1: [
                 'staffsRange',
-                ...(watchOrgType === 'home' ? ['residentManagementEnabled'] : []),
-                ...(watchResidentManagement ? ['residentsRange'] : []),
+                ...(['care_home', 'hospital', 'education'].includes(watchOrgType) ? ['subjectManagementEnabled'] : []),
+                ...(watchSubjectManagement ? ['subjectsRange'] : []),
             ],
             2: ['email', 'countryCode', 'phoneNumber'],
             3: [
@@ -202,22 +189,17 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                 'address.country',
             ],
         };
-
         setErrorMessage('');
         const isStepValid = await trigger(fields[step as keyof typeof fields]);
         if (isStepValid) {
             setStep((prev) => prev + 1);
         }
     };
-
     const handleBack = () => {
         setErrorMessage('');
         setStep((prev) => prev - 1);
     };
-
     const stepTitles = ['Info', 'Management', 'Contact', 'Address'];
-
-    // Helper components
     const renderErrorMessage = () => {
         if (!errorMessage) return null;
         return (
@@ -226,7 +208,16 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
             </Alert>
         );
     };
-
+    const getSubjectLabel = () => {
+        switch (watchOrgType) {
+            case 'care_home': return 'Resident';
+            case 'hospital': return 'Patient';
+            case 'education': return 'Student';
+            case 'healthcare': return 'Patient';
+            case 'social_services': return 'Client';
+            default: return 'Subject';
+        }
+    };
     const ActionButtons = ({ isLastStep = false }: { isLastStep?: boolean }) => (
         <div className="mt-8 flex flex-col sm:flex-row justify-between items-center w-full gap-4 sm:gap-2">
             <Button
@@ -237,7 +228,6 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back
             </Button>
-
             <div className="flex gap-3 sm:gap-2 w-full sm:w-auto order-1 sm:order-2">
                 <Button
                     onClick={isLastStep ? handleSubmit(onFormSubmit) : handleNext}
@@ -258,10 +248,7 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
             </div>
         </div>
     );
-
-    // Form Steps
     const steps = [
-        // Step 1: Basic Information
         <motion.div
             key="basic"
             initial="initial"
@@ -277,9 +264,7 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                     Let's start with your organization's basic details
                 </p>
             </div>
-
             {renderErrorMessage()}
-
             <div className="space-y-6">
                 <div className="space-y-2">
                     <Label htmlFor="name">Organization Name</Label>
@@ -300,7 +285,6 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                         <p className="text-sm text-destructive">{errors.name.message}</p>
                     )}
                 </div>
-
                 <div className="space-y-2">
                     <Label htmlFor="type">Organization Type</Label>
                     <Controller
@@ -308,7 +292,11 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                         control={control}
                         rules={{ required: 'Organization type is required' }}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                                disabled={!!predefinedOrgType}
+                            >
                                 <SelectTrigger
                                     id="type"
                                     className={errors.type ? 'border-destructive' : ''}
@@ -316,8 +304,11 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                                     <SelectValue placeholder="Select organization type" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="agency">Agency</SelectItem>
-                                    <SelectItem value="home">Home</SelectItem>
+                                    {organizationTypes.map(type => (
+                                        <SelectItem key={type.value} value={type.value}>
+                                            {type.label}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         )}
@@ -329,8 +320,6 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
             </div>
             <ActionButtons />
         </motion.div>,
-
-        // Step 2: Structure Information
         <motion.div
             key="management"
             initial="initial"
@@ -346,9 +335,7 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                     Tell us about your organization's capacity
                 </p>
             </div>
-
             {renderErrorMessage()}
-
             <div className="space-y-6">
                 <div className="space-y-2">
                     <Label htmlFor="staffsRange">Staff Range</Label>
@@ -380,34 +367,32 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                         </p>
                     )}
                 </div>
-
-                {watchOrgType === 'home' && (
+                {['care_home', 'hospital', 'education'].includes(watchOrgType) && (
                     <div className="flex items-center space-x-2">
                         <Controller
-                            name="residentManagementEnabled"
+                            name="subjectManagementEnabled"
                             control={control}
                             render={({ field }) => (
                                 <Checkbox
-                                    id="residentManagementEnabled"
+                                    id="subjectManagementEnabled"
                                     checked={field.value}
                                     onCheckedChange={field.onChange}
                                 />
                             )}
                         />
-                        <Label htmlFor="residentManagementEnabled">
-                            Enable resident management for your care home
+                        <Label htmlFor="subjectManagementEnabled">
+                            Enable {getSubjectLabel().toLowerCase()} management for your {watchOrgType.replace('_', ' ')}
                         </Label>
                     </div>
                 )}
-
-                {watchOrgType === 'home' && watchResidentManagement && (
+                {['care_home', 'hospital', 'education'].includes(watchOrgType) && watchSubjectManagement && (
                     <div className="space-y-2">
                         <div className="flex items-center">
-                            <Label htmlFor="residentsRange">Residents Range</Label>
+                            <Label htmlFor="subjectsRange">{getSubjectLabel()} Range</Label>
                             <span className="ml-2 text-xs text-amber-600">(Coming Soon)</span>
                         </div>
                         <Controller
-                            name="residentsRange"
+                            name="subjectsRange"
                             control={control}
                             rules={{}}
                             render={({ field }) => (
@@ -416,8 +401,8 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                                     defaultValue={field.value}
                                     disabled
                                 >
-                                    <SelectTrigger id="residentsRange">
-                                        <SelectValue placeholder="Select residents range" />
+                                    <SelectTrigger id="subjectsRange">
+                                        <SelectValue placeholder={`Select ${getSubjectLabel().toLowerCase()} range`} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="1-10">1-10</SelectItem>
@@ -430,16 +415,13 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                             )}
                         />
                         <p className="text-sm text-muted-foreground">
-                            Resident management features will be available in an upcoming
-                            update.
+                            {getSubjectLabel()} management features will be available in an upcoming update.
                         </p>
                     </div>
                 )}
             </div>
             <ActionButtons />
         </motion.div>,
-
-        // Step 3: Contact Information
         <motion.div
             key="contact"
             initial="initial"
@@ -455,9 +437,7 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                     How can people reach your organization?
                 </p>
             </div>
-
             {renderErrorMessage()}
-
             <div className="space-y-6">
                 <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
@@ -485,7 +465,6 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                         <p className="text-sm text-destructive">{errors.email.message}</p>
                     )}
                 </div>
-
                 <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="countryCode">Country Code</Label>
@@ -517,7 +496,6 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                             </p>
                         )}
                     </div>
-
                     <div className="col-span-2 space-y-2">
                         <Label htmlFor="phoneNumber">Phone Number</Label>
                         <Controller
@@ -549,8 +527,6 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
             </div>
             <ActionButtons />
         </motion.div>,
-
-        // Step 4: Address Information
         <motion.div
             key="address"
             initial="initial"
@@ -566,9 +542,7 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                     Where is your organization located?
                 </p>
             </div>
-
             {renderErrorMessage()}
-
             <div className="mb-6 flex items-center space-x-2">
                 <Controller
                     name="useUserAddress"
@@ -583,7 +557,6 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                 />
                 <Label htmlFor="useUserAddress">Use my personal address</Label>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="col-span-full space-y-2">
                     <Label htmlFor="address.street">Street Address</Label>
@@ -608,7 +581,6 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                         </p>
                     )}
                 </div>
-
                 <div className="space-y-2">
                     <Label htmlFor="address.city">City</Label>
                     <Controller
@@ -632,7 +604,6 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                         </p>
                     )}
                 </div>
-
                 <div className="space-y-2">
                     <Label htmlFor="address.state">Region</Label>
                     <Controller
@@ -656,7 +627,6 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                         </p>
                     )}
                 </div>
-
                 <div className="space-y-2">
                     <Label htmlFor="address.zipCode">Postcode</Label>
                     <Controller
@@ -680,7 +650,6 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
                         </p>
                     )}
                 </div>
-
                 <div className="space-y-2">
                     <Label htmlFor="address.country">Country</Label>
                     <Controller
@@ -708,26 +677,22 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ onSubmit }) => {
             <ActionButtons isLastStep={true} />
         </motion.div>,
     ];
-
     return (
         <div className="w-full p-4">
             <Card className="backdrop-blur-sm bg-background w-full">
                 <CardContent className="p-4 sm:p-6 w-full">
-                    {/* Progress Stepper */}
+                    {}
                     <StepIndicator currentStep={step} steps={stepTitles} />
-
-                    {/* Progress bar */}
+                    {}
                     <Progress
                         value={(step / (steps.length - 1)) * 100}
                         className="h-2 mb-8"
                     />
-
-                    {/* Form Steps */}
+                    {}
                     <AnimatePresence mode="wait">{steps[step]}</AnimatePresence>
                 </CardContent>
             </Card>
         </div>
     );
 };
-
 export default OrganizationForm;

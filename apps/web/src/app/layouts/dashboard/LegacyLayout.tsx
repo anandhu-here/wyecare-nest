@@ -5,12 +5,12 @@ import { selectCurrentOrganization, selectStaffType, selectUser } from '../../fe
 import { OrganizationRole } from '@wyecare-monorepo/shared-types';
 import { useMediaQuery } from '../hook/media-query';
 import { useNavigate } from 'react-router-dom';
-import ModernShiftCalendar from '@/app/features/shift/components/org-shift-calendar';
 import { QuickStats } from './components/quick-stats';
 import { Button } from '@/components/ui/button';
 import AnalyticsDashboard from './components/legacy/DashboardV2';
 import StaffShiftCalendar from '@/app/features/employee/employee-shift-calendar';
 import StaffScheduleView from '@/app/features/employee/shift-schedule-view';
+import EmployerShiftCalendar from '@/app/features/scheduling/calendars/shift-calendar';
 interface TabPanelProps {
     children?: React.ReactNode;
     value: string;
@@ -72,7 +72,7 @@ export default function LegacyDashBoardLayout() {
         if (staffType === 'care') {
             return <StaffScheduleView onMonthChange={handleMonthChange} />;
         }
-        return <ModernShiftCalendar onMonthChange={handleMonthChange} />;
+        return <EmployerShiftCalendar onMonthChange={handleMonthChange} />;
     };
 
 

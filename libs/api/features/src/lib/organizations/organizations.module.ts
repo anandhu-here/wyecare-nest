@@ -15,7 +15,7 @@ import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
-    CoreModule, // Import CoreModule instead of using MongooseModule.forFeature
+    CoreModule,
     UtilsModule,
     AuthorizationModule,
     JwtModule.register({

@@ -123,6 +123,25 @@ import {
   Attendance,
   AttendanceSchema,
 } from './organizations/attendance.schema';
+import { ShiftType, ShiftTypeSchema } from './shifts/shift-type.schema';
+import { StaffRate, StaffRateSchema } from './shifts/staff-rate.schema';
+import {
+  ShiftPaymentConfig,
+  ShiftPaymentConfigSchema,
+  ShiftPaymentMethod,
+} from './shifts/shift-payment.schema';
+import {
+  ShiftTemplate,
+  ShiftTemplateSchema,
+} from './shifts/shift-template.schema';
+import {
+  ShiftRotationPattern,
+  ShiftRotationPatternSchema,
+} from './shifts/shift-rotation-pattern.schema';
+import {
+  SchedulingRule,
+  SchedulingRuleSchema,
+} from './shifts/scheduling-rule.schema';
 
 @Module({
   imports: [
@@ -214,6 +233,34 @@ import {
       {
         name: Attendance.name,
         schema: AttendanceSchema,
+      },
+
+      // shift types and scheduling
+
+      {
+        name: ShiftType.name,
+        schema: ShiftTypeSchema,
+      },
+      {
+        name: StaffRate.name,
+        schema: StaffRateSchema,
+      },
+
+      {
+        name: ShiftPaymentConfig.name,
+        schema: ShiftPaymentConfigSchema,
+      },
+      {
+        name: ShiftTemplate.name,
+        schema: ShiftTemplateSchema,
+      },
+      {
+        name: ShiftRotationPattern.name,
+        schema: ShiftRotationPatternSchema,
+      },
+      {
+        name: SchedulingRule.name,
+        schema: SchedulingRuleSchema,
       },
     ]),
   ],

@@ -158,8 +158,42 @@ export class Organization {
   @Prop({ required: true })
   name!: string;
 
-  @Prop({ required: true, enum: ['agency', 'home'] })
+  @Prop({ required: false, enum: ['agency', 'home'] })
   type!: 'agency' | 'home';
+
+  @Prop({
+    required: true,
+    enum: [
+      'hospital',
+      'staff_provider',
+      'software_company',
+      'manufacturing',
+      'education',
+      'retail',
+      'logistics',
+      'construction',
+      'financial',
+      'hospitality',
+      'healthcare',
+      'other',
+    ],
+  })
+  category!:
+    | 'hospital'
+    | 'staff_provider'
+    | 'software_company'
+    | 'manufacturing'
+    | 'education'
+    | 'retail'
+    | 'logistics'
+    | 'construction'
+    | 'financial'
+    | 'hospitality'
+    | 'healthcare'
+    | 'other';
+
+  @Prop()
+  subCategory?: string;
 
   @Prop({ type: AddressSchemaDefinition })
   address?: Address;

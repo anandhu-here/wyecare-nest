@@ -41,6 +41,19 @@ export class PermissionsService {
     return this.permissionModel.find({ contextType }).exec();
   }
 
+  getPermissionDisplayName(
+    permission: Permission,
+    organizationCategory: string
+  ): string {
+    if (
+      permission.displayNames &&
+      permission.displayNames[organizationCategory]
+    ) {
+      return permission.displayNames[organizationCategory];
+    }
+    return permission.name; // Fall back to default name
+  }
+
   async getImpliedPermissions(permissionId: string): Promise<string[]> {
     // Get direct implications
     const directImplications = await this.permissionImplicationModel
@@ -61,6 +74,18 @@ export class PermissionsService {
 
     // Combine direct and nested implications, ensuring uniqueness
     return [...new Set([...childPermissionIds, ...nestedPermissionIds])];
+  }
+  async getPermissionsByOrganizationCategory(
+    category: string
+  ): Promise<Permission[]> {
+    return this.permissionModel
+      .find({
+        $or: [
+          { organizationCategories: '*' },
+          { organizationCategories: category },
+        ],
+      })
+      .exec();
   }
 
   async getAllPermissionsIncludingImplied(

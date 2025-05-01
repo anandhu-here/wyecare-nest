@@ -5,6 +5,8 @@ import App from './app/app';
 import { Provider } from 'react-redux';
 import { store } from './redux/store';
 import { ToastContainer, toast } from 'react-toastify';
+import './scrollbar.css';
+import './styles.css';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

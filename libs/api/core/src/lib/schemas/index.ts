@@ -30,3 +30,10 @@ export * from './leaves/leave-balance.schema';
 export * from './leaves/leave-policy.schema';
 export * from './leaves/leave-request.schema';
 export * from './organizations/attendance.schema';
+
+export * from './shifts/shift-type.schema';
+export * from './shifts/shift-payment.schema';
+export * from './shifts/staff-rate.schema';
+export * from './shifts/shift-rotation-pattern.schema';
+export * from './shifts/scheduling-rule.schema';
+export * from './shifts/shift-template.schema';

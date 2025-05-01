@@ -132,6 +132,32 @@ export class ShiftsController {
     }
   }
 
+  @Get('organization/published/:orgId')
+  @UseGuards(JwtAuthGuard, OrganizationContextGuard)
+  @RequirePermission('view_shift')
+  async getShiftsByOrganization(
+    @Param('orgId') orgId: string,
+    @Query('month') month?: number,
+    @Query('year') year?: number
+  ) {
+    try {
+      return await this.shiftsService.getPublishedShiftsByOrganization(
+        orgId,
+        month,
+        year
+      );
+    } catch (error: any) {
+      this.logger.error(
+        `Error getting shifts by organization: ${error.message}`,
+        error.stack
+      );
+      throw new HttpException(
+        'Error getting shifts by organization',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
   @Get('home/:orgId')
   @Auth('view_shift')
   async getPubShifts(

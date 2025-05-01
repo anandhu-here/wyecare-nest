@@ -15,9 +15,10 @@ import {
   RolePermission,
   RolePermissionDocument,
 } from '../../../../../core/src/lib/schemas';
-import { permissionImplicationsData, permissionsData } from './permissionData';
+import { permissionsData } from './permissionData';
 import { rolesData } from './rolesData';
 import { User } from '../../../../../core/src/lib/schemas';
+import { permissionImplicationsData } from './permissionsImplication';
 
 @Injectable()
 export class SeedService {
@@ -44,10 +45,16 @@ export class SeedService {
     await this.permissionModel.deleteMany({});
     console.log('Cleared existing permissions');
 
-    // Define all permissions by category
+    // Add permissions with the new structure
+    // We need to extract organizationCategories and displayNames from the new format
+    const formattedPermissionsData = permissionsData.map((permission) => {
+      const { organizationCategories, displayNames, ...permissionData } =
+        permission;
+      return permissionData;
+    });
 
-    await this.permissionModel.insertMany(permissionsData);
-    console.log(`Seeded ${permissionsData.length} permissions`);
+    await this.permissionModel.insertMany(formattedPermissionsData);
+    console.log(`Seeded ${formattedPermissionsData.length} permissions`);
   }
 
   async seedRoles() {
@@ -55,10 +62,21 @@ export class SeedService {
     await this.roleModel.deleteMany({});
     console.log('Cleared existing roles');
 
-    // Create roles with hierarchical structure
+    // Add roles with the new structure
+    // We need to extract organizationCategories and displayNames from the new format
+    const formattedRolesData = rolesData.map((role) => {
+      const { organizationCategories, displayNames, ...roleData } = role;
+      return {
+        ...roleData,
+        organizationCategories: organizationCategories || [],
+        displayNames: displayNames || {},
+      };
+    });
 
-    await this.roleModel.insertMany(rolesData);
-    console.log(`Seeded ${rolesData.length} roles`);
+    console.log(formattedRolesData.filter((role) => role.displayNames));
+
+    await this.roleModel.insertMany(formattedRolesData);
+    console.log(`Seeded ${formattedRolesData.length} roles`);
   }
 
   async seedPermissionImplications() {
@@ -76,6 +94,7 @@ export class SeedService {
 
   async seedRolePermissions() {
     // Clear existing role permissions
+
     await this.rolePermissionModel.deleteMany({});
     console.log('Cleared existing role permissions');
 
@@ -117,24 +136,23 @@ export class SeedService {
         'remove_permission',
       ],
 
-      // Manager permissions
+      // Manager permissions - updated to use generalized subject permissions
       manager: [
         'view_organization',
         'view_staff',
-        'view_clients',
-        'view_residents',
-        'edit_clients',
+        'view_subjects',
+        'edit_subjects',
         'view_schedules',
         'edit_schedules',
         'view_timesheets',
         'approve_timesheets',
         'view_reports',
         'create_reports',
-        'view_care_plans',
-        'view_care_notes',
+        'view_service_plans',
+        'view_service_notes',
         'view_medications',
-        'view_medical_records',
-        'view_medical_conditions',
+        'view_health_records',
+        'view_health_conditions',
         'view_allergies',
         'view_quality_metrics',
         'view_incident_reports',
@@ -160,36 +178,31 @@ export class SeedService {
         'view_leave_balance',
       ],
 
-      // Nurse permissions
+      // Nurse permissions - updated to use generalized permissions
       nurse: [
-        'view_clients',
-        'view_residents',
+        'view_subjects',
         'view_schedules',
         'edit_schedules',
-        'view_care_plans',
-        'create_care_plans',
-        'update_care_plans',
-        'view_care_notes',
-        'create_care_notes',
-        'update_care_notes',
+        'view_service_plans',
+        'create_service_plans',
+        'update_service_plans',
+        'view_service_notes',
+        'create_service_notes',
+        'update_service_notes',
         'view_medications',
         'create_medications',
         'update_medications',
-        'view_medical_records',
-        'create_medical_records',
-        'update_medical_records',
-        'view_medical_conditions',
-        'create_medical_conditions',
-        'update_medical_conditions',
+        'view_health_records',
+        'create_health_records',
+        'update_health_records',
+        'view_health_conditions',
         'view_allergies',
-        'create_allergies',
-        'update_allergies',
         'create_incident_reports',
         'view_incident_reports',
         'view_pending_tasks',
         'view_all_tasks',
         'view_historical_tasks',
-        'view_resident_profile',
+        'view_subject_profile',
         'scan_timesheets',
         'view_group',
         'create_group',
@@ -201,7 +214,7 @@ export class SeedService {
         'approve_timesheets',
         'add_task',
         'resolve_task',
-        'view_resident_tasks',
+        'view_subject_tasks',
         'view_active_tasks',
         'view_overdue_tasks',
         'view_task_details',
@@ -210,25 +223,24 @@ export class SeedService {
         'create_timesheets',
       ],
 
-      // Senior carer permissions
+      // Senior carer permissions - updated to use generalized permissions
       senior_carer: [
-        'view_clients',
-        'view_residents',
+        'view_subjects',
         'view_schedules',
         'edit_schedules',
-        'view_care_plans',
-        'view_care_notes',
-        'create_care_notes',
-        'update_care_notes',
+        'view_service_plans',
+        'view_service_notes',
+        'create_service_notes',
+        'update_service_notes',
         'view_medications',
-        'view_medical_records',
-        'view_medical_conditions',
+        'view_health_records',
+        'view_health_conditions',
         'view_allergies',
         'create_incident_reports',
         'view_pending_tasks',
         'view_all_tasks',
         'view_historical_tasks',
-        'view_resident_profile',
+        'view_subject_profile',
         'scan_timesheets',
         'view_group',
         'create_group',
@@ -243,35 +255,34 @@ export class SeedService {
         'view_active_tasks',
         'view_overdue_tasks',
         'view_task_details',
-        'view_resident_tasks',
+        'view_subject_tasks',
         'view_timesheets',
         'create_timesheets',
         'assign_task',
         'transfer_task',
       ],
 
-      // Carer permissions
+      // Carer permissions - updated to use generalized permissions
       carer: [
-        'view_clients',
-        'view_residents',
+        'view_subjects',
         'view_schedules',
         'view_timesheets',
         'create_timesheets',
         'view_chat',
-        'view_agencies',
+        'view_providers',
         'view_settings',
         'view_dashboard',
-        'view_care_plans',
-        'view_care_notes',
-        'create_care_notes',
+        'view_service_plans',
+        'view_service_notes',
+        'create_service_notes',
         'view_medications',
-        'view_medical_conditions',
+        'view_health_conditions',
         'view_allergies',
         'complete_tasks',
         'view_upcoming_tasks',
         'view_pending_tasks',
         'create_incident_reports',
-        'view_resident_profile',
+        'view_subject_profile',
         'view_group',
         'view_leave_balance',
         'create_leave_request',
@@ -280,7 +291,7 @@ export class SeedService {
         'resolve_task',
         'view_active_tasks',
         'view_task_details',
-        'view_resident_tasks',
+        'view_subject_tasks',
       ],
 
       // HR manager permissions
@@ -327,16 +338,15 @@ export class SeedService {
         'view_organization',
       ],
 
-      // Admin staff permissions
+      // Admin staff permissions - updated to use generalized permissions
       admin_staff: [
         'view_organization',
         'view_staff',
-        'view_clients',
-        'view_residents',
+        'view_subjects',
         'view_schedules',
         'view_timesheets',
-        'view_homes',
-        'view_agencies',
+        'view_locations',
+        'view_providers',
         'view_chat',
         'view_invoices',
         'view_payments',
@@ -348,11 +358,11 @@ export class SeedService {
         'manage_inventory',
       ],
 
-      // Quality assurance permissions
+      // Quality assurance permissions - updated to use generalized permissions
       quality_assurance: [
-        'view_care_plans',
-        'view_care_notes',
-        'view_medical_records',
+        'view_service_plans',
+        'view_service_notes',
+        'view_health_records',
         'view_quality_metrics',
         'edit_quality_metrics',
         'view_compliance_reports',
@@ -377,17 +387,16 @@ export class SeedService {
         'view_organization',
       ],
 
-      // Staff permissions
+      // Staff permissions - updated to use generalized permissions
       staff: [
         'view_organization',
-        'view_clients',
-        'view_residents',
+        'view_subjects',
         'view_schedules',
-        'view_care_plans',
-        'view_care_notes',
-        'create_care_notes',
+        'view_service_plans',
+        'view_service_notes',
+        'create_service_notes',
         'view_medications',
-        'view_medical_conditions',
+        'view_health_conditions',
         'view_allergies',
         'create_incident_reports',
         'view_dashboard',
@@ -397,6 +406,94 @@ export class SeedService {
         'view_leave_policy',
         'view_timesheets',
         'create_timesheets',
+      ],
+
+      // New roles with appropriate permissions
+      doctor: [
+        'view_subjects',
+        'view_subject_profile',
+        'view_service_plans',
+        'create_service_plans',
+        'update_service_plans',
+        'view_service_notes',
+        'create_service_notes',
+        'update_service_notes',
+        'view_medications',
+        'create_medications',
+        'update_medications',
+        'view_health_records',
+        'create_health_records',
+        'update_health_records',
+        'view_health_conditions',
+        'view_allergies',
+        'view_schedules',
+        'create_incident_reports',
+        'view_incident_reports',
+        'view_task_details',
+        'view_subject_tasks',
+      ],
+
+      teacher: [
+        'view_subjects',
+        'view_subject_profile',
+        'view_service_plans',
+        'create_service_plans',
+        'update_service_plans',
+        'view_service_notes',
+        'create_service_notes',
+        'update_service_notes',
+        'view_schedules',
+        'view_task_details',
+        'view_subject_tasks',
+        'add_task',
+        'resolve_task',
+      ],
+
+      teaching_assistant: [
+        'view_subjects',
+        'view_subject_profile',
+        'view_service_plans',
+        'view_service_notes',
+        'create_service_notes',
+        'view_schedules',
+        'view_task_details',
+        'view_subject_tasks',
+        'resolve_task',
+      ],
+
+      counselor: [
+        'view_subjects',
+        'view_subject_profile',
+        'view_service_plans',
+        'create_service_plans',
+        'update_service_plans',
+        'view_service_notes',
+        'create_service_notes',
+        'update_service_notes',
+        'view_schedules',
+        'add_task',
+        'view_subject_tasks',
+      ],
+
+      social_worker: [
+        'view_subjects',
+        'view_subject_profile',
+        'view_service_plans',
+        'create_service_plans',
+        'update_service_plans',
+        'view_service_notes',
+        'create_service_notes',
+        'update_service_notes',
+        'view_schedules',
+        'add_task',
+        'view_subject_tasks',
+      ],
+
+      customer_service: [
+        'view_subjects',
+        'view_chat',
+        'view_dashboard',
+        'view_organization',
       ],
     };
 

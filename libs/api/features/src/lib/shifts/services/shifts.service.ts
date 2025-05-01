@@ -102,6 +102,35 @@ export class ShiftsService {
       throw error;
     }
   }
+  async getPublishedShiftsByOrganization(
+    orgId: string,
+    month?: number,
+    year?: number
+  ): Promise<ShiftDocument[]> {
+    try {
+      let query: any = { homeId: new Types.ObjectId(orgId), isPublished: true };
+
+      if (month && year) {
+        const monthStr = month.toString().padStart(2, '0');
+        query.date = { $regex: `^${year}-${monthStr}-` };
+      }
+
+      return await this.shiftModel
+        .find(query)
+        .populate('homeId')
+        .populate('agentId')
+        .populate('assignedUsers')
+        .populate('preferredStaff')
+        .populate('shiftPattern')
+        .exec();
+    } catch (error: any) {
+      this.logger.error(
+        `Error getting published shifts by organization: ${error.message}`,
+        error.stack
+      );
+      throw error;
+    }
+  }
 
   async getPubShifts(
     orgId: string,

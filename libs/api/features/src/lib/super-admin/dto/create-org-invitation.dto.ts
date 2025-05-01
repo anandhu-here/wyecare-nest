@@ -1,24 +1,37 @@
 // super-admin/dto/create-org-invitation.dto.ts
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 export class CreateOrgInvitationDto {
   @IsEmail()
-  @IsNotEmpty()
-  email!: string;
+  email: string;
 
-  @IsString()
   @IsNotEmpty()
-  roleToAssign!: string;
+  firstName: string;
 
-  @IsString()
-  @IsOptional()
+  @IsNotEmpty()
+  lastName: string;
+
+  @IsNotEmpty()
+  roleToAssign: string;
+
+  // Add organization type field
+  @IsNotEmpty()
+  @IsEnum([
+    'care_home',
+    'hospital',
+    'education',
+    'healthcare',
+    'social_services',
+    'retail',
+    'service_provider',
+    'other',
+  ])
+  organizationType: string;
+
   message?: string;
-
-  @IsString()
-  @IsOptional()
-  firstName?: string;
-
-  @IsString()
-  @IsOptional()
-  lastName?: string;
 }

@@ -1,5 +1,4 @@
 export const permissionsData = [
-  // System Administration Permissions
   {
     id: 'get_permissions',
     name: 'Get Permissions',
@@ -7,6 +6,8 @@ export const permissionsData = [
     category: 'system',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'delete_organization',
@@ -15,6 +16,8 @@ export const permissionsData = [
     category: 'system',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'delete_account',
@@ -23,6 +26,8 @@ export const permissionsData = [
     category: 'system',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'add_permission',
@@ -31,6 +36,8 @@ export const permissionsData = [
     category: 'system',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'remove_permission',
@@ -39,9 +46,9 @@ export const permissionsData = [
     category: 'system',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
-
-  // Organization Management Permissions
   {
     id: 'create_organization',
     name: 'Create Organization',
@@ -49,6 +56,8 @@ export const permissionsData = [
     category: 'organization',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_organization',
@@ -57,6 +66,8 @@ export const permissionsData = [
     category: 'organization',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'edit_organization',
@@ -65,6 +76,8 @@ export const permissionsData = [
     category: 'organization',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'link_organizations',
@@ -73,6 +86,8 @@ export const permissionsData = [
     category: 'organization',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'manage_parent_company',
@@ -81,9 +96,9 @@ export const permissionsData = [
     category: 'organization',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
-
-  // Staff Management Permissions
   {
     id: 'invite_staff',
     name: 'Invite Staff',
@@ -91,6 +106,8 @@ export const permissionsData = [
     category: 'staff',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_staff_invitations',
@@ -99,6 +116,8 @@ export const permissionsData = [
     category: 'staff',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'manage_staff_invitations',
@@ -107,6 +126,8 @@ export const permissionsData = [
     category: 'staff',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'add_staff',
@@ -115,6 +136,8 @@ export const permissionsData = [
     category: 'staff',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'remove_staff',
@@ -123,6 +146,8 @@ export const permissionsData = [
     category: 'staff',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_staff',
@@ -131,6 +156,8 @@ export const permissionsData = [
     category: 'staff',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'edit_staff_role',
@@ -139,51 +166,114 @@ export const permissionsData = [
     category: 'staff',
     contextType: 'ORGANIZATION',
     isSystem: true,
-  },
-
-  // Client/Resident Management Permissions
-  {
-    id: 'view_clients',
-    name: 'View Clients',
-    description: 'Ability to view client information',
-    category: 'client',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
-    id: 'edit_clients',
-    name: 'Edit Clients',
-    description: 'Ability to edit client information',
-    category: 'client',
+    id: 'view_subjects',
+    name: 'View Subjects',
+    description: 'Ability to view subject information',
+    category: 'subject',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'View Patients',
+      care_home: 'View Residents',
+      education: 'View Students',
+      service_provider: 'View Clients',
+    },
   },
   {
-    id: 'view_residents',
-    name: 'View Residents',
-    description: 'Ability to view resident information',
-    category: 'resident',
+    id: 'edit_subjects',
+    name: 'Edit Subjects',
+    description: 'Ability to edit subject information',
+    category: 'subject',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'Edit Patients',
+      care_home: 'Edit Residents',
+      education: 'Edit Students',
+      service_provider: 'Edit Clients',
+    },
   },
   {
-    id: 'view_resident_profile',
-    name: 'View Resident Profile',
-    description: 'Ability to view detailed resident profiles',
-    category: 'resident',
+    id: 'view_subject_profile',
+    name: 'View Subject Profile',
+    description: 'Ability to view detailed subject profiles',
+    category: 'subject',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'View Patient Profile',
+      care_home: 'View Resident Profile',
+      education: 'View Student Profile',
+      service_provider: 'View Client Profile',
+    },
   },
   {
-    id: 'view_resident_charts',
-    name: 'View Resident Charts',
-    description: 'Ability to view resident charts and metrics',
-    category: 'resident',
+    id: 'view_subject_records',
+    name: 'View Subject Records',
+    description: 'Ability to view subject records',
+    category: 'subject',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'View Patient Records',
+      care_home: 'View Resident Charts',
+      education: 'View Student Records',
+      service_provider: 'View Client Records',
+    },
   },
-
-  // Timesheet Permissions
+  {
+    id: 'create_subject_data',
+    name: 'Create Subject Data',
+    description: 'Ability to create subject data',
+    category: 'subject',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'Create Patient Data',
+      care_home: 'Create Resident Data',
+      education: 'Create Student Data',
+      service_provider: 'Create Client Data',
+    },
+  },
+  {
+    id: 'update_subject_data',
+    name: 'Update Subject Data',
+    description: 'Ability to update subject data',
+    category: 'subject',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'Update Patient Data',
+      care_home: 'Update Resident Data',
+      education: 'Update Student Data',
+      service_provider: 'Update Client Data',
+    },
+  },
+  {
+    id: 'delete_subject_data',
+    name: 'Delete Subject Data',
+    description: 'Ability to delete subject data',
+    category: 'subject',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'Delete Patient Data',
+      care_home: 'Delete Resident Data',
+      education: 'Delete Student Data',
+      service_provider: 'Delete Client Data',
+    },
+  },
   {
     id: 'create_timesheets',
     name: 'Create Timesheets',
@@ -191,6 +281,8 @@ export const permissionsData = [
     category: 'timesheet',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'approve_timesheets',
@@ -199,6 +291,8 @@ export const permissionsData = [
     category: 'timesheet',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'reject_timesheets',
@@ -207,6 +301,8 @@ export const permissionsData = [
     category: 'timesheet',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'delete_timesheets',
@@ -215,6 +311,8 @@ export const permissionsData = [
     category: 'timesheet',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_timesheets',
@@ -223,6 +321,8 @@ export const permissionsData = [
     category: 'timesheet',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'scan_timesheets',
@@ -231,6 +331,8 @@ export const permissionsData = [
     category: 'timesheet',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'edit_timesheets',
@@ -239,43 +341,69 @@ export const permissionsData = [
     category: 'timesheet',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
-
-  // Organization View Permissions
   {
-    id: 'view_homes',
-    name: 'View Homes',
-    description: 'Ability to view care homes',
+    id: 'view_locations',
+    name: 'View Locations',
+    description: 'Ability to view organization locations',
     category: 'organization_view',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'View Hospitals',
+      care_home: 'View Homes',
+      education: 'View Schools',
+      retail: 'View Stores',
+    },
   },
   {
-    id: 'edit_homes',
-    name: 'Edit Homes',
-    description: 'Ability to edit care home information',
+    id: 'edit_locations',
+    name: 'Edit Locations',
+    description: 'Ability to edit location information',
     category: 'organization_view',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'Edit Hospitals',
+      care_home: 'Edit Homes',
+      education: 'Edit Schools',
+      retail: 'Edit Stores',
+    },
   },
   {
-    id: 'view_agencies',
-    name: 'View Agencies',
-    description: 'Ability to view care agencies',
+    id: 'view_providers',
+    name: 'View Providers',
+    description: 'Ability to view service providers',
     category: 'organization_view',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'View Medical Providers',
+      care_home: 'View Care Agencies',
+      education: 'View Educational Providers',
+      retail: 'View Suppliers',
+    },
   },
   {
-    id: 'edit_agencies',
-    name: 'Edit Agencies',
-    description: 'Ability to edit care agency information',
+    id: 'edit_providers',
+    name: 'Edit Providers',
+    description: 'Ability to edit provider information',
     category: 'organization_view',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'Edit Medical Providers',
+      care_home: 'Edit Care Agencies',
+      education: 'Edit Educational Providers',
+      retail: 'Edit Suppliers',
+    },
   },
-
-  // Communication Permissions
   {
     id: 'view_chat',
     name: 'View Chat',
@@ -283,6 +411,8 @@ export const permissionsData = [
     category: 'communication',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'edit_chat',
@@ -291,9 +421,9 @@ export const permissionsData = [
     category: 'communication',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
-
-  // Finance Permissions
   {
     id: 'view_invoices',
     name: 'View Invoices',
@@ -301,6 +431,8 @@ export const permissionsData = [
     category: 'finance',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'edit_invoices',
@@ -309,6 +441,8 @@ export const permissionsData = [
     category: 'finance',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_payments',
@@ -317,6 +451,8 @@ export const permissionsData = [
     category: 'finance',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'edit_payments',
@@ -325,6 +461,8 @@ export const permissionsData = [
     category: 'finance',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_payroll',
@@ -333,6 +471,8 @@ export const permissionsData = [
     category: 'finance',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'process_payroll',
@@ -341,6 +481,8 @@ export const permissionsData = [
     category: 'finance',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_financial_reports',
@@ -349,6 +491,8 @@ export const permissionsData = [
     category: 'finance',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'create_financial_reports',
@@ -357,9 +501,9 @@ export const permissionsData = [
     category: 'finance',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
-
-  // Settings & Dashboard Permissions
   {
     id: 'view_settings',
     name: 'View Settings',
@@ -367,6 +511,8 @@ export const permissionsData = [
     category: 'settings',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'edit_settings',
@@ -375,6 +521,8 @@ export const permissionsData = [
     category: 'settings',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_dashboard',
@@ -383,9 +531,9 @@ export const permissionsData = [
     category: 'dashboard',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
-
-  // Schedule Permissions
   {
     id: 'view_schedules',
     name: 'View Schedules',
@@ -393,6 +541,8 @@ export const permissionsData = [
     category: 'schedule',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'edit_schedules',
@@ -401,9 +551,9 @@ export const permissionsData = [
     category: 'schedule',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
-
-  // Shift Pattern Permissions
   {
     id: 'create_shift_pattern',
     name: 'Create Shift Pattern',
@@ -411,6 +561,8 @@ export const permissionsData = [
     category: 'shift',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'edit_shift_pattern',
@@ -419,6 +571,8 @@ export const permissionsData = [
     category: 'shift',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'delete_shift_pattern',
@@ -427,6 +581,8 @@ export const permissionsData = [
     category: 'shift',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_shift_pattern',
@@ -435,9 +591,9 @@ export const permissionsData = [
     category: 'shift',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
-
-  // Shift Management Permissions
   {
     id: 'create_shift',
     name: 'Create Shift',
@@ -445,6 +601,8 @@ export const permissionsData = [
     category: 'shift',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'delete_shift',
@@ -453,6 +611,8 @@ export const permissionsData = [
     category: 'shift',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'update_shift',
@@ -461,6 +621,8 @@ export const permissionsData = [
     category: 'shift',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'assign_users',
@@ -469,6 +631,8 @@ export const permissionsData = [
     category: 'shift',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'unassign_users',
@@ -477,6 +641,8 @@ export const permissionsData = [
     category: 'shift',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_shift',
@@ -485,69 +651,304 @@ export const permissionsData = [
     category: 'shift',
     contextType: 'ORGANIZATION',
     isSystem: true,
-  },
-
-  // Resident Data Permissions
-  {
-    id: 'create_resident_data',
-    name: 'Create Resident Data',
-    description: 'Ability to create resident data',
-    category: 'resident',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
-    id: 'update_resident_data',
-    name: 'Update Resident Data',
-    description: 'Ability to update resident data',
-    category: 'resident',
+    id: 'view_service_plans',
+    name: 'View Service Plans',
+    description: 'Ability to view service plans',
+    category: 'service',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'View Treatment Plans',
+      care_home: 'View Care Plans',
+      education: 'View Learning Plans',
+    },
   },
   {
-    id: 'delete_resident_data',
-    name: 'Delete Resident Data',
-    description: 'Ability to delete resident data',
-    category: 'resident',
+    id: 'create_service_plans',
+    name: 'Create Service Plans',
+    description: 'Ability to create service plans',
+    category: 'service',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'Create Treatment Plans',
+      care_home: 'Create Care Plans',
+      education: 'Create Learning Plans',
+    },
   },
-
-  // Care Routines Permissions
+  {
+    id: 'update_service_plans',
+    name: 'Update Service Plans',
+    description: 'Ability to update service plans',
+    category: 'service',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'Update Treatment Plans',
+      care_home: 'Update Care Plans',
+      education: 'Update Learning Plans',
+    },
+  },
+  {
+    id: 'delete_service_plans',
+    name: 'Delete Service Plans',
+    description: 'Ability to delete service plans',
+    category: 'service',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'Delete Treatment Plans',
+      care_home: 'Delete Care Plans',
+      education: 'Delete Learning Plans',
+    },
+  },
+  {
+    id: 'view_service_notes',
+    name: 'View Service Notes',
+    description: 'Ability to view service notes',
+    category: 'service',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'View Medical Notes',
+      care_home: 'View Care Notes',
+      education: 'View Progress Notes',
+    },
+  },
+  {
+    id: 'create_service_notes',
+    name: 'Create Service Notes',
+    description: 'Ability to create service notes',
+    category: 'service',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'Create Medical Notes',
+      care_home: 'Create Care Notes',
+      education: 'Create Progress Notes',
+    },
+  },
+  {
+    id: 'update_service_notes',
+    name: 'Update Service Notes',
+    description: 'Ability to update service notes',
+    category: 'service',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'Update Medical Notes',
+      care_home: 'Update Care Notes',
+      education: 'Update Progress Notes',
+    },
+  },
+  {
+    id: 'delete_service_notes',
+    name: 'Delete Service Notes',
+    description: 'Ability to delete service notes',
+    category: 'service',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'Delete Medical Notes',
+      care_home: 'Delete Care Notes',
+      education: 'Delete Progress Notes',
+    },
+  },
   {
     id: 'create_routines',
     name: 'Create Routines',
-    description: 'Ability to create care routines',
-    category: 'care',
+    description: 'Ability to create service routines',
+    category: 'service',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'Create Treatment Routines',
+      care_home: 'Create Care Routines',
+      education: 'Create Learning Activities',
+    },
   },
   {
     id: 'update_routines',
     name: 'Update Routines',
-    description: 'Ability to update care routines',
-    category: 'care',
+    description: 'Ability to update service routines',
+    category: 'service',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'Update Treatment Routines',
+      care_home: 'Update Care Routines',
+      education: 'Update Learning Activities',
+    },
   },
   {
     id: 'delete_routines',
     name: 'Delete Routines',
-    description: 'Ability to delete care routines',
-    category: 'care',
+    description: 'Ability to delete service routines',
+    category: 'service',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'Delete Treatment Routines',
+      care_home: 'Delete Care Routines',
+      education: 'Delete Learning Activities',
+    },
   },
   {
     id: 'view_routines',
     name: 'View Routines',
-    description: 'Ability to view care routines',
-    category: 'care',
+    description: 'Ability to view service routines',
+    category: 'service',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'View Treatment Routines',
+      care_home: 'View Care Routines',
+      education: 'View Learning Activities',
+    },
   },
-
-  // Task Management Permissions
+  {
+    id: 'view_health_records',
+    name: 'View Health Records',
+    description: 'Ability to view health records',
+    category: 'health',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    organizationCategories: ['hospital', 'care_home', 'healthcare'],
+    displayNames: {
+      hospital: 'View Medical Records',
+      care_home: 'View Health Records',
+    },
+  },
+  {
+    id: 'create_health_records',
+    name: 'Create Health Records',
+    description: 'Ability to create health records',
+    category: 'health',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    organizationCategories: ['hospital', 'care_home', 'healthcare'],
+    displayNames: {
+      hospital: 'Create Medical Records',
+      care_home: 'Create Health Records',
+    },
+  },
+  {
+    id: 'update_health_records',
+    name: 'Update Health Records',
+    description: 'Ability to update health records',
+    category: 'health',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    organizationCategories: ['hospital', 'care_home', 'healthcare'],
+    displayNames: {
+      hospital: 'Update Medical Records',
+      care_home: 'Update Health Records',
+    },
+  },
+  {
+    id: 'delete_health_records',
+    name: 'Delete Health Records',
+    description: 'Ability to delete health records',
+    category: 'health',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    organizationCategories: ['hospital', 'care_home', 'healthcare'],
+    displayNames: {
+      hospital: 'Delete Medical Records',
+      care_home: 'Delete Health Records',
+    },
+  },
+  {
+    id: 'view_medications',
+    name: 'View Medications',
+    description: 'Ability to view medications',
+    category: 'health',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    organizationCategories: ['hospital', 'care_home', 'healthcare'],
+    displayNames: {
+      hospital: 'View Patient Medications',
+      care_home: 'View Resident Medications',
+    },
+  },
+  {
+    id: 'create_medications',
+    name: 'Create Medications',
+    description: 'Ability to add medications',
+    category: 'health',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    organizationCategories: ['hospital', 'care_home', 'healthcare'],
+    displayNames: {
+      hospital: 'Add Patient Medications',
+      care_home: 'Add Resident Medications',
+    },
+  },
+  {
+    id: 'update_medications',
+    name: 'Update Medications',
+    description: 'Ability to update medications',
+    category: 'health',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    organizationCategories: ['hospital', 'care_home', 'healthcare'],
+    displayNames: {
+      hospital: 'Update Patient Medications',
+      care_home: 'Update Resident Medications',
+    },
+  },
+  {
+    id: 'delete_medications',
+    name: 'Delete Medications',
+    description: 'Ability to delete medications',
+    category: 'health',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    organizationCategories: ['hospital', 'care_home', 'healthcare'],
+    displayNames: {
+      hospital: 'Delete Patient Medications',
+      care_home: 'Delete Resident Medications',
+    },
+  },
+  {
+    id: 'view_health_conditions',
+    name: 'View Health Conditions',
+    description: 'Ability to view health conditions',
+    category: 'health',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    organizationCategories: ['hospital', 'care_home', 'healthcare'],
+    displayNames: {
+      hospital: 'View Medical Conditions',
+      care_home: 'View Health Conditions',
+    },
+  },
+  {
+    id: 'view_allergies',
+    name: 'View Allergies',
+    description: 'Ability to view allergies',
+    category: 'health',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    organizationCategories: ['hospital', 'care_home', 'healthcare'],
+    displayNames: {},
+  },
   {
     id: 'create_tasks',
     name: 'Create Tasks',
@@ -555,7 +956,10 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
+
   {
     id: 'update_tasks',
     name: 'Update Tasks',
@@ -563,6 +967,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'delete_tasks',
@@ -571,6 +977,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_tasks',
@@ -579,6 +987,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_historical_tasks',
@@ -587,6 +997,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_tasks_by_date_range',
@@ -595,6 +1007,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_completion_rate',
@@ -603,6 +1017,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'reschedule_tasks',
@@ -611,6 +1027,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'generate_tasks',
@@ -619,6 +1037,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'mark_overdue_tasks',
@@ -627,6 +1047,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'complete_tasks',
@@ -635,6 +1057,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_upcoming_tasks',
@@ -643,6 +1067,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_pending_tasks',
@@ -651,6 +1077,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_all_tasks',
@@ -659,6 +1087,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_task_details',
@@ -667,14 +1097,23 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
-    id: 'view_resident_tasks',
-    name: 'View Resident Tasks',
-    description: 'Ability to view tasks for specific residents',
+    id: 'view_subject_tasks',
+    name: 'View Subject Tasks',
+    description: 'Ability to view tasks for specific subjects',
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'View Patient Tasks',
+      care_home: 'View Resident Tasks',
+      education: 'View Student Tasks',
+      service_provider: 'View Client Tasks',
+    },
   },
   {
     id: 'resolve_task',
@@ -683,6 +1122,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'add_task',
@@ -691,6 +1132,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_active_tasks',
@@ -699,6 +1142,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_overdue_tasks',
@@ -707,6 +1152,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_cancelled_tasks',
@@ -715,6 +1162,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'assign_task',
@@ -723,6 +1172,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'transfer_task',
@@ -731,6 +1182,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'bulk_update_tasks',
@@ -739,6 +1192,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_task_templates',
@@ -747,6 +1202,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'create_task_templates',
@@ -755,6 +1212,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'edit_task_templates',
@@ -763,6 +1222,8 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'delete_task_templates',
@@ -771,205 +1232,9 @@ export const permissionsData = [
     category: 'task',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
-
-  // Care Plans and Notes Permissions
-  {
-    id: 'view_care_plans',
-    name: 'View Care Plans',
-    description: 'Ability to view resident care plans',
-    category: 'care',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'create_care_plans',
-    name: 'Create Care Plans',
-    description: 'Ability to create resident care plans',
-    category: 'care',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'update_care_plans',
-    name: 'Update Care Plans',
-    description: 'Ability to update resident care plans',
-    category: 'care',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'delete_care_plans',
-    name: 'Delete Care Plans',
-    description: 'Ability to delete resident care plans',
-    category: 'care',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'view_care_notes',
-    name: 'View Care Notes',
-    description: 'Ability to view resident care notes',
-    category: 'care',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'create_care_notes',
-    name: 'Create Care Notes',
-    description: 'Ability to create resident care notes',
-    category: 'care',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'update_care_notes',
-    name: 'Update Care Notes',
-    description: 'Ability to update resident care notes',
-    category: 'care',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'delete_care_notes',
-    name: 'Delete Care Notes',
-    description: 'Ability to delete resident care notes',
-    category: 'care',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-
-  // Medical Information Permissions
-  {
-    id: 'view_medications',
-    name: 'View Medications',
-    description: 'Ability to view resident medications',
-    category: 'medical',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'create_medications',
-    name: 'Create Medications',
-    description: 'Ability to add resident medications',
-    category: 'medical',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'update_medications',
-    name: 'Update Medications',
-    description: 'Ability to update resident medications',
-    category: 'medical',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'delete_medications',
-    name: 'Delete Medications',
-    description: 'Ability to delete resident medications',
-    category: 'medical',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'view_medical_records',
-    name: 'View Medical Records',
-    description: 'Ability to view resident medical records',
-    category: 'medical',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'create_medical_records',
-    name: 'Create Medical Records',
-    description: 'Ability to create resident medical records',
-    category: 'medical',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'update_medical_records',
-    name: 'Update Medical Records',
-    description: 'Ability to update resident medical records',
-    category: 'medical',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'delete_medical_records',
-    name: 'Delete Medical Records',
-    description: 'Ability to delete resident medical records',
-    category: 'medical',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'view_medical_conditions',
-    name: 'View Medical Conditions',
-    description: 'Ability to view resident medical conditions',
-    category: 'medical',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'create_medical_conditions',
-    name: 'Create Medical Conditions',
-    description: 'Ability to add resident medical conditions',
-    category: 'medical',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'update_medical_conditions',
-    name: 'Update Medical Conditions',
-    description: 'Ability to update resident medical conditions',
-    category: 'medical',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'delete_medical_conditions',
-    name: 'Delete Medical Conditions',
-    description: 'Ability to delete resident medical conditions',
-    category: 'medical',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'view_allergies',
-    name: 'View Allergies',
-    description: 'Ability to view resident allergies',
-    category: 'medical',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'create_allergies',
-    name: 'Create Allergies',
-    description: 'Ability to add resident allergies',
-    category: 'medical',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'update_allergies',
-    name: 'Update Allergies',
-    description: 'Ability to update resident allergies',
-    category: 'medical',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-  {
-    id: 'delete_allergies',
-    name: 'Delete Allergies',
-    description: 'Ability to delete resident allergies',
-    category: 'medical',
-    contextType: 'ORGANIZATION',
-    isSystem: true,
-  },
-
-  // Invitation Management Permissions
   {
     id: 'view_organization_invitations',
     name: 'View Organization Invitations',
@@ -977,6 +1242,8 @@ export const permissionsData = [
     category: 'invitation',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'accept_invitation',
@@ -985,6 +1252,8 @@ export const permissionsData = [
     category: 'invitation',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'reject_invitation',
@@ -993,6 +1262,8 @@ export const permissionsData = [
     category: 'invitation',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_invitations',
@@ -1001,6 +1272,8 @@ export const permissionsData = [
     category: 'invitation',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'edit_invitations',
@@ -1009,6 +1282,8 @@ export const permissionsData = [
     category: 'invitation',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'delete_invitations',
@@ -1017,6 +1292,8 @@ export const permissionsData = [
     category: 'invitation',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'create_invitations',
@@ -1025,6 +1302,8 @@ export const permissionsData = [
     category: 'invitation',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'invite_organization',
@@ -1033,9 +1312,9 @@ export const permissionsData = [
     category: 'invitation',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
-
-  // Notification Management Permissions
   {
     id: 'view_notifications',
     name: 'View Notifications',
@@ -1043,6 +1322,8 @@ export const permissionsData = [
     category: 'notification',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'delete_notifications',
@@ -1051,6 +1332,8 @@ export const permissionsData = [
     category: 'notification',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'create_notifications',
@@ -1059,6 +1342,8 @@ export const permissionsData = [
     category: 'notification',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'edit_notifications',
@@ -1067,9 +1352,9 @@ export const permissionsData = [
     category: 'notification',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
-
-  // Report Management Permissions
   {
     id: 'view_reports',
     name: 'View Reports',
@@ -1077,6 +1362,8 @@ export const permissionsData = [
     category: 'report',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'create_reports',
@@ -1085,6 +1372,8 @@ export const permissionsData = [
     category: 'report',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'edit_reports',
@@ -1093,6 +1382,8 @@ export const permissionsData = [
     category: 'report',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'delete_reports',
@@ -1101,9 +1392,9 @@ export const permissionsData = [
     category: 'report',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
-
-  // HR Management Permissions
   {
     id: 'view_employee_records',
     name: 'View Employee Records',
@@ -1111,6 +1402,8 @@ export const permissionsData = [
     category: 'hr',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'edit_employee_records',
@@ -1119,6 +1412,8 @@ export const permissionsData = [
     category: 'hr',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_training_records',
@@ -1127,6 +1422,8 @@ export const permissionsData = [
     category: 'hr',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'edit_training_records',
@@ -1135,6 +1432,8 @@ export const permissionsData = [
     category: 'hr',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'schedule_training',
@@ -1143,9 +1442,9 @@ export const permissionsData = [
     category: 'hr',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
-
-  // Quality and Compliance Permissions
   {
     id: 'view_audit_logs',
     name: 'View Audit Logs',
@@ -1153,6 +1452,8 @@ export const permissionsData = [
     category: 'quality',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'perform_audits',
@@ -1161,6 +1462,8 @@ export const permissionsData = [
     category: 'quality',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_quality_metrics',
@@ -1169,6 +1472,8 @@ export const permissionsData = [
     category: 'quality',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'edit_quality_metrics',
@@ -1177,6 +1482,8 @@ export const permissionsData = [
     category: 'quality',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_compliance_reports',
@@ -1185,6 +1492,8 @@ export const permissionsData = [
     category: 'quality',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'manage_compliance',
@@ -1193,6 +1502,8 @@ export const permissionsData = [
     category: 'quality',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_incident_reports',
@@ -1201,6 +1512,8 @@ export const permissionsData = [
     category: 'quality',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'create_incident_reports',
@@ -1209,6 +1522,8 @@ export const permissionsData = [
     category: 'quality',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'manage_incident_reports',
@@ -1217,9 +1532,9 @@ export const permissionsData = [
     category: 'quality',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
-
-  // Inventory Management Permissions
   {
     id: 'view_inventory',
     name: 'View Inventory',
@@ -1227,6 +1542,8 @@ export const permissionsData = [
     category: 'inventory',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'manage_inventory',
@@ -1235,6 +1552,8 @@ export const permissionsData = [
     category: 'inventory',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_supplier_contracts',
@@ -1243,6 +1562,8 @@ export const permissionsData = [
     category: 'inventory',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'manage_supplier_contracts',
@@ -1251,16 +1572,22 @@ export const permissionsData = [
     category: 'inventory',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
-
-  // Group Management Permissions
   {
     id: 'create_group',
     name: 'Create Group',
-    description: 'Ability to create staff or resident groups',
+    description: 'Ability to create staff or subject groups',
     category: 'group',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {
+      hospital: 'Create Staff or Patient Groups',
+      care_home: 'Create Staff or Resident Groups',
+      education: 'Create Staff or Student Groups',
+    },
   },
   {
     id: 'view_group',
@@ -1269,6 +1596,8 @@ export const permissionsData = [
     category: 'group',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'edit_group',
@@ -1277,6 +1606,8 @@ export const permissionsData = [
     category: 'group',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'delete_group',
@@ -1285,6 +1616,8 @@ export const permissionsData = [
     category: 'group',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'add_group_member',
@@ -1293,6 +1626,8 @@ export const permissionsData = [
     category: 'group',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'update_group',
@@ -1301,9 +1636,9 @@ export const permissionsData = [
     category: 'group',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
-
-  // Leave Management Permissions
   {
     id: 'create_leave_request',
     name: 'Create Leave Request',
@@ -1311,6 +1646,8 @@ export const permissionsData = [
     category: 'leave',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_leave_requests',
@@ -1319,6 +1656,8 @@ export const permissionsData = [
     category: 'leave',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_leave_balance',
@@ -1327,6 +1666,8 @@ export const permissionsData = [
     category: 'leave',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_all_leave_balances',
@@ -1335,6 +1676,8 @@ export const permissionsData = [
     category: 'leave',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'manage_leave_requests',
@@ -1343,6 +1686,8 @@ export const permissionsData = [
     category: 'leave',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'manage_leave_policy',
@@ -1351,6 +1696,8 @@ export const permissionsData = [
     category: 'leave',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_leave_policy',
@@ -1359,10 +1706,9 @@ export const permissionsData = [
     category: 'leave',
     contextType: 'ORGANIZATION',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
-
-  //system
-
   {
     id: 'manage_system',
     name: 'Manage System',
@@ -1370,6 +1716,8 @@ export const permissionsData = [
     category: 'system',
     contextType: 'SYSTEM',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'create_system_admin',
@@ -1378,6 +1726,8 @@ export const permissionsData = [
     category: 'system',
     contextType: 'SYSTEM',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'manage_permissions',
@@ -1386,6 +1736,8 @@ export const permissionsData = [
     category: 'system',
     contextType: 'SYSTEM',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'manage_roles',
@@ -1394,6 +1746,8 @@ export const permissionsData = [
     category: 'system',
     contextType: 'SYSTEM',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_all_organizations',
@@ -1402,6 +1756,8 @@ export const permissionsData = [
     category: 'system',
     contextType: 'SYSTEM',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'manage_all_organizations',
@@ -1410,6 +1766,8 @@ export const permissionsData = [
     category: 'system',
     contextType: 'SYSTEM',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'view_all_users',
@@ -1418,6 +1776,8 @@ export const permissionsData = [
     category: 'system',
     contextType: 'SYSTEM',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
     id: 'manage_all_users',
@@ -1426,212 +1786,167 @@ export const permissionsData = [
     category: 'system',
     contextType: 'SYSTEM',
     isSystem: true,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
 ];
 
-export const permissionImplicationsData = [
-  // Admin permissions imply more specific permissions
+export const rolesData = [
   {
-    parentPermissionId: 'manage_system',
-    childPermissionId: 'manage_permissions',
+    id: 'owner',
+    name: 'Owner',
+    description: 'Organization owner with full access',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 1,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
-    parentPermissionId: 'manage_system',
-    childPermissionId: 'manage_roles',
+    id: 'admin',
+    name: 'Administrator',
+    description: 'Organization administrator with broad access',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 2,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
-    parentPermissionId: 'manage_system',
-    childPermissionId: 'view_all_organizations',
+    id: 'manager',
+    name: 'Manager',
+    description: 'Department or team manager',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 3,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
-    parentPermissionId: 'manage_system',
-    childPermissionId: 'manage_all_organizations',
+    id: 'doctor',
+    name: 'Doctor',
+    description: 'Medical doctor with clinical responsibilities',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 3,
+    organizationCategories: ['hospital', 'healthcare'],
+    displayNames: {},
   },
   {
-    parentPermissionId: 'manage_system',
-    childPermissionId: 'view_all_users',
+    id: 'nurse',
+    name: 'Nurse',
+    description: 'Registered nurse with clinical responsibilities',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 3,
+    organizationCategories: ['hospital', 'care_home', 'healthcare'],
+    displayNames: {},
   },
   {
-    parentPermissionId: 'manage_system',
-    childPermissionId: 'manage_all_users',
+    id: 'care_assistant',
+    name: 'Care Assistant',
+    description: 'Care staff providing direct care',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 5,
+    organizationCategories: ['care_home', 'healthcare', 'hospital'],
+    displayNames: {
+      hospital: 'Healthcare Assistant',
+      care_home: 'Carer',
+    },
   },
   {
-    parentPermissionId: 'manage_system',
-    childPermissionId: 'create_system_admin',
+    id: 'senior_care_assistant',
+    name: 'Senior Care Assistant',
+    description: 'Senior care staff with supervisory duties',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 4,
+    organizationCategories: ['care_home', 'healthcare', 'hospital'],
+    displayNames: {
+      hospital: 'Senior Healthcare Assistant',
+      care_home: 'Senior Carer',
+    },
   },
   {
-    parentPermissionId: 'manage_all_organizations',
-    childPermissionId: 'view_all_organizations',
+    id: 'teacher',
+    name: 'Teacher',
+    description: 'Educational instructor',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 3,
+    organizationCategories: ['education', 'school'],
+    displayNames: {},
   },
   {
-    parentPermissionId: 'manage_all_organizations',
-    childPermissionId: 'create_organization',
+    id: 'admin_staff',
+    name: 'Administrative Staff',
+    description: 'General administrative personnel',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 4,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
-    parentPermissionId: 'manage_all_organizations',
-    childPermissionId: 'delete_organization',
+    id: 'hr_manager',
+    name: 'HR Manager',
+    description: 'Human resources manager',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 3,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
-    parentPermissionId: 'manage_all_users',
-    childPermissionId: 'view_all_users',
+    id: 'accountant',
+    name: 'Accountant',
+    description: 'Financial management staff',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 3,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
-    parentPermissionId: 'manage_permissions',
-    childPermissionId: 'add_permission',
+    id: 'quality_assurance',
+    name: 'Quality Assurance',
+    description: 'Staff responsible for quality standards',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 3,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
-    parentPermissionId: 'manage_permissions',
-    childPermissionId: 'remove_permission',
+    id: 'procurement_officer',
+    name: 'Procurement Officer',
+    description: 'Staff responsible for purchasing and suppliers',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 4,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
-    parentPermissionId: 'manage_permissions',
-    childPermissionId: 'get_permissions',
+    id: 'staff',
+    name: 'Staff',
+    description: 'General staff member',
+    contextType: 'ORGANIZATION',
+    isSystem: true,
+    hierarchyLevel: 6,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
   {
-    parentPermissionId: 'edit_organization',
-    childPermissionId: 'view_organization',
-  },
-  { parentPermissionId: 'edit_staff_role', childPermissionId: 'view_staff' },
-  { parentPermissionId: 'edit_clients', childPermissionId: 'view_clients' },
-  {
-    parentPermissionId: 'edit_timesheets',
-    childPermissionId: 'view_timesheets',
-  },
-  {
-    parentPermissionId: 'approve_timesheets',
-    childPermissionId: 'view_timesheets',
-  },
-  {
-    parentPermissionId: 'reject_timesheets',
-    childPermissionId: 'view_timesheets',
-  },
-  { parentPermissionId: 'edit_homes', childPermissionId: 'view_homes' },
-  { parentPermissionId: 'edit_agencies', childPermissionId: 'view_agencies' },
-  { parentPermissionId: 'edit_invoices', childPermissionId: 'view_invoices' },
-  { parentPermissionId: 'edit_payments', childPermissionId: 'view_payments' },
-  { parentPermissionId: 'edit_settings', childPermissionId: 'view_settings' },
-  {
-    parentPermissionId: 'edit_schedules',
-    childPermissionId: 'view_schedules',
-  },
-
-  // Task management implications
-  { parentPermissionId: 'create_tasks', childPermissionId: 'view_tasks' },
-  { parentPermissionId: 'update_tasks', childPermissionId: 'view_tasks' },
-  { parentPermissionId: 'delete_tasks', childPermissionId: 'view_tasks' },
-  { parentPermissionId: 'view_all_tasks', childPermissionId: 'view_tasks' },
-  {
-    parentPermissionId: 'view_all_tasks',
-    childPermissionId: 'view_active_tasks',
-  },
-  {
-    parentPermissionId: 'view_all_tasks',
-    childPermissionId: 'view_pending_tasks',
-  },
-  {
-    parentPermissionId: 'view_all_tasks',
-    childPermissionId: 'view_historical_tasks',
-  },
-  {
-    parentPermissionId: 'view_all_tasks',
-    childPermissionId: 'view_overdue_tasks',
-  },
-  { parentPermissionId: 'assign_task', childPermissionId: 'view_tasks' },
-
-  // Care plan implications
-  {
-    parentPermissionId: 'create_care_plans',
-    childPermissionId: 'view_care_plans',
-  },
-  {
-    parentPermissionId: 'update_care_plans',
-    childPermissionId: 'view_care_plans',
-  },
-  {
-    parentPermissionId: 'delete_care_plans',
-    childPermissionId: 'view_care_plans',
-  },
-  {
-    parentPermissionId: 'create_care_notes',
-    childPermissionId: 'view_care_notes',
-  },
-  {
-    parentPermissionId: 'update_care_notes',
-    childPermissionId: 'view_care_notes',
-  },
-  {
-    parentPermissionId: 'delete_care_notes',
-    childPermissionId: 'view_care_notes',
-  },
-
-  // Medical information implications
-  {
-    parentPermissionId: 'create_medications',
-    childPermissionId: 'view_medications',
-  },
-  {
-    parentPermissionId: 'update_medications',
-    childPermissionId: 'view_medications',
-  },
-  {
-    parentPermissionId: 'delete_medications',
-    childPermissionId: 'view_medications',
-  },
-  {
-    parentPermissionId: 'create_medical_records',
-    childPermissionId: 'view_medical_records',
-  },
-  {
-    parentPermissionId: 'update_medical_records',
-    childPermissionId: 'view_medical_records',
-  },
-  {
-    parentPermissionId: 'delete_medical_records',
-    childPermissionId: 'view_medical_records',
-  },
-
-  // Resident data implications
-  {
-    parentPermissionId: 'create_resident_data',
-    childPermissionId: 'view_residents',
-  },
-  {
-    parentPermissionId: 'update_resident_data',
-    childPermissionId: 'view_residents',
-  },
-  {
-    parentPermissionId: 'delete_resident_data',
-    childPermissionId: 'view_residents',
-  },
-
-  // Shift management implications
-  { parentPermissionId: 'create_shift', childPermissionId: 'view_shift' },
-  { parentPermissionId: 'update_shift', childPermissionId: 'view_shift' },
-  { parentPermissionId: 'delete_shift', childPermissionId: 'view_shift' },
-  { parentPermissionId: 'assign_users', childPermissionId: 'view_shift' },
-
-  // Report implications
-  { parentPermissionId: 'create_reports', childPermissionId: 'view_reports' },
-  { parentPermissionId: 'edit_reports', childPermissionId: 'view_reports' },
-  { parentPermissionId: 'delete_reports', childPermissionId: 'view_reports' },
-
-  // Group management implications
-  { parentPermissionId: 'edit_group', childPermissionId: 'view_group' },
-  { parentPermissionId: 'add_group_member', childPermissionId: 'view_group' },
-  { parentPermissionId: 'update_group', childPermissionId: 'view_group' },
-  { parentPermissionId: 'delete_group', childPermissionId: 'view_group' },
-
-  // Leave management implications
-  {
-    parentPermissionId: 'manage_leave_requests',
-    childPermissionId: 'view_leave_requests',
-  },
-  {
-    parentPermissionId: 'view_all_leave_balances',
-    childPermissionId: 'view_leave_balance',
-  },
-  {
-    parentPermissionId: 'manage_leave_policy',
-    childPermissionId: 'view_leave_policy',
+    id: 'system_admin',
+    name: 'System Administrator',
+    description:
+      'Top-level system administrator with access to all system functions',
+    contextType: 'SYSTEM',
+    isSystem: true,
+    hierarchyLevel: 0,
+    organizationCategories: ['*'],
+    displayNames: {},
   },
 ];

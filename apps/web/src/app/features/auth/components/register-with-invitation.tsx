@@ -5,7 +5,6 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import SignupForm from './forms/signup-form';
 import OrganizationForm from './forms/organization-form';
-import EmailVerification from './views/email-verification';
 import AuthWrapper from './AuthWrapper';
 import GetStarted from './views/get-started';
 import { selectRedirectUrl } from '../AuthSlice';
@@ -35,6 +34,7 @@ const RegisterWithInvitation: React.FC<RegisterWithInvitationProps> = ({
     const [step, setStep] = useState('getStarted');
     const [token, setToken] = useState<string | null>(null);
     const [type, setType] = useState<string | null>(null);
+    const [orgType, setOrgType] = useState<string | null>(null);
     const [userData, setUserData] = useState<any>(null);
     const [isMobile, setIsMobile] = useState(false);
 
@@ -57,24 +57,31 @@ const RegisterWithInvitation: React.FC<RegisterWithInvitationProps> = ({
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    // Check for invitation token and type in URL
+    // Check for invitation token, type, and organization type in URL
     useEffect(() => {
         const invitationToken = searchParams.get('token');
         const invitationType = searchParams.get('type') || 'organization';
+        const organizationType = searchParams.get('orgType');
 
         if (invitationToken) {
             setToken(invitationToken);
             setType(invitationType);
+            setOrgType(organizationType);
             localStorage.setItem('invitationToken', invitationToken);
             localStorage.setItem('invitationType', invitationType);
+            if (organizationType) {
+                localStorage.setItem('organizationType', organizationType);
+            }
         } else {
             // Check if token is in localStorage (for page refreshes)
             const storedToken = localStorage.getItem('invitationToken');
             const storedType = localStorage.getItem('invitationType');
+            const storedOrgType = localStorage.getItem('organizationType');
 
             if (storedToken) {
                 setToken(storedToken);
                 setType(storedType);
+                setOrgType(storedOrgType);
             } else {
                 // No token found, redirect to login
                 navigate('/auth/login');
@@ -85,10 +92,11 @@ const RegisterWithInvitation: React.FC<RegisterWithInvitationProps> = ({
     // Use redirectUrl from backend when available
     useEffect(() => {
         // Only handle redirectUrl if we're in the appropriate steps
-        if ((step === 'emailVerification' || step === 'organizationSignup') && redirectUrl) {
+        if ((step === 'userSignup' || step === 'organizationSignup') && redirectUrl) {
             // Clean up localStorage items no longer needed
             localStorage.removeItem('invitationToken');
             localStorage.removeItem('invitationType');
+            localStorage.removeItem('organizationType');
 
             // Navigate to the backend-provided redirect URL
             navigate(redirectUrl);
@@ -101,24 +109,12 @@ const RegisterWithInvitation: React.FC<RegisterWithInvitationProps> = ({
         localStorage.setItem('token', data.token);
         localStorage.setItem('userData', JSON.stringify(data.user));
         setUserData(data);
-        setStep('emailVerification');
-    };
 
-    const handleEmailVerified = () => {
-        // Update the user data to reflect verified email
-        const user = JSON.parse(localStorage.getItem('userData') || '{}');
-        localStorage.setItem('userData', JSON.stringify({ ...user, emailVerified: true }));
-
-        // If we have a redirectUrl from backend, use it
-        if (redirectUrl) {
-            navigate(redirectUrl);
+        // Skip email verification step since we're using invitation emails
+        if (type === 'staff') {
+            navigate('/dashboard');
         } else {
-            // Otherwise follow our normal flow logic
-            if (type === 'staff') {
-                navigate('/dashboard');
-            } else {
-                setStep('organizationSignup');
-            }
+            setStep('organizationSignup');
         }
     };
 
@@ -163,20 +159,8 @@ const RegisterWithInvitation: React.FC<RegisterWithInvitationProps> = ({
                         onSubmit={handleUserSignup}
                         invitationToken={token}
                         invitationType={type as 'organization' | 'staff'}
+                        organizationType={orgType}
                     />
-                </motion.div>
-            )}
-            {step === 'emailVerification' && (
-                <motion.div
-                    key="emailVerification"
-                    initial="initial"
-                    animate="in"
-                    exit="out"
-                    variants={pageVariants}
-                    transition={pageTransition}
-                    className="w-full"
-                >
-                    <EmailVerification onVerified={handleEmailVerified} />
                 </motion.div>
             )}
             {step === 'organizationSignup' && type === 'organization' && (
@@ -189,7 +173,10 @@ const RegisterWithInvitation: React.FC<RegisterWithInvitationProps> = ({
                     transition={pageTransition}
                     className="w-full bg-background"
                 >
-                    <OrganizationForm onSubmit={handleOrganizationSignup} />
+                    <OrganizationForm
+                        onSubmit={handleOrganizationSignup}
+                        predefinedOrgType={orgType}
+                    />
                 </motion.div>
             )}
         </AnimatePresence>

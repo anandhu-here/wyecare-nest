@@ -55,7 +55,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Capacitor } from '@capacitor/core';
 import { useMediaQuery } from '@/app/layouts/hook/media-query';
 import { useDispatch, useSelector } from 'react-redux';
-import { useAssignUsersToShiftMutation, useUnassignUserFromShiftMutation } from '../shiftApi';
+import { useAssignUsersToShiftMutation, useUnassignUserFromShiftMutation } from '@/app/features/shift/shiftApi';
 import { LoadingOverlay } from '@/components/loading-overlay';
 import { useGetAvailableStaffForShiftQuery } from '../../organization/organizationApi';
 

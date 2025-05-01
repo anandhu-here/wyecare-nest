@@ -227,7 +227,7 @@ export class OrganizationStaffService {
       // Check availability for each staff member
       const staffAvailabilityPromises = careStaff.map(async (staff) => {
         const [availability, metadata, isNotOnLeave] = await Promise.all([
-          this.checkCarerAvailability(
+          this.checkStaffAvailability(
             staff.userId as any,
             shiftDate,
             timing.startTime,
@@ -330,20 +330,20 @@ export class OrganizationStaffService {
   /**
    * Check staff availability for a specific shift
    */
-  private async checkCarerAvailability(
-    carerId: string,
+  private async checkStaffAvailability(
+    staffId: string,
     shiftDate: string,
     startTime: string,
     endTime: string
   ): Promise<any> {
     try {
       this.logger.log(
-        `Checking availability for carer ${carerId} on ${shiftDate}`
+        `Checking availability for staff ${staffId} on ${shiftDate}`
       );
 
       // Check existing assignments first
       const assignmentCheck = await this.checkExistingAssignments(
-        carerId,
+        staffId,
         shiftDate
       );
 
@@ -362,7 +362,7 @@ export class OrganizationStaffService {
       // Check availability in the employee availability system
       const shiftPeriod = this.getShiftPeriod(startTime, endTime);
       const dayAvailability = await this.checkEmployeeAvailabilitySystem(
-        carerId,
+        staffId,
         shiftDate,
         shiftPeriod
       );
@@ -385,7 +385,7 @@ export class OrganizationStaffService {
       };
     } catch (error: any) {
       this.logger.error(
-        `Error checking availability for carer ${carerId}:`,
+        `Error checking availability for carer ${staffId}:`,
         error
       );
       throw error;
@@ -1234,9 +1234,7 @@ export class OrganizationStaffService {
   /**
    * Send staff invitation email
    */
-  private async sendStaffInvitationEmail(
-    invitation: StaffInvitation
-  ): Promise<void> {
+  async sendStaffInvitationEmail(invitation: StaffInvitation): Promise<void> {
     const inviter = await this.userModel.findById(invitation.invitedBy);
     const organization = await this.organizationModel.findById(
       invitation.organizationId
@@ -1244,9 +1242,16 @@ export class OrganizationStaffService {
     const existingUser = await this.userModel.findOne({
       email: invitation.email,
     });
+    const role = await this.roleModel.findById(invitation.role);
 
-    if (!organization) {
-      throw new NotFoundException('Organization not found');
+    if (!organization || !role) {
+      throw new NotFoundException('Organization or role not found');
+    }
+
+    // Get appropriate role display name for this organization type
+    let roleName = role.name;
+    if (role.displayNames && role.displayNames[organization.type]) {
+      roleName = role.displayNames[organization.type];
     }
 
     const subject = `Invitation to join ${organization.name}`;
@@ -1265,7 +1270,7 @@ export class OrganizationStaffService {
     <p>Hello ${invitation.firstName || ''},</p>
     <p>${inviter?.firstName || 'An administrator'} has invited you to join ${
       organization.name
-    } as ${invitation.role}.</p>
+    } as ${roleName}.</p>
     ${invitation.message ? `<p>Message: "${invitation.message}"</p>` : ''}
     <p>To accept this invitation, please click the link below:</p>
     <p><a href="${invitationUrl}">${actionText}</a></p>
@@ -1581,26 +1586,48 @@ export class OrganizationStaffService {
     }
   }
 
-  /**
-   * Get care staff for an organization
-   */
-  async getCareStaff(
-    organizationId: Types.ObjectId
+  async getSpecializedStaff(
+    organizationId: Types.ObjectId,
+    organizationType: string
   ): Promise<OrganizationRole[]> {
-    // Get roles that are considered "care" roles
-    const careRoles = await this.roleModel
-      .find({
-        contextType: 'ORGANIZATION',
-        hierarchyLevel: { $gte: 4 }, // Assuming care roles have a hierarchy level of 4 or greater
-      })
-      .exec();
+    // Get roles appropriate for this organization type
+    let roleQuery: any = {
+      contextType: 'ORGANIZATION',
+    };
 
-    const careRoleIds = careRoles.map((role) => role.id);
+    // Add organization type filtering
+    if (organizationType) {
+      roleQuery.$or = [
+        { organizationCategories: organizationType },
+        { organizationCategories: '*' }, // Include universal roles
+      ];
+    }
+
+    // For care homes, get care staff roles
+    if (organizationType === 'care_home') {
+      roleQuery.id = { $in: ['carer', 'senior_carer', 'nurse'] };
+    }
+    // For hospitals, get medical staff roles
+    else if (organizationType === 'hospital') {
+      roleQuery.id = { $in: ['doctor', 'nurse'] };
+    }
+    // For educational institutions, get teaching roles
+    else if (organizationType === 'education') {
+      roleQuery.id = { $in: ['teacher', 'teaching_assistant'] };
+    }
+    // Otherwise get non-administrative roles
+    else {
+      roleQuery.hierarchyLevel = { $gte: 3 }; // Non-admin roles
+    }
+
+    const specializedRoles = await this.roleModel.find(roleQuery).exec();
+
+    const roleIds = specializedRoles.map((role) => role.id);
 
     return this.organizationRoleModel
       .find({
         organizationId,
-        roleId: { $in: careRoleIds },
+        roleId: { $in: roleIds },
         isActive: true,
       })
       .populate('userId')

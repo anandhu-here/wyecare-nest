@@ -6,10 +6,10 @@ export type RoleDocument = Role & Document;
 @Schema({ timestamps: true })
 export class Role {
   @Prop({ required: true, unique: true })
-  id!: string; // e.g., "ORGANIZATION_ADMIN"
+  id!: string;
 
   @Prop({ required: true })
-  name!: string; // Human-readable name
+  name!: string;
 
   @Prop({ required: true })
   description!: string;
@@ -18,16 +18,22 @@ export class Role {
   contextType!: 'SYSTEM' | 'ORGANIZATION';
 
   @Prop({ default: true })
-  isSystem!: boolean; // True for built-in roles
+  isSystem!: boolean;
 
   @Prop({ type: String, ref: 'Role' })
-  baseRoleId?: string; // Optional parent role for inheritance
+  baseRoleId?: string;
 
   @Prop({ default: false })
   isCustom!: boolean;
 
   @Prop({ required: true })
-  hierarchyLevel!: number; // Lower number = higher authority
+  hierarchyLevel!: number;
+
+  @Prop({ type: [String], default: ['*'] })
+  organizationCategories!: string[];
+
+  @Prop({ type: Object })
+  displayNames?: Record<string, string>;
 }
 
 export const RoleSchema = SchemaFactory.createForClass(Role);

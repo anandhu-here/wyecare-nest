@@ -20,6 +20,10 @@ export default defineConfig(() => ({
         __dirname,
         '../../libs/shared/types/src/index.ts'
       ),
+      '@wyecare-monorepo/web-ui': path.resolve(
+        __dirname,
+        '../../libs/web/ui/src/index.ts'
+      ),
     },
   },
   server: {

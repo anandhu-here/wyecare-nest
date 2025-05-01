@@ -42,6 +42,22 @@ export class OrganizationCreationInvitation {
   })
   status!: string;
 
+  // Add organization type
+  @Prop({
+    required: true,
+    enum: [
+      'care_home',
+      'hospital',
+      'education',
+      'healthcare',
+      'social_services',
+      'retail',
+      'service_provider',
+      'other',
+    ],
+  })
+  organizationType!: string;
+
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'User',
@@ -59,3 +75,4 @@ export const OrganizationCreationInvitationSchema =
 OrganizationCreationInvitationSchema.index({ email: 1, status: 1 });
 OrganizationCreationInvitationSchema.index({ token: 1 });
 OrganizationCreationInvitationSchema.index({ expiresAt: 1 });
+OrganizationCreationInvitationSchema.index({ organizationType: 1 }); // Add index for organization type

@@ -22,10 +22,6 @@ export class CreateOrganizationDto {
   @IsString()
   name!: string;
 
-  @IsNotEmpty()
-  @IsEnum(['agency', 'home'])
-  type: 'agency' | 'home' = 'agency';
-
   @IsOptional()
   @ValidateNested()
   @Type(() => AddressDto)
