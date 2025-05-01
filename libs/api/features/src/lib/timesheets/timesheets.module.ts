@@ -23,4 +23,3 @@ import { AuthorizationModule } from '../authorization/authorization.module';
   exports: [TimesheetsService],
 })
 export class TimesheetsModule {}
-

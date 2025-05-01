@@ -1,657 +1,431 @@
-// timesheets/controllers/timesheets.controller.ts
+// libs/api/features/src/lib/timesheets/controllers/timesheets.controller.ts
 import {
   Controller,
   Get,
   Post,
-  Patch,
-  Delete,
   Body,
   Param,
-  Query,
-  Req,
-  Res,
+  Delete,
+  Put,
   UseGuards,
-  HttpStatus,
-  HttpException,
+  Req,
   Logger,
+  Query,
 } from '@nestjs/common';
-import { Response } from 'express';
-import { JwtAuthGuard } from '../../authentication/jwt/jwt-auth.guard';
-import { RequirePermission } from '../../authorization/permissions.decorator';
-import { OrganizationContextGuard } from '../../organizations/organization-context.guard';
 import { TimesheetsService } from '../services/timesheets.service';
 import { CreateTimesheetDto } from '../dto/create-timesheet.dto';
 import { UpdateTimesheetDto } from '../dto/update-timesheet.dto';
+import { GenerateTimesheetDto } from '../dto/generate-timesheet.dto';
+import { BulkGenerateTimesheetsDto } from '../dto/bulk-generate-timesheets.dto';
+import { TimesheetApprovalDto } from '../dto/timesheet-approval.dto';
+import { JwtAuthGuard } from '../../authentication/jwt/jwt-auth.guard';
+import { PermissionGuard } from '../../authorization/permission.guard';
 import { Auth } from '../../authorization/auth.decorator';
+import { OrganizationContextGuard } from '../../organizations/organization-context.guard';
 
 @Controller('timesheets')
+@UseGuards(JwtAuthGuard)
 export class TimesheetsController {
   private readonly logger = new Logger(TimesheetsController.name);
 
   constructor(private readonly timesheetsService: TimesheetsService) {}
 
-  @Get('timesheet-events')
-  async addSSEConnection(@Req() req: any, @Res() res: Response) {
+  @Post()
+  @UseGuards(PermissionGuard)
+  @Auth('create_timesheet')
+  async create(
+    @Body() createTimesheetDto: CreateTimesheetDto,
+    @Req() req: any
+  ) {
     try {
-      const { qrCode } = req.query;
-      return this.timesheetsService.addSSEConnection(qrCode, req, res);
+      const organizationId = req.currentOrganization._id.toString();
+
+      // If organizationId not provided, use the current organization
+      if (!createTimesheetDto.organizationId) {
+        createTimesheetDto.organizationId = organizationId;
+      }
+
+      const result = await this.timesheetsService.create(createTimesheetDto);
+
+      return result;
     } catch (error: any) {
-      this.logger.error('Error establishing SSE connection:', error);
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).end();
+      this.logger.error(
+        `Error creating timesheet: ${error.message}`,
+        error.stack
+      );
+      throw error;
+    }
+  }
+
+  @Post('generate')
+  @UseGuards(PermissionGuard)
+  @Auth('create_timesheet')
+  async generate(@Body() generateDto: GenerateTimesheetDto, @Req() req: any) {
+    try {
+      const organizationId = req.currentOrganization._id.toString();
+
+      // If organizationId not provided, use the current organization
+      if (!generateDto.organizationId) {
+        generateDto.organizationId = organizationId;
+      }
+
+      const result = await this.timesheetsService.generateTimesheet(
+        generateDto
+      );
+
+      return result;
+    } catch (error: any) {
+      this.logger.error(
+        `Error generating timesheet: ${error.message}`,
+        error.stack
+      );
+      throw error;
+    }
+  }
+
+  @Post('generate-bulk')
+  @UseGuards(PermissionGuard)
+  @Auth('create_timesheet')
+  async generateBulk(
+    @Body() bulkDto: BulkGenerateTimesheetsDto,
+    @Req() req: any
+  ) {
+    try {
+      const organizationId = req.currentOrganization._id.toString();
+
+      // Use organization ID from request if not provided in DTO
+      const targetOrgId = bulkDto.organizationId || organizationId;
+
+      const result = await this.timesheetsService.generateTimesheetsBulk(
+        targetOrgId,
+        bulkDto.workerIds,
+        bulkDto.periodStart,
+        bulkDto.periodEnd,
+        bulkDto.periodType as any,
+        bulkDto.departmentId
+      );
+
+      return result;
+    } catch (error: any) {
+      this.logger.error(
+        `Error generating bulk timesheets: ${error.message}`,
+        error.stack
+      );
+      throw error;
     }
   }
 
   @Get()
   @UseGuards(JwtAuthGuard, OrganizationContextGuard)
-  async getTimesheets(
-    @Query() query: any,
-    @Req() req: any,
-    @Res() res: Response
-  ) {
+  async findAll(@Req() req: any, @Query() query: any) {
     try {
-      const { role: accountType, _id } = req.user;
-      const orgType = req.currentOrganization?.type;
-      const orgId = req.currentOrganization?._id.toString();
-      const organizationId = query.organizationId;
+      const organizationId = req.currentOrganization._id.toString();
 
-      // Pagination parameters
-      const page = parseInt(query.page as string) || 1;
-      const limit = parseInt(query.limit as string) || 10;
+      // Parse query parameters
+      const options: any = {};
 
-      // Status filters
-      const status =
-        (query.status as 'all' | 'approved' | 'pending' | 'rejected') || 'all';
-      const invoiceStatus = (query.invoiceStatus as string) || null;
-
-      // Additional filters
-      const isEmergency = query.isEmergency
-        ? query.isEmergency === 'true'
-        : null;
-      const carerRole = (query.carerRole as string) || 'all';
-      const shiftPatternId = (query.shiftPatternId as string) || null;
-      const careUserId = (query.careUserId as string) || null;
-
-      // Date range
-      let { startDate, endDate } = query;
-      if (!startDate || !endDate) {
-        const now = new Date();
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1)
-          .toISOString()
-          .split('T')[0];
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-          .toISOString()
-          .split('T')[0];
+      if (query.status) {
+        options.status = query.status;
       }
 
-      let staffType = 'care';
-
-      if (['admin', 'manager', 'owner'].includes(accountType)) {
-        staffType = 'admin';
+      if (query.periodStart) {
+        options.periodStart = new Date(query.periodStart);
       }
 
-      const result = await this.timesheetsService.getTimesheetsByRole(
-        staffType,
-        _id.toString(),
-        orgType,
-        orgId,
+      if (query.periodEnd) {
+        options.periodEnd = new Date(query.periodEnd);
+      }
+
+      if (query.workerId) {
+        options.workerId = query.workerId;
+      }
+
+      if (query.departmentId) {
+        options.departmentId = query.departmentId;
+      }
+
+      if (query.year !== undefined) {
+        options.year = parseInt(query.year, 10);
+      }
+
+      if (query.month !== undefined) {
+        options.month = parseInt(query.month, 10);
+      }
+
+      if (query.week !== undefined) {
+        options.week = parseInt(query.week, 10);
+      }
+
+      if (query.search) {
+        options.search = query.search;
+      }
+
+      const results = await this.timesheetsService.findAll(
         organizationId,
-        { page, limit },
-        status,
-        startDate,
-        endDate,
-        invoiceStatus,
-        isEmergency,
-        carerRole,
-        shiftPatternId,
-        careUserId
+        options
       );
 
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        ...result,
-      });
+      return results;
     } catch (error: any) {
-      console.log('Error getting timesheets:', error);
-      this.logger.error('Error getting timesheets:', error);
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: error.message || 'Failed to get timesheets',
-      });
+      this.logger.error(
+        `Error finding all timesheets: ${error.message}`,
+        error.stack
+      );
+      throw error;
     }
   }
 
-  //get user timesheet by shift id
-  @Get('user/:shiftId')
+  @Get('worker/:workerId')
   @UseGuards(JwtAuthGuard, OrganizationContextGuard)
-  async getUserTimesheetByShiftId(
-    @Param('shiftId') shiftId: string,
+  async findByWorker(
+    @Param('workerId') workerId: string,
     @Req() req: any,
-    @Res() res: Response
+    @Query() query: any
   ) {
     try {
-      const timesheet = await this.timesheetsService.getUserTimesheetByShiftId(
-        req.user._id.toString(),
-        shiftId
-      );
+      const organizationId = req.currentOrganization._id.toString();
 
-      if (!timesheet) {
-        return res.status(HttpStatus.NOT_FOUND).json({
-          success: false,
-          message: 'Timesheet not found',
-        });
+      let year: number | undefined;
+      let month: number | undefined;
+      let status: string[] | undefined;
+
+      if (query.year !== undefined) {
+        year = parseInt(query.year, 10);
       }
 
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        data: timesheet,
-      });
+      if (query.month !== undefined) {
+        month = parseInt(query.month, 10);
+      }
+
+      if (query.status) {
+        status = Array.isArray(query.status) ? query.status : [query.status];
+      }
+
+      const results = await this.timesheetsService.findByWorker(
+        organizationId,
+        workerId,
+        year,
+        month,
+        status
+      );
+
+      return results;
     } catch (error: any) {
-      this.logger.error('Error getting user timesheet by shift ID:', error);
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: error.message || 'Failed to get user timesheet',
-      });
+      this.logger.error(
+        `Error finding worker timesheets: ${error.message}`,
+        error.stack
+      );
+      throw error;
+    }
+  }
+
+  @Get('period')
+  @UseGuards(JwtAuthGuard, OrganizationContextGuard)
+  async findByPeriod(@Req() req: any, @Query() query: any) {
+    try {
+      const organizationId = req.currentOrganization._id.toString();
+
+      if (!query.startDate || !query.endDate) {
+        throw new Error('startDate and endDate are required');
+      }
+
+      const periodStart = new Date(query.startDate);
+      const periodEnd = new Date(query.endDate);
+
+      let status: string[] | undefined;
+
+      if (query.status) {
+        status = Array.isArray(query.status) ? query.status : [query.status];
+      }
+
+      const results = await this.timesheetsService.getTimeSheetsByPeriod(
+        organizationId,
+        periodStart,
+        periodEnd,
+        status
+      );
+
+      return results;
+    } catch (error: any) {
+      this.logger.error(
+        `Error finding timesheets by period: ${error.message}`,
+        error.stack
+      );
+      throw error;
     }
   }
 
   @Get('stats')
-  @Auth('view_timesheets')
-  async getTimesheetCounts(
-    @Query() query: any,
-    @Req() req: any,
-    @Res() res: Response
-  ) {
+  @UseGuards(JwtAuthGuard, OrganizationContextGuard)
+  async getStats(@Req() req: any, @Query() query: any) {
     try {
-      const { startDate, endDate } = query;
-      const orgId = req.currentOrganization?._id.toString();
+      const organizationId = req.currentOrganization._id.toString();
 
-      if (!orgId) {
-        return res.status(HttpStatus.BAD_REQUEST).json({
-          success: false,
-          message: 'Organization context is required',
-        });
+      let periodStart: Date | undefined;
+      let periodEnd: Date | undefined;
+
+      if (query.startDate) {
+        periodStart = new Date(query.startDate);
       }
 
-      const counts = await this.timesheetsService.getTimesheetCountsByUser(
-        orgId,
-        req.currentOrganization?.type,
-        startDate,
-        endDate
-      );
-
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        data: counts,
-      });
-    } catch (error: any) {
-      this.logger.error('Error getting timesheet counts:', error);
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: error.message || 'Failed to get timesheet counts',
-      });
-    }
-  }
-
-  @Get('user')
-  @UseGuards(JwtAuthGuard)
-  @RequirePermission('view_timesheets')
-  async getUserTimesheets(@Query() query: any, @Res() res: Response) {
-    try {
-      const { userId, startDate, endDate } = query;
-
-      if (!userId || !startDate || !endDate) {
-        return res.status(HttpStatus.BAD_REQUEST).json({
-          success: false,
-          message: 'User ID, start date, and end date are required',
-        });
+      if (query.endDate) {
+        periodEnd = new Date(query.endDate);
       }
 
-      const timesheets = await this.timesheetsService.getUserTimesheets(
-        userId,
-        startDate,
-        endDate
-      );
-
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        data: timesheets,
-      });
-    } catch (error: any) {
-      this.logger.error('Error getting user timesheets:', error);
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: error.message || 'Failed to get user timesheets',
-      });
-    }
-  }
-
-  @Post()
-  @UseGuards(JwtAuthGuard)
-  async createTimesheet(
-    @Body() createTimesheetDto: CreateTimesheetDto,
-    @Req() req: any,
-    @Res() res: Response
-  ) {
-    try {
-      const { shiftId, shiftPatternId, homeId }: any = createTimesheetDto;
-
-      if (!shiftId) {
-        return res.status(HttpStatus.BAD_REQUEST).json({
-          success: false,
-          message: 'Shift ID is required',
-        });
-      }
-
-      const carerId = req.user._id.toString();
-      const organizationId =
-        req.currentOrganization?.type === 'agency'
-          ? req.currentOrganization?._id.toString()
-          : null;
-
-      const timesheet = await this.timesheetsService.createTimesheet({
-        shiftId,
-        userId: carerId,
-        shiftPatternId,
+      const results = await this.timesheetsService.getTimesheetStats(
         organizationId,
-        homeId,
-      });
+        periodStart,
+        periodEnd
+      );
 
-      return res.status(HttpStatus.CREATED).json({
-        success: true,
-        message: 'Timesheet created successfully',
-        data: timesheet,
-      });
+      return results;
     } catch (error: any) {
-      this.logger.error('Error creating timesheet:', error);
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: error.message || 'Failed to create timesheet',
-      });
+      this.logger.error(
+        `Error getting timesheet stats: ${error.message}`,
+        error.stack
+      );
+      throw error;
     }
   }
 
-  @Post('upload-manual')
+  @Get(':id')
   @UseGuards(JwtAuthGuard, OrganizationContextGuard)
-  async createManualTimesheets(
-    @Body() createManualTimesheetsDto: any,
-    @Req() req: any,
-    @Res() res: Response
-  ) {
+  async findOne(@Param('id') id: string, @Req() req: any) {
     try {
-      const {
-        homeId,
-        shiftPatternId,
-        carerIds,
-        shiftDate,
-        temporaryHomeId,
-        isTemporaryHome,
-      } = createManualTimesheetsDto;
+      const organizationId = req.currentOrganization._id.toString();
 
-      const createdBy = req.user._id;
-      const organizationId = req.currentOrganization?._id.toString();
+      const result = await this.timesheetsService.findOne(id, organizationId);
 
-      const result = await this.timesheetsService.createManualTimesheets({
-        homeId,
-        shiftPatternId,
-        carerIds,
-        shiftDate,
-        createdBy: createdBy?.toString(),
-        agentId: organizationId,
-        temporaryHomeId,
-        isTemporaryHome,
-      });
-
-      return res.status(HttpStatus.CREATED).json({
-        success: true,
-        message: 'Timesheets created successfully',
-        data: result,
-      });
+      return result;
     } catch (error: any) {
-      this.logger.error('Error creating manual timesheets:', error);
-
-      if (error.statusCode) {
-        return res.status(error.statusCode).json({
-          success: false,
-          message: error.message,
-        });
-      }
-
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: 'Failed to create timesheets',
-      });
+      this.logger.error(
+        `Error finding timesheet: ${error.message}`,
+        error.stack
+      );
+      throw error;
     }
   }
 
-  @Post('create-for-signature')
-  @UseGuards(JwtAuthGuard, OrganizationContextGuard)
-  async createTimesheetForSignature(
-    @Body() createForSignatureDto: any,
-    @Req() req: any,
-    @Res() res: Response
+  @Put(':id')
+  @Auth('edit_timesheet')
+  async update(
+    @Param('id') id: string,
+    @Body() updateTimesheetDto: UpdateTimesheetDto,
+    @Req() req: any
   ) {
     try {
-      const { shiftId, homeId } = createForSignatureDto;
-      const { timezone } = req.user;
-      const currentOrganization = req.currentOrganization;
+      const organizationId = req.currentOrganization._id.toString();
 
-      const timesheet =
-        await this.timesheetsService.createTimesheetForSignature(
-          shiftId,
-          req.user._id.toString(),
-          currentOrganization?.type === 'agency'
-            ? currentOrganization._id.toString()
-            : null,
-          homeId,
-          timezone || 'UTC'
-        );
-
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        data: timesheet,
-        message: 'Timesheet created successfully',
-      });
-    } catch (error: any) {
-      this.logger.error('Error creating timesheet for signature:', error);
-
-      return res
-        .status(error.statusCode || HttpStatus.INTERNAL_SERVER_ERROR)
-        .json({
-          success: false,
-          message: error.message || 'Failed to create timesheet for signature',
-        });
-    }
-  }
-
-  @Patch(':timesheetId/approve-with-signature')
-  @UseGuards(JwtAuthGuard)
-  async approveTimesheetWithSignature(
-    @Param('timesheetId') timesheetId: string,
-    @Body() signatureData: any,
-    @Req() req: any,
-    @Res() res: Response
-  ) {
-    try {
-      const {
-        signatureData: signature,
-        signerName,
-        signerRole,
-        rating,
-        review,
-      } = signatureData;
-
-      if (!signature) {
-        return res.status(HttpStatus.BAD_REQUEST).json({
-          success: false,
-          message: 'Signature data is required',
-        });
-      }
-
-      if (!signerName || !signerRole) {
-        return res.status(HttpStatus.BAD_REQUEST).json({
-          success: false,
-          message: 'Signer name and role are required',
-        });
-      }
-
-      // Validate signer role
-      const validRoles = ['nurse', 'senior carer', 'manager', 'admin'];
-      if (!validRoles.includes(signerRole)) {
-        return res.status(HttpStatus.BAD_REQUEST).json({
-          success: false,
-          message:
-            'Invalid signer role. Must be one of: nurse, senior carer, manager',
-        });
-      }
-
-      const updatedTimesheet =
-        await this.timesheetsService.approveTimesheetWithSignature(
-          timesheetId,
-          signature,
-          req.user._id.toString(),
-          signerName,
-          signerRole,
-          rating,
-          review,
-          req.ip,
-          req.headers['user-agent']
-        );
-
-      if (!updatedTimesheet) {
-        return res.status(HttpStatus.NOT_FOUND).json({
-          success: false,
-          message: 'Timesheet not found',
-        });
-      }
-
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        message: 'Timesheet approved with signature successfully',
-        data: updatedTimesheet,
-      });
-    } catch (error: any) {
-      this.logger.error('Error approving timesheet with signature:', error);
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: error.message || 'Failed to approve timesheet with signature',
-      });
-    }
-  }
-
-  @Patch(':timesheetId/approve')
-  @UseGuards(JwtAuthGuard)
-  @RequirePermission('approve_timesheets')
-  async approveTimesheet(
-    @Param('timesheetId') timesheetId: string,
-    @Body() approveDto: any,
-    @Req() req: any,
-    @Res() res: Response
-  ) {
-    try {
-      const { rating, review, barcode } = approveDto;
-
-      const updatedTimesheet = await this.timesheetsService.approveTimesheet(
-        timesheetId,
-        rating,
-        review,
-        req.user._id.toString(),
-        barcode
+      const result = await this.timesheetsService.update(
+        id,
+        organizationId,
+        updateTimesheetDto
       );
 
-      if (!updatedTimesheet) {
-        return res.status(HttpStatus.NOT_FOUND).json({
-          success: false,
-          message: 'Timesheet not found',
-        });
-      }
-
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        message: 'Timesheet approved successfully',
-        data: updatedTimesheet,
-      });
+      return result;
     } catch (error: any) {
-      this.logger.error('Error approving timesheet:', error);
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: error.message || 'Failed to approve timesheet',
-      });
+      this.logger.error(
+        `Error updating timesheet: ${error.message}`,
+        error.stack
+      );
+      throw error;
     }
   }
 
-  @Patch(':timesheetId/reject')
-  @UseGuards(JwtAuthGuard)
-  @RequirePermission('reject_timesheets')
-  async rejectTimesheet(
-    @Param('timesheetId') timesheetId: string,
-    @Body() rejectDto: any,
-    @Res() res: Response
+  @Post(':id/action')
+  @UseGuards(PermissionGuard)
+  async processAction(
+    @Param('id') id: string,
+    @Body() approvalDto: TimesheetApprovalDto,
+    @Req() req: any
   ) {
     try {
-      const { reason } = rejectDto;
+      const organizationId = req.currentOrganization._id.toString();
+      const userId = req.user.id;
 
-      const updatedTimesheet = await this.timesheetsService.rejectTimesheet(
-        timesheetId,
-        reason
+      // Check permissions based on action
+      switch (approvalDto.action) {
+        case 'submit':
+          // Workers can submit their own timesheets
+          const timesheet = await this.timesheetsService.findOne(
+            id,
+            organizationId
+          );
+          const isOwnTimesheet = timesheet.workerId.toString() === userId;
+          if (
+            !isOwnTimesheet &&
+            !req.user.permissions.includes('approve_timesheet')
+          ) {
+            throw new Error('Not authorized to submit this timesheet');
+          }
+          break;
+
+        case 'approve':
+        case 'reject':
+        case 'reopen':
+        case 'mark_paid':
+          // These actions require approval permission
+          if (!req.user.permissions.includes('approve_timesheet')) {
+            throw new Error('Not authorized to perform this action');
+          }
+          break;
+      }
+
+      const result = await this.timesheetsService.processAction(
+        id,
+        organizationId,
+        approvalDto.action as any,
+        userId,
+        approvalDto.comments
       );
 
-      if (!updatedTimesheet) {
-        return res.status(HttpStatus.NOT_FOUND).json({
-          success: false,
-          message: 'Timesheet not found',
-        });
-      }
-
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        message: 'Timesheet rejected successfully',
-        data: updatedTimesheet,
-      });
+      return result;
     } catch (error: any) {
-      this.logger.error('Error rejecting timesheet:', error);
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: error.message || 'Failed to reject timesheet',
-      });
+      this.logger.error(
+        `Error processing timesheet action: ${error.message}`,
+        error.stack
+      );
+      throw error;
     }
   }
 
-  @Patch('invalidate/:timesheetId')
-  @UseGuards(JwtAuthGuard)
-  async invalidateTimesheet(
-    @Param('timesheetId') timesheetId: string,
-    @Res() res: Response
+  @Delete(':id')
+  @Auth('delete_timesheet')
+  async remove(@Param('id') id: string, @Req() req: any) {
+    try {
+      const organizationId = req.currentOrganization._id.toString();
+      return await this.timesheetsService.remove(id, organizationId);
+    } catch (error: any) {
+      this.logger.error(
+        `Error removing timesheet: ${error.message}`,
+        error.stack
+      );
+      throw error;
+    }
+  }
+
+  @Post('export-payroll')
+  @Auth('export_timesheet')
+  async exportForPayroll(
+    @Body() exportData: { timesheetIds: string[]; payrollReference: string },
+    @Req() req: any
   ) {
     try {
-      const result = await this.timesheetsService.invalidateTimesheet(
-        timesheetId
+      const organizationId = req.currentOrganization._id.toString();
+
+      const result = await this.timesheetsService.exportForPayroll(
+        organizationId,
+        exportData.timesheetIds,
+        exportData.payrollReference
       );
 
-      if (!result) {
-        return res.status(HttpStatus.NOT_FOUND).json({
-          success: false,
-          message: 'Timesheet not found',
-        });
-      }
-
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        message: 'Timesheet invalidated successfully',
-        data: result,
-      });
+      return result;
     } catch (error: any) {
-      this.logger.error('Error invalidating timesheet:', error);
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: error.message || 'Failed to invalidate timesheet',
-      });
-    }
-  }
-
-  @Delete(':timesheetId')
-  @UseGuards(JwtAuthGuard)
-  @RequirePermission('delete_timesheets')
-  async deleteTimesheet(
-    @Param('timesheetId') timesheetId: string,
-    @Res() res: Response
-  ) {
-    try {
-      const result = await this.timesheetsService.deleteTimesheet(timesheetId);
-
-      if (!result) {
-        return res.status(HttpStatus.NOT_FOUND).json({
-          success: false,
-          message: 'Timesheet not found',
-        });
-      }
-
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        message: 'Timesheet deleted successfully',
-      });
-    } catch (error: any) {
-      this.logger.error('Error deleting timesheet:', error);
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: error.message || 'Failed to delete timesheet',
-      });
-    }
-  }
-
-  @Post('scan-qr')
-  @UseGuards(JwtAuthGuard)
-  async scanBarcode(
-    @Body() scanBarcodeDto: any,
-    @Req() req: any,
-    @Res() res: Response
-  ) {
-    try {
-      const { barcode, carerId } = scanBarcodeDto;
-
-      if (!barcode) {
-        return res.status(HttpStatus.BAD_REQUEST).json({
-          success: false,
-          message: 'Barcode is required',
-        });
-      }
-
-      const timesheet = await this.timesheetsService.scanBarcode(
-        req.user._id.toString(),
-        carerId,
-        barcode
+      this.logger.error(
+        `Error exporting timesheets for payroll: ${error.message}`,
+        error.stack
       );
-
-      if (!timesheet) {
-        return res.status(HttpStatus.NOT_FOUND).json({
-          success: false,
-          message: 'Timesheet not found',
-        });
-      }
-
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        data: timesheet,
-      });
-    } catch (error: any) {
-      this.logger.error('Error scanning barcode:', error);
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: error.message || 'Failed to scan barcode',
-      });
-    }
-  }
-
-  @Get('check-status')
-  @UseGuards(JwtAuthGuard)
-  @RequirePermission('view_timesheets')
-  async checkTimesheetStatus(
-    @Query('qrCode') qrCode: string,
-    @Req() req: any,
-    @Res() res: Response
-  ) {
-    try {
-      if (!qrCode) {
-        return res.status(HttpStatus.BAD_REQUEST).json({
-          success: false,
-          message: 'QR code is required',
-        });
-      }
-
-      const timesheet = await this.timesheetsService.checkTimesheetStatus(
-        req.user._id.toString(),
-        qrCode
-      );
-
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        data: timesheet,
-      });
-    } catch (error: any) {
-      this.logger.error('Error checking timesheet status:', error);
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: error.message || 'Failed to check timesheet status',
-      });
+      throw error;
     }
   }
 }

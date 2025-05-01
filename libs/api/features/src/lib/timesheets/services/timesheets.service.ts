@@ -1,3 +1,4 @@
+// libs/api/features/src/lib/timesheets/services/timesheets.service.ts
 import {
   Injectable,
   Logger,
@@ -5,1299 +6,991 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model, Types } from 'mongoose';
-import * as dayjs from 'dayjs';
-import Redis from 'ioredis';
-import * as admin from 'firebase-admin';
-import { Shift, ShiftDocument } from '../../../../../core/src/lib/schemas';
-import { ShiftsService } from '../../shifts/services/shifts.service';
-import { ShiftPatternsService } from '../../shift-patterns/services/shift-patterns.service';
-import moment from 'moment';
+import { Model, Types } from 'mongoose';
 import {
   Timesheet,
   TimesheetDocument,
-} from 'libs/api/core/src/lib/schemas/timesheets/timesheet.schema';
+  TimesheetStatus,
+  TimesheetPeriod,
+} from '@wyecare-monorepo/core';
+import { CreateTimesheetDto } from '../dto/create-timesheet.dto';
+import { UpdateTimesheetDto } from '../dto/update-timesheet.dto';
+import { GenerateTimesheetDto } from '../dto/generate-timesheet.dto';
 import {
   ShiftAssignment,
   ShiftAssignmentDocument,
-} from 'libs/api/core/src/lib/schemas/shifts/shift-assignment.schema';
-import { UsersService } from '../../users/services/users.service';
+  ShiftStatus,
+} from '@wyecare-monorepo/core';
+import { TimesheetAction } from '../dto/timesheet-approval.dto';
+import * as luxon from 'luxon';
+
+interface TimesheetQueryOptions {
+  status?: string | string[];
+  periodStart?: Date;
+  periodEnd?: Date;
+  workerId?: string | string[];
+  departmentId?: string;
+  year?: number;
+  month?: number;
+  week?: number;
+  search?: string;
+}
+
 @Injectable()
 export class TimesheetsService {
   private readonly logger = new Logger(TimesheetsService.name);
-  private readonly redisClient: Redis;
-  private readonly defaultPopulateOptions = [
-    {
-      path: 'shift_',
-      select: 'shiftPattern homeId date',
-      populate: {
-        path: 'shiftPattern',
-        select: 'name timings userTypeRates rates',
-      },
-    },
-    {
-      path: 'carer',
-      select: 'firstName lastName _id avatar.url role',
-    },
-    {
-      path: 'home',
-      select: 'name _id',
-    },
-    {
-      path: 'agency',
-      select: 'name _id',
-    },
-    {
-      path: 'approvedBy',
-      select: 'firstName lastName role',
-    },
-  ];
+
   constructor(
     @InjectModel(Timesheet.name)
     private timesheetModel: Model<TimesheetDocument>,
-    @InjectModel(Shift.name) private shiftModel: Model<ShiftDocument>,
+
     @InjectModel(ShiftAssignment.name)
-    private shiftAssignmentModel: Model<ShiftAssignmentDocument>,
-    private userService: UsersService,
-    private shiftService: ShiftsService,
-    private shiftPatternService: ShiftPatternsService
-  ) {
-    this.redisClient = new Redis({
-      host: process.env['REDIS_HOST'] || 'localhost',
-      port: parseInt(process.env['REDIS_PORT'] || '6379'),
-    });
-  }
-  async createTimesheetForSignature(
-    shiftId: string,
-    userId: string,
-    agency?: string,
-    home?: string,
-    timezone: string = 'UTC'
-  ): Promise<any> {
-    this.logger.log(
-      `Starting timesheet creation for signature - Shift: ${shiftId}, User: ${userId}`
-    );
-    const shift = await this.shiftModel
-      .findOne({
-        _id: new Types.ObjectId(shiftId),
-      })
-      .populate('shiftPattern')
-      .lean();
-    if (!shift) {
-      this.logger.error(`Shift not found with ID: ${shiftId}`);
-      throw new NotFoundException('Shift not found');
-    }
-    if (shift.agentId && !agency) {
-      throw new BadRequestException(
-        'This is an agency shift and your current organization is not an agency'
-      );
-    }
-    if (!shift.shiftPattern) {
-      this.logger.error(`No shift pattern linked to shift ID: ${shiftId}`);
-      throw new BadRequestException('Shift pattern not found for this shift');
-    }
-    const currentDateTime = new Date();
-    const currentDateTimeInTZ = new Date(
-      currentDateTime.toLocaleString('en-US', { timeZone: timezone })
-    );
-    const shiftDate = shift.date;
-    const formattedShiftDate = moment(shiftDate).format('YYYY-MM-DD');
-    const formattedCurrentDate =
-      moment(currentDateTimeInTZ).format('YYYY-MM-DD');
-    const shiftPattern = shift.shiftPattern as any;
-    if (!shiftPattern.timings || !shiftPattern.timings.length) {
-      throw new BadRequestException('No timings defined in the shift pattern');
-    }
-    const homeId = home || shift.homeId.toString();
-    const timing = shiftPattern.timings.find(
-      (t: any) => t.careHomeId === homeId
-    );
-    if (!timing) {
-      throw new BadRequestException(
-        'No timing found for this care home in the shift pattern'
-      );
-    }
-    const [startHour, startMinute] = timing.startTime.split(':').map(Number);
-    const [endHour, endMinute] = timing.endTime.split(':').map(Number);
-    const shiftStartDate = new Date(formattedShiftDate);
-    shiftStartDate.setHours(startHour, startMinute, 0, 0);
-    shiftStartDate.setTime(
-      new Date(
-        shiftStartDate.toLocaleString('en-US', { timeZone: timezone })
-      ).getTime()
-    );
-    const shiftEndDate = new Date(formattedShiftDate);
-    shiftEndDate.setHours(endHour, endMinute, 0, 0);
-    const isOvernightShift =
-      endHour < startHour || (endHour === startHour && endMinute < startMinute);
-    if (isOvernightShift) {
-      shiftEndDate.setDate(shiftEndDate.getDate() + 1);
-    }
-    shiftEndDate.setTime(
-      new Date(
-        shiftEndDate.toLocaleString('en-US', { timeZone: timezone })
-      ).getTime()
-    );
-    const toleranceEndDate = new Date(shiftEndDate);
-    toleranceEndDate.setHours(toleranceEndDate.getHours() + 3);
-    const isWithinShiftTime =
-      currentDateTimeInTZ >= shiftStartDate &&
-      currentDateTimeInTZ <= toleranceEndDate;
-    if (!isWithinShiftTime) {
-      let timeMessage = '';
-      if (currentDateTimeInTZ < shiftStartDate) {
-        const msTillStart =
-          shiftStartDate.getTime() - currentDateTimeInTZ.getTime();
-        const daysTillStart = Math.floor(msTillStart / (1000 * 60 * 60 * 24));
-        const hoursTillStart = Math.floor(
-          (msTillStart % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-        );
-        const minutesTillStart = Math.floor(
-          (msTillStart % (1000 * 60 * 60)) / (1000 * 60)
-        );
-        if (daysTillStart > 0) {
-          timeMessage = `Shift starts in ${daysTillStart}d ${hoursTillStart}h ${minutesTillStart}m`;
-        } else {
-          timeMessage = `Shift starts in ${hoursTillStart}h ${minutesTillStart}m`;
-        }
-      } else if (currentDateTimeInTZ > toleranceEndDate) {
-        const msSinceEnd =
-          currentDateTimeInTZ.getTime() - toleranceEndDate.getTime();
-        const daysSinceEnd = Math.floor(msSinceEnd / (1000 * 60 * 60 * 24));
-        const hoursSinceEnd = Math.floor(
-          (msSinceEnd % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-        );
-        const minutesSinceEnd = Math.floor(
-          (msSinceEnd % (1000 * 60 * 60)) / (1000 * 60)
-        );
-        if (daysSinceEnd > 0) {
-          timeMessage = `Shift (including 3h tolerance) ended ${daysSinceEnd}d ${hoursSinceEnd}h ${minutesSinceEnd}m ago`;
-        } else {
-          timeMessage = `Shift (including 3h tolerance) ended ${hoursSinceEnd}h ${minutesSinceEnd}m ago`;
-        }
-      }
-      throw new BadRequestException(
-        `Timesheet can only be created during the shift timing or within 3 hours after the shift ends. ${timeMessage}`
-      );
-    }
-    const shiftAssignment = await this.shiftAssignmentModel
-      .findOne({
-        shift: new Types.ObjectId(shiftId),
-        user: new Types.ObjectId(userId),
-      })
-      .lean();
-    if (!shiftAssignment) {
-      throw new NotFoundException('Shift assignment not found');
-    }
-    const timesheet: any = await this.timesheetModel.findOneAndUpdate(
-      {
-        shiftId: new Types.ObjectId(shiftId),
-        carer: new Types.ObjectId(userId),
-        home: new Types.ObjectId(home || shift.homeId.toString()),
-      },
-      {
-        $set: {
-          agency: agency ? new Types.ObjectId(agency) : null,
-          status: 'pending',
-        },
-      },
-      {
-        new: true,
-        upsert: true,
-        setDefaultsOnInsert: true,
-      }
-    );
-    return timesheet;
-  }
-  async approveTimesheetWithSignature(
-    timesheetId: string,
-    signatureData: string,
-    approvingUserId: string,
-    signerName: string,
-    signerRole: string,
-    rating?: number | null,
-    review?: string | null,
-    ipAddress?: string,
-    deviceInfo?: string
-  ): Promise<any> {
-    this.logger.log(
-      `Approving timesheet with signature - TimesheetId: ${timesheetId}`
-    );
-    const timesheet: any = await this.timesheetModel.findById(timesheetId);
-    if (!timesheet) {
-      throw new NotFoundException('Timesheet not found');
-    }
-    const fileName = `signatures/${timesheet.home}/${
-      timesheet.carer
-    }/${timesheetId}_${Date.now()}.png`;
-    const bucket = admin.storage().bucket();
-    const signatureBuffer = Buffer.from(
-      signatureData.replace(/^data:image\/\w+;base64,/, ''),
-      'base64'
-    );
-    const fileUpload = bucket.file(fileName);
-    await fileUpload.save(signatureBuffer, {
-      metadata: {
-        contentType: 'image/png',
-      },
-    });
-    let signedUrl;
-    if (process.env['NODE_ENV'] === 'local') {
-      signedUrl = `http://localhost:9199/mock-signed-url/${fileName}`;
-    } else {
-      [signedUrl] = await fileUpload.getSignedUrl({
-        action: 'read',
-        expires: '03-01-2500',
-      });
-    }
-    const updateData: any = {
-      status: 'approved',
-      approvedAt: new Date(),
-      approvedBy: approvingUserId,
-      signature: {
-        storageRef: fileName,
-        downloadUrl: signedUrl,
-        timestamp: new Date(),
-        ipAddress: ipAddress || null,
-        deviceInfo: deviceInfo || null,
-        verified: true,
-        signerName: signerName,
-        signerRole: signerRole,
-      },
-    };
-    if (rating !== undefined && rating !== null) updateData.rating = rating;
-    if (review !== undefined && review !== null) updateData.review = review;
-    const updatedTimesheet = await this.timesheetModel
-      .findByIdAndUpdate(timesheetId, updateData, { new: true })
-      .exec();
-    if (!updatedTimesheet) {
-      throw new NotFoundException('Failed to update timesheet');
-    }
-    await this.shiftAssignmentModel.findOneAndUpdate(
-      {
-        shift: updatedTimesheet.shiftId,
-        user: updatedTimesheet.carer,
-      },
-      {
-        status: 'signed',
-      },
-      {
-        new: true,
-      }
-    );
-    const shiftId = updatedTimesheet.shiftId;
-    const allAssignments = await this.shiftAssignmentModel.find({
-      shift: shiftId,
-    });
-    const allCompleted = allAssignments.every(
-      (assignment) =>
-        assignment.status === 'completed' || assignment.status === 'signed'
-    );
-    if (allCompleted) {
-      const allTimesheets = await this.timesheetModel.find({ shift_: shiftId });
-      const allTimesheetsApproved = allTimesheets.every(
-        (ts) => ts.status === 'approved'
-      );
-      if (allTimesheetsApproved) {
-        await this.shiftModel.findByIdAndUpdate(
-          shiftId,
-          {
-            isCompleted: true,
-            isDone: true,
-          },
-          {
-            new: true,
-          }
-        );
-        this.logger.log(`Marked shift ${shiftId} as completed and done`);
-      }
-    }
-    return updatedTimesheet;
-  }
-  async getTimesheetsByRole(
-    accountType: string,
-    userId: string,
-    orgType?: string,
-    orgId?: string,
-    organizationIdQuery?: string,
-    pagination?: { page: number; limit: number },
-    status?: 'all' | 'approved' | 'pending' | 'rejected',
-    startDate?: string,
-    endDate?: string,
-    invoiceStatus?: string | null,
-    isEmergency?: boolean | null,
-    carerRole?: string,
-    shiftPatternId?: string | null,
-    careUserId?: string | null
-  ): Promise<{ data: any[]; pagination: any }> {
+    private shiftAssignmentModel: Model<ShiftAssignmentDocument>
+  ) {}
+
+  /**
+   * Create a new timesheet
+   */
+  async create(
+    createTimesheetDto: CreateTimesheetDto
+  ): Promise<TimesheetDocument> {
     try {
-      console.log(
-        `Fetching timesheets for user ${userId} with account type ${accountType}`,
-        `orgType: ${orgType}, orgId: ${orgId}, organizationIdQuery: ${organizationIdQuery}`,
-        `pagination: ${JSON.stringify(pagination)}`,
-        `status: ${status}, startDate: ${startDate}, endDate: ${endDate}`,
-        `invoiceStatus: ${invoiceStatus}, isEmergency: ${isEmergency}`,
-        `carerRole: ${carerRole}, shiftPatternId: ${shiftPatternId}`,
-        `careUserId: ${careUserId}`
-      );
-
-      const page = pagination?.page || 1;
-      const limit = pagination?.limit || 10;
-      const skip = (page - 1) * limit;
-      let matchStage: Record<string, any> = {};
-
-      // Handle undefined accountType
-      const effectiveAccountType = accountType || 'admin';
-
-      if (invoiceStatus) {
-        matchStage['invoiceStatus'] = invoiceStatus;
-      }
-      if (status && status !== 'all') {
-        matchStage['status'] = status;
-      }
-      if (careUserId) {
-        matchStage['carer'] = new Types.ObjectId(careUserId);
-      }
-
-      switch (effectiveAccountType) {
-        case 'admin':
-        case 'owner':
-          if (orgType === 'agency') {
-            matchStage['agency'] = new Types.ObjectId(orgId);
-            if (organizationIdQuery) {
-              matchStage['home'] = new Types.ObjectId(organizationIdQuery);
-            }
-          } else if (orgType === 'home') {
-            matchStage['home'] = new Types.ObjectId(orgId);
-            if (organizationIdQuery) {
-              matchStage['agency'] = new Types.ObjectId(organizationIdQuery);
-            } else {
-              // If no agency is specified, also match timesheets with null agency
-              matchStage = {
-                ...matchStage,
-                $or: [
-                  { agency: { $exists: true, $ne: null } },
-                  { agency: null },
-                  { agency: { $exists: false } },
-                ],
-              };
-            }
-          }
-          break;
-        case 'care':
-          matchStage[orgType === 'agency' ? 'agency' : 'home'] =
-            new Types.ObjectId(orgId);
-          matchStage['carer'] = new Types.ObjectId(userId);
-          break;
-        default:
-          matchStage['carer'] = new Types.ObjectId(userId);
-      }
-
-      const pipeline: any[] = [];
-      pipeline.push({ $match: matchStage });
-
-      // Lookup shift data
-      pipeline.push({
-        $lookup: {
-          from: 'shifts',
-          localField: 'shiftId',
-          foreignField: '_id',
-          as: 'shiftData',
-        },
-      });
-
-      // Modified unwind to preserve documents even if there's no matching shift
-      pipeline.push({
-        $unwind: {
-          path: '$shiftData',
-          preserveNullAndEmptyArrays: true, // Changed to true to keep timesheets even without shifts
-        },
-      });
-
-      // Only apply shift filters when shiftData exists
-      if (isEmergency !== null && isEmergency !== undefined) {
-        pipeline.push({
-          $match: {
-            $or: [
-              { 'shiftData.isEmergency': isEmergency },
-              { shiftData: { $exists: false } },
-            ],
-          },
-        });
-      }
-
-      if (shiftPatternId) {
-        pipeline.push({
-          $match: {
-            $or: [
-              { 'shiftData.shiftPattern': new Types.ObjectId(shiftPatternId) },
-              { shiftData: { $exists: false } },
-            ],
-          },
-        });
-      }
-
-      if (startDate && endDate) {
-        pipeline.push({
-          $match: {
-            $or: [
-              {
-                'shiftData.date': {
-                  $gte: startDate,
-                  $lte: endDate,
-                },
-              },
-              { shiftData: { $exists: false } },
-            ],
-          },
-        });
-      }
-
-      // Lookup shift pattern data
-      pipeline.push({
-        $lookup: {
-          from: 'shiftpatterns',
-          localField: 'shiftData.shiftPattern',
-          foreignField: '_id',
-          as: 'shiftPatternData',
-        },
-      });
-
-      pipeline.push({
-        $unwind: {
-          path: '$shiftPatternData',
-          preserveNullAndEmptyArrays: true,
-        },
-      });
-
-      // Lookup carer details
-      pipeline.push({
-        $lookup: {
-          from: 'users',
-          localField: 'carer',
-          foreignField: '_id',
-          as: 'carerDetails',
-        },
-      });
-
-      pipeline.push({
-        $unwind: {
-          path: '$carerDetails',
-          preserveNullAndEmptyArrays: true,
-        },
-      });
-
-      if (carerRole && carerRole !== 'all') {
-        pipeline.push({
-          $match: {
-            'carerDetails.role': carerRole,
-          },
-        });
-      }
-
-      // Lookup home organization
-      pipeline.push({
-        $lookup: {
-          from: 'organizations',
-          localField: 'home',
-          foreignField: '_id',
-          as: 'regularHome',
-        },
-      });
-
-      // Lookup temporary home
-      pipeline.push({
-        $lookup: {
-          from: 'temporaryhomes',
-          localField: 'shiftData.temporaryHomeId',
-          foreignField: '_id',
-          as: 'tempHome',
-        },
-      });
-
-      // Save the pipeline for count
-      const countPipeline = [...pipeline];
-      countPipeline.push({ $count: 'total' });
-
-      // Sort with fallback on createdAt
-      pipeline.push({
-        $sort: {
-          'shiftData.date': -1,
-          createdAt: -1,
-        },
-      });
-
-      pipeline.push({ $skip: skip });
-      pipeline.push({ $limit: limit });
-
-      // Project only the fields needed without duplicates
-      pipeline.push({
-        $project: {
-          _id: 1,
-          agency: 1,
-          home: 1,
-          carer: 1,
-          status: 1,
-          invoiceStatus: 1,
-          requestType: 1,
-          review: 1,
-          rating: 1,
-          signature: 1, // Include signature data
-          invoiceId: 1,
-          invoiceNumber: 1,
-          invoicedAt: 1,
-          paidAt: 1,
-          paymentReference: 1,
-          approvedBy: 1,
-          createdAt: 1,
-          updatedAt: 1,
-
-          // Include lookups
-          carerDetails: 1,
-          regularHome: 1,
-          tempHome: 1,
-          shiftPatternData: 1,
-
-          // Map shiftData to shift (without duplication)
-          shift: {
-            $cond: {
-              if: { $ifNull: ['$shiftData', false] },
-              then: '$shiftData',
-              else: null,
-            },
-          },
-        },
-      });
-
-      const [countResult, timesheets] = await Promise.all([
-        this.timesheetModel.aggregate(countPipeline),
-        this.timesheetModel.aggregate(pipeline),
-      ]);
-
-      // Log the result count
-      console.log(`Found ${timesheets.length} timesheet results`);
-
-      console.log(timesheets, 'Timesheets:', timesheets.length);
-
-      const total = countResult[0]?.total || 0;
-      return {
-        data: timesheets,
-        pagination: {
-          total,
-          page,
-          pageSize: limit,
-          totalPages: Math.ceil(total / limit),
-        },
+      // Convert IDs to ObjectIds
+      const timesheetData = {
+        ...createTimesheetDto,
+        organizationId: new Types.ObjectId(createTimesheetDto.organizationId),
+        workerId: new Types.ObjectId(createTimesheetDto.workerId),
+        departmentId: createTimesheetDto.departmentId
+          ? new Types.ObjectId(createTimesheetDto.departmentId)
+          : undefined,
+        shiftAssignments: createTimesheetDto.shiftAssignments
+          ? createTimesheetDto.shiftAssignments.map(
+              (id) => new Types.ObjectId(id)
+            )
+          : [],
       };
-    } catch (error: any) {
-      this.logger.error('Error getting timesheets by role:', error);
-      throw error;
-    }
-  }
-  getUserTimesheetByShiftId(userId: string, shiftId: string): Promise<any> {
-    console.log(`Fetching timesheet for user ${userId} and shift ${shiftId}`);
-    return this.timesheetModel.findOne({
-      carer: new Types.ObjectId(userId),
-      shiftId: new Types.ObjectId(shiftId),
-    });
-  }
 
-  async getTimesheetCountsByUser(
-    orgId: string,
-    orgType: string,
-    startDate: string,
-    endDate: string
-  ): Promise<any[]> {
-    try {
-      const matchStage = {
-        [orgType === 'agency' ? 'agency' : 'home']: new Types.ObjectId(orgId),
-      };
-      const pipeline = [
-        {
-          $lookup: {
-            from: 'shifts',
-            localField: 'shift_',
-            foreignField: '_id',
-            as: 'shift',
-          },
-        },
-        { $unwind: '$shift' },
-        {
-          $match: {
-            ...matchStage,
-            'shift.date': {
-              $gte: startDate,
-              $lte: endDate,
-            },
-          },
-        },
-        {
-          $group: {
-            _id: '$carer',
-            count: { $sum: 1 },
-          },
-        },
-        {
-          $lookup: {
-            from: 'users',
-            localField: '_id',
-            foreignField: '_id',
-            as: 'userDetails',
-          },
-        },
-        { $unwind: '$userDetails' },
-        {
-          $project: {
-            _id: 1,
-            count: 1,
-            firstName: '$userDetails.firstName',
-            lastName: '$userDetails.lastName',
-            role: '$userDetails.role',
-            avatarUrl: '$userDetails.avatarUrl',
-          },
-        },
-        { $match: { count: { $gt: 0 } } },
-        { $sort: { count: -1 } },
-      ];
-      return await this.timesheetModel.aggregate(pipeline as any);
-    } catch (error: any) {
-      this.logger.error('Error getting timesheet counts:', error);
-      throw error;
-    }
-  }
-  async getUserTimesheets(
-    userId: string,
-    startDate: string,
-    endDate: string
-  ): Promise<any[]> {
-    try {
-      return await this.timesheetModel
-        .find({
-          carer: new Types.ObjectId(userId),
-          createdAt: {
-            $gte: new Date(startDate),
-            $lte: new Date(endDate),
-          },
-        })
-        .populate(this.defaultPopulateOptions);
-    } catch (error: any) {
-      this.logger.error('Error getting user timesheets:', error);
-      throw error;
-    }
-  }
-  async createTimesheet({
-    shiftId,
-    userId,
-    shiftPatternId,
-    organizationId,
-    homeId,
-    documentUrl,
-  }: {
-    shiftId: string;
-    userId: string;
-    shiftPatternId: string;
-    organizationId: string;
-    homeId: string;
-    documentUrl?: string;
-  }): Promise<any> {
-    try {
-      const [user, shift] = await Promise.all([
-        this.userService.findOne(userId),
-        this.shiftService.findOne(shiftId),
-      ]);
-      if (!user) throw new NotFoundException('User not found');
-      if (!shift) throw new NotFoundException('Shift not found');
-      const timesheet: any = await this.timesheetModel.create({
-        shift_: new Types.ObjectId(shiftId),
-        carer: new Types.ObjectId(userId),
-        agency: organizationId ? new Types.ObjectId(organizationId) : null,
-        home: new Types.ObjectId(homeId),
-        status: 'pending',
-        startTime: new Date(),
-        documentUrl,
-      });
-      await this.shiftAssignmentModel.findOneAndUpdate(
-        {
-          user: userId,
-          shift: shiftId,
-        },
-        {
-          status: 'completed',
-        }
-      );
-      return timesheet;
-    } catch (error: any) {
-      this.logger.error('Error creating timesheet:', error);
-      throw error;
-    }
-  }
-  async createManualTimesheets({
-    homeId,
-    shiftPatternId,
-    carerIds,
-    shiftDate,
-    createdBy,
-    agentId,
-    isTemporaryHome,
-    temporaryHomeId,
-  }: {
-    homeId: string;
-    shiftPatternId: string;
-    carerIds: string[];
-    shiftDate: string;
-    createdBy: string;
-    agentId: string;
-    isTemporaryHome?: boolean;
-    temporaryHomeId?: string;
-  }): Promise<any> {
-    try {
-      const existingTimesheets: any = await this.timesheetModel
-        .find({
-          home: new Types.ObjectId(homeId),
-          carer: { $in: carerIds.map((id) => new Types.ObjectId(id)) },
-          shift_: {
-            $in: await this.shiftModel
-              .find({
-                homeId: new Types.ObjectId(homeId),
-                date: shiftDate,
-              })
-              .select('_id'),
-          },
-        })
-        .populate('carer', 'firstName lastName');
-      if (existingTimesheets.length > 0) {
-        const existingCarers = existingTimesheets.map((ts: any) => ({
-          id: ts.carer._id,
-          name: `${ts.carer.firstName} ${ts.carer.lastName}`,
-        }));
-        return {
-          success: false,
-          message:
-            'Timesheets already exist for some staff members on this date',
-          data: {
-            timesheets: [],
-            existingEntries: existingCarers,
-            duplicateDate: shiftDate,
-          },
-        };
+      // Set default status if not provided
+      if (!timesheetData.status) {
+        timesheetData.status = TimesheetStatus.DRAFT;
       }
-      let shift = await this.shiftModel.findOne({
-        homeId: new Types.ObjectId(homeId),
-        temporaryHomeId: isTemporaryHome
-          ? new Types.ObjectId(temporaryHomeId)
-          : null,
-        isTemporaryHome,
-        shiftPattern: new Types.ObjectId(shiftPatternId),
-        date: shiftDate,
-      });
-      if (!shift) {
-        shift = await this.shiftModel.create({
-          homeId: new Types.ObjectId(homeId),
-          agentId: new Types.ObjectId(agentId),
-          shiftPattern: new Types.ObjectId(shiftPatternId),
-          date: shiftDate,
-          assignedUsers: carerIds.map((id) => new Types.ObjectId(id)),
-          isAccepted: true,
-          isDone: true,
-        });
+
+      // Calculate year, month, week if not provided
+      if (!timesheetData.year) {
+        timesheetData.year = luxon.DateTime.fromJSDate(
+          timesheetData.periodStart
+        ).year;
       }
-      const timesheetData = carerIds.map((carerId) => ({
-        shift_: shift._id,
-        carer: new Types.ObjectId(carerId),
-        home: new Types.ObjectId(isTemporaryHome ? temporaryHomeId : homeId),
-        agency: new Types.ObjectId(agentId),
-        status: 'pending',
-        requestType: 'manual',
-        approvedBy: new Types.ObjectId(createdBy),
-        invoiceStatus: 'idle',
-      }));
-      const createdTimesheets = await this.timesheetModel.insertMany(
-        timesheetData
-      );
-      const populatedTimesheets = await this.timesheetModel
-        .find({
-          _id: { $in: createdTimesheets.map((t) => t._id) },
-        })
-        .populate([
-          {
-            path: 'shift_',
-            populate: {
-              path: 'shiftPattern',
-            },
-          },
-          {
-            path: 'carer',
-            select: 'firstName lastName email',
-          },
-          {
-            path: 'home',
-            select: 'name',
-          },
-        ]);
-      return {
-        success: true,
-        message: 'Timesheets created successfully',
-        data: {
-          timesheets: populatedTimesheets,
-        },
-      };
-    } catch (error: any) {
-      this.logger.error('Error creating manual timesheets:', error);
-      throw error;
-    }
-  }
-  async approveTimesheet(
-    timesheetId: string,
-    rating?: number | null,
-    review?: string | null,
-    approvingUserId?: string,
-    barcode?: any
-  ): Promise<any> {
-    try {
-      const updateData: any = {
-        status: 'approved',
-        approvedAt: new Date(),
-      };
-      if (rating !== undefined && rating !== null) updateData.rating = rating;
-      if (review !== undefined && review !== null) updateData.review = review;
-      const timesheet: any = await this.timesheetModel
-        .findByIdAndUpdate(
-          timesheetId,
-          {
-            ...updateData,
-            approvedBy: approvingUserId,
-          },
-          { new: true }
-        )
-        .exec();
-      if (!timesheet) throw new NotFoundException('Timesheet not found');
-      await Promise.all([
-        this.shiftAssignmentModel.findOneAndUpdate(
-          {
-            user: timesheet.carer,
-            shift: timesheet.shiftId,
-          },
-          {
-            status: 'signed',
-          }
-        ),
-        this.shiftService.update(timesheet.shiftId?.toString(), {
-          status: 'done',
-        }),
-      ]);
-      try {
-        const allAssignments = await this.shiftAssignmentModel.find({
-          shift: timesheet.shiftId,
-        });
-        const allCompleted = allAssignments.every(
-          (assignment) =>
-            assignment.status === 'completed' || assignment.status === 'signed'
-        );
-        if (allCompleted) {
-          const allTimesheets = await this.timesheetModel.find({
-            shift_: timesheet.shiftId,
-          });
-          const allTimesheetsApproved = allTimesheets.every(
-            (ts) => ts.status === 'approved'
-          );
-          if (allTimesheetsApproved) {
-            await this.shiftModel.findByIdAndUpdate(timesheet.shiftId, {
-              isCompleted: true,
-              isDone: true,
-            });
-            this.logger.log(
-              `Marked shift ${timesheet.shiftId} as completed and done`
-            );
-          }
-        }
-      } catch (shiftUpdateError) {
-        this.logger.error('Error updating shift status:', shiftUpdateError);
-      }
-      const REDIS_KEY_PREFIX = 'timesheet:qr:';
-      await this.redisClient.set(
-        `${REDIS_KEY_PREFIX}${timesheet.tokenForQrCode}`,
-        JSON.stringify({
-          timestamp: new Date().toISOString(),
-          status: 'success',
-          carerId: timesheet.carer.toString(),
-          orgId: timesheet.home.toString(),
-          timesheetId: timesheet._id.toString(),
-        }),
-        'EX',
-        1200
-      );
-      return timesheet;
-    } catch (error: any) {
-      this.logger.error('Error approving timesheet:', error);
-      throw error;
-    }
-  }
-  async rejectTimesheet(timesheetId: string, reason: string): Promise<any> {
-    try {
-      const timesheet: any = await this.timesheetModel.findOneAndDelete({
-        _id: new Types.ObjectId(timesheetId),
-      });
-      if (!timesheet) {
-        throw new NotFoundException('Timesheet not found');
-      }
-      this.logger.log(`Timesheet ${timesheetId} rejected. Reason: ${reason}`);
-      return timesheet;
-    } catch (error: any) {
-      this.logger.error('Error rejecting timesheet:', error);
-      throw error;
-    }
-  }
-  async deleteTimesheet(timesheetId: string): Promise<any> {
-    try {
-      const timesheet: any = await this.timesheetModel.findById(timesheetId);
-      if (!timesheet) {
-        throw new NotFoundException('Timesheet not found');
-      }
+
       if (
-        timesheet.invoiceId ||
-        ['paid', 'invoiced'].includes(timesheet.invoiceStatus)
+        !timesheetData.monthNumber &&
+        timesheetData.periodType === TimesheetPeriod.MONTHLY
+      ) {
+        timesheetData.monthNumber = luxon.DateTime.fromJSDate(
+          timesheetData.periodStart
+        ).month;
+      }
+
+      if (
+        !timesheetData.weekNumber &&
+        (timesheetData.periodType === TimesheetPeriod.WEEKLY ||
+          timesheetData.periodType === TimesheetPeriod.BI_WEEKLY)
+      ) {
+        timesheetData.weekNumber = luxon.DateTime.fromJSDate(
+          timesheetData.periodStart
+        ).weekNumber;
+      }
+
+      // Check if timesheet already exists for this period and worker
+      const existingTimesheet = await this.timesheetModel.findOne({
+        organizationId: timesheetData.organizationId,
+        workerId: timesheetData.workerId,
+        periodStart: timesheetData.periodStart,
+        periodEnd: timesheetData.periodEnd,
+      });
+
+      if (existingTimesheet) {
+        throw new BadRequestException(
+          `Timesheet already exists for this worker and period (ID: ${existingTimesheet._id})`
+        );
+      }
+
+      // Create and save the timesheet
+      const newTimesheet = new this.timesheetModel(timesheetData);
+
+      // Calculate totals if shifts are provided
+      if (
+        timesheetData.shiftAssignments &&
+        timesheetData.shiftAssignments.length > 0
+      ) {
+        await this.calculateTimesheetSummary(newTimesheet);
+      }
+
+      return await newTimesheet.save();
+    } catch (error: any) {
+      this.logger.error(
+        `Error creating timesheet: ${error.message}`,
+        error.stack
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Generate a timesheet for a worker based on completed shifts
+   */
+  async generateTimesheet(
+    generateTimesheetDto: GenerateTimesheetDto
+  ): Promise<TimesheetDocument> {
+    try {
+      const {
+        workerId,
+        organizationId,
+        periodStart,
+        periodEnd,
+        periodType,
+        departmentId,
+      } = generateTimesheetDto;
+
+      // Check if timesheet already exists
+      const existingTimesheet = await this.timesheetModel.findOne({
+        organizationId: new Types.ObjectId(organizationId),
+        workerId: new Types.ObjectId(workerId),
+        periodStart,
+        periodEnd,
+      });
+
+      if (existingTimesheet) {
+        throw new BadRequestException(
+          `Timesheet already exists for this worker and period (ID: ${existingTimesheet._id})`
+        );
+      }
+
+      // Find completed shifts for this worker and period
+      const shifts = await this.shiftAssignmentModel
+        .find({
+          organizationId: new Types.ObjectId(organizationId),
+          workerId: new Types.ObjectId(workerId),
+          scheduledStartTime: { $gte: periodStart },
+          scheduledEndTime: { $lte: periodEnd },
+          status: { $in: [ShiftStatus.COMPLETED, ShiftStatus.CONFIRMED] },
+        })
+        .exec();
+
+      if (shifts.length === 0) {
+        throw new BadRequestException(
+          'No completed shifts found for this period'
+        );
+      }
+
+      // Create timesheet DTO
+      const createTimesheetDto: CreateTimesheetDto = {
+        workerId,
+        organizationId,
+        periodStart,
+        periodEnd,
+        periodType,
+        departmentId,
+        status: TimesheetStatus.DRAFT,
+        shiftAssignments: shifts.map((shift: ShiftAssignment & { _id: any }) =>
+          shift._id.toString()
+        ),
+      };
+
+      // Create the timesheet
+      return await this.create(createTimesheetDto);
+    } catch (error: any) {
+      this.logger.error(
+        `Error generating timesheet: ${error.message}`,
+        error.stack
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Generate timesheets in bulk for multiple workers
+   */
+  async generateTimesheetsBulk(
+    organizationId: string,
+    workerIds: string[],
+    periodStart: Date,
+    periodEnd: Date,
+    periodType: TimesheetPeriod,
+    departmentId?: string
+  ): Promise<TimesheetDocument[]> {
+    try {
+      const timesheets: TimesheetDocument[] = [];
+
+      // Generate timesheet for each worker
+      for (const workerId of workerIds) {
+        try {
+          const timesheet = await this.generateTimesheet({
+            workerId,
+            organizationId,
+            periodStart,
+            periodEnd,
+            periodType,
+            departmentId,
+          });
+
+          timesheets.push(timesheet);
+        } catch (error) {
+          // Log error but continue with other workers
+          this.logger.warn(
+            `Failed to generate timesheet for worker ${workerId}: ${error.message}`
+          );
+        }
+      }
+
+      return timesheets;
+    } catch (error: any) {
+      this.logger.error(
+        `Error generating bulk timesheets: ${error.message}`,
+        error.stack
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Find all timesheets with optional filtering
+   */
+  async findAll(
+    organizationId: string,
+    options: TimesheetQueryOptions = {}
+  ): Promise<TimesheetDocument[]> {
+    try {
+      const {
+        status,
+        periodStart,
+        periodEnd,
+        workerId,
+        departmentId,
+        year,
+        month,
+        week,
+        search,
+      } = options;
+
+      // Build query
+      const query: any = { organizationId: new Types.ObjectId(organizationId) };
+
+      // Add filters based on options
+      if (status) {
+        if (Array.isArray(status)) {
+          query.status = { $in: status };
+        } else {
+          query.status = status;
+        }
+      }
+
+      if (periodStart) {
+        query.periodStart = { ...query.periodStart, $gte: periodStart };
+      }
+
+      if (periodEnd) {
+        query.periodEnd = { ...query.periodEnd, $lte: periodEnd };
+      }
+
+      if (workerId) {
+        if (Array.isArray(workerId)) {
+          query.workerId = {
+            $in: workerId.map((id) => new Types.ObjectId(id)),
+          };
+        } else {
+          query.workerId = new Types.ObjectId(workerId);
+        }
+      }
+
+      if (departmentId) {
+        query.departmentId = new Types.ObjectId(departmentId);
+      }
+
+      if (year !== undefined) {
+        query.year = year;
+      }
+
+      if (month !== undefined) {
+        query.monthNumber = month;
+      }
+
+      if (week !== undefined) {
+        query.weekNumber = week;
+      }
+
+      if (search) {
+        query.$or = [{ notes: { $regex: search, $options: 'i' } }];
+      }
+
+      return await this.timesheetModel
+        .find(query)
+        .sort({ periodStart: -1 })
+        .lean()
+        .exec();
+    } catch (error: any) {
+      this.logger.error(
+        `Error finding timesheets: ${error.message}`,
+        error.stack
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Find timesheets for a specific worker
+   */
+  async findByWorker(
+    organizationId: string,
+    workerId: string,
+    year?: number,
+    month?: number,
+    status?: string[]
+  ): Promise<TimesheetDocument[]> {
+    try {
+      return await this.findAll(organizationId, {
+        workerId,
+        year,
+        month,
+        status: status || undefined,
+      });
+    } catch (error: any) {
+      this.logger.error(
+        `Error finding worker timesheets: ${error.message}`,
+        error.stack
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Find a specific timesheet
+   */
+  async findOne(
+    id: string,
+    organizationId: string
+  ): Promise<TimesheetDocument> {
+    try {
+      const timesheet = await this.timesheetModel
+        .findOne({
+          _id: new Types.ObjectId(id),
+          organizationId: new Types.ObjectId(organizationId),
+        })
+        .exec();
+
+      if (!timesheet) {
+        throw new NotFoundException(`Timesheet with ID ${id} not found`);
+      }
+
+      return timesheet;
+    } catch (error: any) {
+      this.logger.error(
+        `Error finding timesheet: ${error.message}`,
+        error.stack
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Update a timesheet
+   */
+  async update(
+    id: string,
+    organizationId: string,
+    updateTimesheetDto: UpdateTimesheetDto
+  ): Promise<TimesheetDocument> {
+    try {
+      // Prepare update data with ObjectId conversions
+      const updateData: any = { ...updateTimesheetDto };
+
+      if (updateData.departmentId) {
+        updateData.departmentId = new Types.ObjectId(updateData.departmentId);
+      }
+
+      if (updateData.shiftAssignments) {
+        updateData.shiftAssignments = updateData.shiftAssignments.map(
+          (id: any) => new Types.ObjectId(id)
+        );
+      }
+
+      const timesheet = await this.timesheetModel
+        .findOne({
+          _id: new Types.ObjectId(id),
+          organizationId: new Types.ObjectId(organizationId),
+        })
+        .exec();
+
+      if (!timesheet) {
+        throw new NotFoundException(`Timesheet with ID ${id} not found`);
+      }
+
+      // Prevent updating submitted or approved timesheets
+      if (
+        (timesheet.status === TimesheetStatus.SUBMITTED ||
+          timesheet.status === TimesheetStatus.APPROVED ||
+          timesheet.status === TimesheetStatus.PAID) &&
+        !updateData.status
       ) {
         throw new BadRequestException(
-          'Timesheet cannot be deleted due to invoice status'
+          `Cannot update timesheet with status ${timesheet.status}`
         );
       }
-      if (timesheet.signature && timesheet.signature.storageRef) {
-        try {
-          const bucket = admin.storage().bucket();
-          const file = bucket.file(timesheet.signature.storageRef);
-          const [exists] = await file.exists();
-          if (exists) {
-            await file.delete();
-            this.logger.log(
-              `Deleted signature file: ${timesheet.signature.storageRef}`
-            );
-          }
-        } catch (storageError: any) {
-          this.logger.error(
-            `Failed to delete signature file: ${storageError.message}`
-          );
-        }
+
+      // Update the timesheet
+      Object.assign(timesheet, updateData);
+
+      // Recalculate summary if shifts were updated
+      if (updateData.shiftAssignments) {
+        await this.calculateTimesheetSummary(timesheet);
       }
-      const deletedTimesheet = await this.timesheetModel.findByIdAndDelete(
-        timesheetId
-      );
-      if (!deletedTimesheet) {
-        throw new NotFoundException('Failed to delete timesheet');
-      }
-      return deletedTimesheet;
+
+      return await timesheet.save();
     } catch (error: any) {
-      this.logger.error('Error deleting timesheet:', error);
+      this.logger.error(
+        `Error updating timesheet: ${error.message}`,
+        error.stack
+      );
       throw error;
     }
   }
-  async invalidateTimesheet(timesheetId: string): Promise<any> {
+
+  /**
+   * Process a timesheet action (submit, approve, reject, etc.)
+   */
+  async processAction(
+    id: string,
+    organizationId: string,
+    action: TimesheetAction,
+    userId: string,
+    comments?: string
+  ): Promise<TimesheetDocument> {
     try {
-      const timesheet: any = await this.timesheetModel
-        .findByIdAndUpdate(
-          timesheetId,
+      const timesheet = await this.findOne(id, organizationId);
+
+      // Create approval history entry
+      const historyEntry = {
+        status: action,
+        userId: new Types.ObjectId(userId),
+        timestamp: new Date(),
+        comments,
+      };
+
+      // Update timesheet based on action
+      let updateData: any = {
+        $push: { approvalHistory: historyEntry },
+      };
+
+      switch (action) {
+        case TimesheetAction.SUBMIT:
+          if (timesheet.status !== TimesheetStatus.DRAFT) {
+            throw new BadRequestException(
+              'Only draft timesheets can be submitted'
+            );
+          }
+          updateData.$set = {
+            status: TimesheetStatus.SUBMITTED,
+            submittedAt: new Date(),
+            submittedBy: new Types.ObjectId(userId),
+          };
+          break;
+
+        case TimesheetAction.APPROVE:
+          if (
+            timesheet.status !== TimesheetStatus.SUBMITTED &&
+            timesheet.status !== TimesheetStatus.UNDER_REVIEW
+          ) {
+            throw new BadRequestException(
+              'Only submitted timesheets can be approved'
+            );
+          }
+          updateData.$set = {
+            status: TimesheetStatus.APPROVED,
+            approvedAt: new Date(),
+            approvedBy: new Types.ObjectId(userId),
+          };
+          break;
+
+        case TimesheetAction.REJECT:
+          if (
+            timesheet.status !== TimesheetStatus.SUBMITTED &&
+            timesheet.status !== TimesheetStatus.UNDER_REVIEW
+          ) {
+            throw new BadRequestException(
+              'Only submitted timesheets can be rejected'
+            );
+          }
+          updateData.$set = { status: TimesheetStatus.DRAFT };
+          break;
+
+        case TimesheetAction.REOPEN:
+          if (timesheet.status !== TimesheetStatus.APPROVED) {
+            throw new BadRequestException(
+              'Only approved timesheets can be reopened'
+            );
+          }
+          updateData.$set = { status: TimesheetStatus.DRAFT };
+          break;
+
+        case TimesheetAction.MARK_PAID:
+          if (timesheet.status !== TimesheetStatus.APPROVED) {
+            throw new BadRequestException(
+              'Only approved timesheets can be marked as paid'
+            );
+          }
+          updateData.$set = {
+            status: TimesheetStatus.PAID,
+            paidAt: new Date(),
+          };
+          break;
+
+        default:
+          throw new BadRequestException(`Invalid action: ${action}`);
+      }
+
+      const updatedTimesheet = await this.timesheetModel
+        .findOneAndUpdate(
           {
-            status: 'invalidated',
-            invoiceStatus: 'invalidated',
-            invoiceId: null,
+            _id: new Types.ObjectId(id),
+            organizationId: new Types.ObjectId(organizationId),
           },
+          updateData,
           { new: true }
         )
         .exec();
-      if (!timesheet) {
-        throw new NotFoundException('Timesheet not found');
+
+      if (!updatedTimesheet) {
+        throw new NotFoundException(`Timesheet with ID ${id} not found`);
       }
-      return timesheet;
+
+      return updatedTimesheet;
     } catch (error: any) {
-      this.logger.error('Error invalidating timesheet:', error);
+      this.logger.error(
+        `Error processing timesheet action: ${error.message}`,
+        error.stack
+      );
       throw error;
     }
   }
-  async scanBarcode(
-    signedBy: string,
-    userId: string,
-    qrCodeToken: string
-  ): Promise<any> {
-    this.logger.log(
-      `Scanning barcode - SignedBy: ${signedBy}, UserId: ${userId}, Token: ${qrCodeToken}`
-    );
-    const REDIS_KEY_PREFIX = 'timesheet:qr:';
+
+  /**
+   * Delete a timesheet
+   */
+  async remove(
+    id: string,
+    organizationId: string
+  ): Promise<{ deleted: boolean }> {
     try {
-      const timesheet: any = await this.timesheetModel
-        .findOne({
-          tokenForQrCode: qrCodeToken,
-          carer: userId,
+      // Check timesheet status first
+      const timesheet = await this.findOne(id, organizationId);
+
+      if (timesheet.status !== TimesheetStatus.DRAFT) {
+        throw new BadRequestException(
+          `Cannot delete timesheet with status ${timesheet.status}`
+        );
+      }
+
+      const result = await this.timesheetModel
+        .deleteOne({
+          _id: new Types.ObjectId(id),
+          organizationId: new Types.ObjectId(organizationId),
         })
         .exec();
-      if (!timesheet) {
-        this.logger.error(
-          `Timesheet not found - Token: ${qrCodeToken}, UserId: ${userId}`
-        );
-        await this.redisClient.set(
-          `${REDIS_KEY_PREFIX}${qrCodeToken}`,
-          JSON.stringify({
-            timestamp: new Date().toISOString(),
-            status: 'error',
-            carerId: userId,
-            orgId: '',
-            timesheetId: '',
-            error: 'Timesheet not found',
-          }),
-          'EX',
-          1200
-        );
-        throw new NotFoundException('Timesheet not found');
+
+      if (result.deletedCount === 0) {
+        throw new NotFoundException(`Timesheet with ID ${id} not found`);
       }
-      this.logger.log(`Timesheet found - TimesheetId: ${timesheet._id}`);
-      const shift = await this.shiftService.findOne(
-        timesheet.shiftId.toString()
+
+      return { deleted: true };
+    } catch (error: any) {
+      this.logger.error(
+        `Error removing timesheet: ${error.message}`,
+        error.stack
       );
-      this.logger.log(`Shift retrieved - ShiftId: ${shift._id}`);
-      await this.shiftAssignmentModel.findOneAndUpdate(
-        {
-          shift: timesheet.shiftId,
-          user: userId,
-        },
-        {
-          status: 'completed',
-        }
-      );
-      try {
-        const allAssignments = await this.shiftAssignmentModel.find({
-          shift: timesheet.shiftId,
-        });
-        const allCompleted = allAssignments.every(
-          (assignment) =>
-            assignment.status === 'completed' || assignment.status === 'signed'
+      throw error;
+    }
+  }
+
+  /**
+   * Calculate timesheet summary from shifts
+   */
+  private async calculateTimesheetSummary(
+    timesheet: TimesheetDocument
+  ): Promise<void> {
+    try {
+      if (
+        !timesheet.shiftAssignments ||
+        timesheet.shiftAssignments.length === 0
+      ) {
+        throw new BadRequestException('No shifts assigned to this timesheet');
+      }
+
+      // Get all shifts
+      const shifts = await this.shiftAssignmentModel
+        .find({
+          _id: { $in: timesheet.shiftAssignments },
+        })
+        .exec();
+
+      if (shifts.length === 0) {
+        throw new BadRequestException(
+          'No valid shifts found for this timesheet'
         );
-        if (allCompleted) {
-          const allTimesheets = await this.timesheetModel.find({
-            shift_: timesheet.shiftId,
-          });
-          const allTimesheetsApproved = allTimesheets.every(
-            (ts) => ts.status === 'approved'
-          );
-          if (allTimesheetsApproved) {
-            await this.shiftModel.findByIdAndUpdate(timesheet.shiftId, {
-              isCompleted: true,
-              isDone: true,
-            });
-            this.logger.log(
-              `Marked shift ${timesheet.shiftId} as completed and done`
-            );
+      }
+
+      // Calculate summary
+      const summary = {
+        totalShifts: shifts.length,
+        scheduledMinutes: 0,
+        actualMinutes: 0,
+        regularMinutes: 0,
+        overtimeMinutes: 0,
+        weekendMinutes: 0,
+        holidayMinutes: 0,
+        nightMinutes: 0,
+        breakMinutes: 0,
+        paidBreakMinutes: 0,
+        unpaidBreakMinutes: 0,
+      };
+
+      // Calculate payment summary
+      const paymentSummary = {
+        baseAmount: 0,
+        overtimeAmount: 0,
+        weekendAmount: 0,
+        holidayAmount: 0,
+        nightAmount: 0,
+        bonusAmount: 0,
+        deductionAmount: 0,
+        totalAmount: 0,
+        currency: 'default',
+      };
+
+      // Process each shift
+      for (const shift of shifts) {
+        // Calculate time summary
+        summary.scheduledMinutes += shift.scheduledDurationMinutes || 0;
+        summary.actualMinutes += shift.actualDurationMinutes || 0;
+
+        // Categorize minutes based on shift type
+        const minutes =
+          shift.actualDurationMinutes || shift.scheduledDurationMinutes || 0;
+
+        if (shift.isOvertime) {
+          summary.overtimeMinutes += minutes;
+        } else {
+          summary.regularMinutes += minutes;
+        }
+
+        if (shift.isWeekend) {
+          summary.weekendMinutes += minutes;
+        }
+
+        if (shift.isHoliday) {
+          summary.holidayMinutes += minutes;
+        }
+
+        if (shift.isNightShift) {
+          summary.nightMinutes += minutes;
+        }
+
+        // Calculate break minutes
+        if (shift.breaks && shift.breaks.length > 0) {
+          for (const breakPeriod of shift.breaks) {
+            const breakMinutes = breakPeriod.durationMinutes || 0;
+            summary.breakMinutes += breakMinutes;
+
+            if (breakPeriod.isPaid) {
+              summary.paidBreakMinutes += breakMinutes;
+            } else {
+              summary.unpaidBreakMinutes += breakMinutes;
+            }
           }
         }
-      } catch (shiftUpdateError) {
-        this.logger.error('Error updating shift status:', shiftUpdateError);
+
+        // Add payment details if available
+        if (shift.paymentDetails) {
+          paymentSummary.baseAmount += shift.paymentDetails.totalAmount || 0;
+
+          // Additional payment breakdowns if available
+          if (shift.paymentDetails.method === 'hourly') {
+            const regularHours = shift.paymentDetails.regularHours || 0;
+            const overtimeHours = shift.paymentDetails.overtimeHours || 0;
+            const baseRate = shift.paymentDetails.baseRate || 0;
+            const overtimeRate =
+              shift.paymentDetails.overtimeRate || baseRate * 1.5;
+
+            if (regularHours > 0) {
+              paymentSummary.baseAmount += regularHours * baseRate;
+            }
+
+            if (overtimeHours > 0) {
+              paymentSummary.overtimeAmount += overtimeHours * overtimeRate;
+            }
+
+            if (
+              shift.paymentDetails.weekendHours &&
+              shift.paymentDetails.weekendRate
+            ) {
+              const additionalWeekend =
+                shift.paymentDetails.weekendHours *
+                (shift.paymentDetails.weekendRate - baseRate);
+              paymentSummary.weekendAmount +=
+                additionalWeekend > 0 ? additionalWeekend : 0;
+            }
+
+            if (
+              shift.paymentDetails.holidayHours &&
+              shift.paymentDetails.holidayRate
+            ) {
+              const additionalHoliday =
+                shift.paymentDetails.holidayHours *
+                (shift.paymentDetails.holidayRate - baseRate);
+              paymentSummary.holidayAmount +=
+                additionalHoliday > 0 ? additionalHoliday : 0;
+            }
+
+            if (
+              shift.paymentDetails.nightHours &&
+              shift.paymentDetails.nightRate
+            ) {
+              const additionalNight =
+                shift.paymentDetails.nightHours *
+                (shift.paymentDetails.nightRate - baseRate);
+              paymentSummary.nightAmount +=
+                additionalNight > 0 ? additionalNight : 0;
+            }
+          } else if (shift.paymentDetails.method === 'per_shift') {
+            // For per-shift payment, the base amount already includes the shift payment
+            // Additional amounts for weekend/holiday would be in specific fields
+            if (shift.paymentDetails.weekendRate) {
+              paymentSummary.weekendAmount += shift.paymentDetails.weekendRate;
+            }
+
+            if (shift.paymentDetails.holidayRate) {
+              paymentSummary.holidayAmount += shift.paymentDetails.holidayRate;
+            }
+          }
+
+          // Add any additional payments
+          if (shift.paymentDetails.additionalPayments) {
+            for (const [key, value] of Object.entries(
+              shift.paymentDetails.additionalPayments
+            )) {
+              if (key.toLowerCase().includes('bonus')) {
+                paymentSummary.bonusAmount +=
+                  typeof value === 'number' ? value : 0;
+              } else if (key.toLowerCase().includes('deduction')) {
+                paymentSummary.deductionAmount +=
+                  typeof value === 'number' ? value : 0;
+              }
+            }
+          }
+
+          // Set currency if not already set
+          if (shift.paymentDetails.currency) {
+            paymentSummary.currency = shift.paymentDetails.currency;
+          }
+        }
       }
-      const shiftPattern = await this.shiftPatternService.findOne(
-        shift.shiftPattern
+
+      // Calculate total payment amount
+      paymentSummary.totalAmount =
+        paymentSummary.baseAmount +
+        paymentSummary.overtimeAmount +
+        paymentSummary.weekendAmount +
+        paymentSummary.holidayAmount +
+        paymentSummary.nightAmount +
+        paymentSummary.bonusAmount -
+        paymentSummary.deductionAmount;
+
+      // Update the timesheet
+      timesheet.summary = summary;
+      timesheet.paymentSummary = paymentSummary;
+    } catch (error: any) {
+      this.logger.error(
+        `Error calculating timesheet summary: ${error.message}`,
+        error.stack
       );
-      this.logger.log(
-        `ShiftPattern retrieved - PatternId: ${shiftPattern._id}`
+      throw error;
+    }
+  }
+
+  /**
+   * Get all timesheets for a specific period
+   */
+  async getTimeSheetsByPeriod(
+    organizationId: string,
+    periodStart: Date,
+    periodEnd: Date,
+    status?: string[]
+  ): Promise<TimesheetDocument[]> {
+    try {
+      return await this.findAll(organizationId, {
+        periodStart,
+        periodEnd,
+        status,
+      });
+    } catch (error: any) {
+      this.logger.error(
+        `Error getting timesheets by period: ${error.message}`,
+        error.stack
       );
-      const shiftTiming = shiftPattern?.timings?.find(
-        (timing: any) =>
-          timing.careHomeId.toString() === timesheet.home.toString()
+      throw error;
+    }
+  }
+
+  /**
+   * Get summary statistics for timesheets
+   */
+  async getTimesheetStats(
+    organizationId: string,
+    periodStart?: Date,
+    periodEnd?: Date
+  ): Promise<any> {
+    try {
+      // Build query
+      const query: any = { organizationId: new Types.ObjectId(organizationId) };
+
+      if (periodStart) {
+        query.periodStart = { $gte: periodStart };
+      }
+
+      if (periodEnd) {
+        query.periodEnd = { $lte: periodEnd };
+      }
+
+      // Get all relevant timesheets
+      const timesheets = await this.timesheetModel.find(query).lean().exec();
+
+      // Calculate statistics
+      const stats = {
+        totalTimesheets: timesheets.length,
+        statusCounts: {
+          draft: 0,
+          submitted: 0,
+          underReview: 0,
+          approved: 0,
+          rejected: 0,
+          paid: 0,
+        },
+        totalMinutes: 0,
+        totalShifts: 0,
+        totalAmount: 0,
+      };
+
+      // Process each timesheet
+      for (const timesheet of timesheets) {
+        // Count by status
+        switch (timesheet.status) {
+          case TimesheetStatus.DRAFT:
+            stats.statusCounts.draft++;
+            break;
+          case TimesheetStatus.SUBMITTED:
+            stats.statusCounts.submitted++;
+            break;
+          case TimesheetStatus.UNDER_REVIEW:
+            stats.statusCounts.underReview++;
+            break;
+          case TimesheetStatus.APPROVED:
+            stats.statusCounts.approved++;
+            break;
+          case TimesheetStatus.REJECTED:
+            stats.statusCounts.rejected++;
+            break;
+          case TimesheetStatus.PAID:
+            stats.statusCounts.paid++;
+            break;
+        }
+
+        // Sum up totals
+        if (timesheet.summary) {
+          stats.totalMinutes += timesheet.summary.actualMinutes || 0;
+          stats.totalShifts += timesheet.summary.totalShifts || 0;
+        }
+
+        if (timesheet.paymentSummary) {
+          stats.totalAmount += timesheet.paymentSummary.totalAmount || 0;
+        }
+      }
+
+      return stats;
+    } catch (error: any) {
+      this.logger.error(
+        `Error getting timesheet stats: ${error.message}`,
+        error.stack
       );
-      this.logger.log(
-        `Shift timing found - StartTime: ${shiftTiming?.startTime}, EndTime: ${shiftTiming?.endTime}`
-      );
-      const shiftDate = moment(shift.date).format('YYYY-MM-DD');
-      const shiftStartTime = moment(shiftTiming?.startTime).format('HH:mm');
-      const shiftEndTime = moment(shiftTiming?.endTime).format('HH:mm');
-      const currentTime = moment().format('YYYY-MM-DD HH:mm');
-      const validationWarnings = [];
-      if (shiftDate !== moment().format('YYYY-MM-DD')) {
-        validationWarnings.push('This timesheet is not for today');
-      }
-      const shiftEndPlus30 = moment(shiftEndTime, 'HH:mm')
-        .add(30, 'minute')
-        .format('HH:mm');
-      if (currentTime > shiftEndPlus30) {
-        validationWarnings.push('Shift has expired');
-      }
-      if (currentTime < shiftEndTime) {
-        validationWarnings.push('Shift has not ended yet');
-      }
-      const employee: any = await this.userService.findOne(userId);
-      if (!employee) {
-        throw new NotFoundException('Employee not found');
-      }
-      const aggregationResult = await this.timesheetModel
-        .aggregate([
-          {
-            $match: {
-              carer: new Types.ObjectId(userId),
-              rating: { $exists: true, $ne: null },
-            },
-          },
-          {
-            $group: {
-              _id: null,
-              averageRating: { $avg: '$rating' },
-            },
-          },
-        ])
-        .exec();
-      const employeeRating =
-        aggregationResult.length > 0
-          ? parseFloat(aggregationResult[0].averageRating.toFixed(1))
-          : 0;
-      const recentReviews = await this.timesheetModel
+      throw error;
+    }
+  }
+
+  /**
+   * Export timesheets for payroll
+   */
+  async exportForPayroll(
+    organizationId: string,
+    timesheetIds: string[],
+    payrollReference: string
+  ): Promise<any> {
+    try {
+      // Get all requested timesheets
+      const timesheets = await this.timesheetModel
         .find({
-          carer: userId,
-          rating: { $exists: true, $ne: null },
-          review: { $exists: true, $ne: null },
+          _id: { $in: timesheetIds.map((id) => new Types.ObjectId(id)) },
+          organizationId: new Types.ObjectId(organizationId),
+          status: TimesheetStatus.APPROVED,
         })
-        .sort({ updatedAt: -1 })
-        .limit(3)
-        .populate('approvedBy', 'firstName lastName')
-        .select('rating review updatedAt approvedBy')
+        .lean()
         .exec();
-      const formattedReviews = recentReviews.map((review: any) => ({
-        id: review._id.toString(),
-        rating: review.rating || 0,
-        comment: review.review || '',
-        date: review.updatedAt
-          ? new Date(review.updatedAt).toLocaleDateString()
-          : '',
-        reviewerName: review.approvedBy
-          ? `${review.approvedBy?.firstName} ${review.approvedBy?.lastName}`
-          : 'Anonymous',
+
+      if (timesheets.length === 0) {
+        throw new BadRequestException(
+          'No approved timesheets found with the provided IDs'
+        );
+      }
+
+      // Mark all as paid
+      await this.timesheetModel.updateMany(
+        {
+          _id: { $in: timesheetIds.map((id) => new Types.ObjectId(id)) },
+          organizationId: new Types.ObjectId(organizationId),
+          status: TimesheetStatus.APPROVED,
+        },
+        {
+          $set: {
+            status: TimesheetStatus.PAID,
+            paidAt: new Date(),
+            payrollReference,
+          },
+        }
+      );
+
+      // Prepare export data
+      const exportData = timesheets.map((timesheet) => ({
+        id: timesheet._id.toString(),
+        workerId: timesheet.workerId.toString(),
+        periodStart: timesheet.periodStart,
+        periodEnd: timesheet.periodEnd,
+        totalHours: (timesheet.summary?.actualMinutes || 0) / 60,
+        totalAmount: timesheet.paymentSummary?.totalAmount || 0,
+        currency: timesheet.paymentSummary?.currency || 'default',
       }));
+
       return {
-        timesheetId: timesheet._id,
-        shiftId: timesheet.shiftId,
-        employeeDetails: {
-          id: employee._id,
-          name: `${employee.firstName} ${employee.lastName}`,
-          profilePicture: employee.avatarUrl || null,
-          position: employee.role,
-          rating: employeeRating,
-          reviews: formattedReviews,
-        },
-        shift: {
-          date: shiftDate,
-          startTime: shiftStartTime,
-          endTime: shiftEndTime,
-          facilityId: timesheet.home,
-        },
-        validationWarnings,
-        tokenForQrCode: qrCodeToken,
+        payrollReference,
+        exportDate: new Date(),
+        timesheetCount: timesheets.length,
+        totalAmount: timesheets.reduce(
+          (sum, t) => sum + (t.paymentSummary?.totalAmount || 0),
+          0
+        ),
+        items: exportData,
       };
     } catch (error: any) {
-      this.logger.error('Error scanning barcode:', error);
-      if (error.message !== 'Timesheet not found') {
-        await this.redisClient.set(
-          `${REDIS_KEY_PREFIX}${qrCodeToken}`,
-          JSON.stringify({
-            timestamp: new Date().toISOString(),
-            status: 'error',
-            carerId: userId,
-            orgId: '',
-            timesheetId: '',
-            error: error.message || 'Unknown error occurred',
-          }),
-          'EX',
-          1200
-        );
-      }
-      throw error;
-    }
-  }
-  async checkTimesheetStatus(carerId: string, qrcode: string): Promise<any> {
-    try {
-      const timesheet: any = await this.timesheetModel
-        .findOne({
-          carer: carerId,
-          tokenForQrCode: qrcode,
-        })
-        .exec();
-      return timesheet ? timesheet : null;
-    } catch (error: any) {
-      this.logger.error('Error checking timesheet status:', error);
-      throw error;
-    }
-  }
-  async addSSEConnection(qrCode: string, req: any, res: any): Promise<void> {
-    const REDIS_KEY_PREFIX = 'timesheet:qr:';
-    res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
-      'Access-Control-Allow-Origin': '*',
-    });
-    const sendMessage = (data: any) => {
-      res.write(`data: ${JSON.stringify(data)}\n\n`);
-      if (typeof (res as any).flush === 'function') {
-        (res as any).flush();
-      }
-    };
-    sendMessage({ status: 'connected' });
-    const checkStatus = async () => {
-      try {
-        const result = await this.redisClient.get(
-          `${REDIS_KEY_PREFIX}${qrCode}`
-        );
-        if (result) {
-          const data = JSON.parse(result);
-          const timeDiff = Date.now() - new Date(data.timestamp).getTime();
-          if (timeDiff <= 20 * 60 * 1000) {
-            if (data.status === 'success') {
-              sendMessage({ status: 'success' });
-              await this.redisClient.del(`${REDIS_KEY_PREFIX}${qrCode}`);
-              clearInterval(interval);
-              this.redisClient.disconnect();
-              res.end();
-              return;
-            } else if (data.status === 'error') {
-              sendMessage({ status: 'error', error: data.error });
-              await this.redisClient.del(`${REDIS_KEY_PREFIX}${qrCode}`);
-              clearInterval(interval);
-              this.redisClient.disconnect();
-              res.end();
-              return;
-            }
-          } else {
-            sendMessage({ status: 'expired' });
-            await this.redisClient.del(`${REDIS_KEY_PREFIX}${qrCode}`);
-            clearInterval(interval);
-            this.redisClient.disconnect();
-            res.end();
-            return;
-          }
-        } else {
-          sendMessage({ status: 'not_found' });
-        }
-      } catch (error: any) {
-        this.logger.error('Redis check error:', error);
-        sendMessage({ status: 'error', error: 'Internal server error' });
-        clearInterval(interval);
-        this.redisClient.disconnect();
-        res.end();
-        return;
-      }
-    };
-    const interval = setInterval(checkStatus, 500);
-    req.on('close', () => {
-      clearInterval(interval);
-      this.redisClient.disconnect();
-    });
-    setTimeout(() => {
-      sendMessage({ status: 'timeout' });
-      clearInterval(interval);
-      this.redisClient.disconnect();
-      res.end();
-    }, 20 * 60 * 1000);
-  }
-  private async recalculateInvoiceAmount(
-    invoiceId: string,
-    session?: mongoose.ClientSession
-  ): Promise<{ totalAmount: number; shiftSummary: Map<string, any> }> {
-    try {
-      return {} as any;
-    } catch (error: any) {
-      this.logger.error('Error recalculating invoice amount:', error);
+      this.logger.error(
+        `Error exporting timesheets for payroll: ${error.message}`,
+        error.stack
+      );
       throw error;
     }
   }

@@ -1,146 +1,182 @@
-// api/features/src/lib/timesheets/schemas/timesheet.schema.ts
+// libs/api/features/src/lib/timesheets/schemas/timesheet.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 
 export type TimesheetDocument = Timesheet & Document;
 
 export enum TimesheetStatus {
-  PENDING = 'pending',
+  DRAFT = 'draft',
+  SUBMITTED = 'submitted',
+  UNDER_REVIEW = 'under_review',
   APPROVED = 'approved',
   REJECTED = 'rejected',
-  INVALIDATED = 'invalidated',
-}
-
-export enum InvoiceStatus {
-  PENDING_INVOICE = 'pending_invoice',
-  INVOICED = 'invoiced',
   PAID = 'paid',
-  APPROVED = 'approved',
-  INVALIDATED = 'invalidated',
-  IDLE = 'idle',
 }
 
-export enum RequestType {
-  MANUAL = 'manual',
-  AUTO = 'auto',
-}
-
-export enum SignerRole {
-  NURSE = 'nurse',
-  SENIOR_CARER = 'senior carer',
-  MANAGER = 'manager',
+export enum TimesheetPeriod {
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+  BI_WEEKLY = 'bi_weekly',
+  MONTHLY = 'monthly',
+  CUSTOM = 'custom',
 }
 
 @Schema({ _id: false })
-export class Signature {
-  @Prop()
-  storageRef?: string;
+export class TimesheetSummary {
+  @Prop({ type: Number, default: 0 })
+  totalShifts!: number;
+
+  @Prop({ type: Number, default: 0 })
+  scheduledMinutes!: number;
+
+  @Prop({ type: Number, default: 0 })
+  actualMinutes!: number;
+
+  @Prop({ type: Number, default: 0 })
+  regularMinutes!: number;
+
+  @Prop({ type: Number, default: 0 })
+  overtimeMinutes!: number;
+
+  @Prop({ type: Number, default: 0 })
+  weekendMinutes!: number;
+
+  @Prop({ type: Number, default: 0 })
+  holidayMinutes!: number;
+
+  @Prop({ type: Number, default: 0 })
+  nightMinutes!: number;
+
+  @Prop({ type: Number, default: 0 })
+  breakMinutes!: number;
+
+  @Prop({ type: Number, default: 0 })
+  paidBreakMinutes!: number;
+
+  @Prop({ type: Number, default: 0 })
+  unpaidBreakMinutes!: number;
+}
+
+@Schema({ _id: false })
+export class PaymentSummary {
+  @Prop({ type: Number, default: 0 })
+  baseAmount!: number;
+
+  @Prop({ type: Number, default: 0 })
+  overtimeAmount!: number;
+
+  @Prop({ type: Number, default: 0 })
+  weekendAmount!: number;
+
+  @Prop({ type: Number, default: 0 })
+  holidayAmount!: number;
+
+  @Prop({ type: Number, default: 0 })
+  nightAmount!: number;
+
+  @Prop({ type: Number, default: 0 })
+  bonusAmount!: number;
+
+  @Prop({ type: Number, default: 0 })
+  deductionAmount!: number;
+
+  @Prop({ type: Number, default: 0 })
+  totalAmount!: number;
+
+  @Prop({ type: String, default: 'default' })
+  currency!: string;
+}
+
+@Schema({ _id: false })
+export class ApprovalHistory {
+  @Prop({ required: true })
+  status!: string;
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
+  userId!: MongooseSchema.Types.ObjectId;
+
+  @Prop({ type: Date, required: true })
+  timestamp!: Date;
 
   @Prop()
-  downloadUrl?: string;
-
-  @Prop()
-  timestamp?: Date;
-
-  @Prop()
-  ipAddress?: string;
-
-  @Prop()
-  deviceInfo?: string;
-
-  @Prop({ default: false })
-  verified: boolean = false;
-
-  @Prop()
-  signerName?: string;
-
-  @Prop({ type: String, enum: SignerRole })
-  signerRole?: SignerRole;
+  comments?: string;
 }
 
 @Schema({ timestamps: true })
 export class Timesheet {
   @Prop({
     type: MongooseSchema.Types.ObjectId,
-    ref: 'Shift',
+    ref: 'Organization',
     required: true,
   })
-  shiftId!: MongooseSchema.Types.ObjectId;
+  organizationId!: MongooseSchema.Types.ObjectId;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'User',
     required: true,
   })
-  carer!: MongooseSchema.Types.ObjectId;
+  workerId!: MongooseSchema.Types.ObjectId;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
-    ref: 'Organization',
+    ref: 'Department',
+  })
+  departmentId?: MongooseSchema.Types.ObjectId;
+
+  @Prop({ required: true, enum: Object.values(TimesheetPeriod) })
+  periodType!: string;
+
+  @Prop({ required: true, type: Date })
+  periodStart!: Date;
+
+  @Prop({ required: true, type: Date })
+  periodEnd!: Date;
+
+  @Prop({ type: Number })
+  weekNumber?: number;
+
+  @Prop({ type: Number })
+  monthNumber?: number;
+
+  @Prop({ type: Number })
+  year!: number;
+
+  @Prop({
     required: true,
+    enum: Object.values(TimesheetStatus),
+    default: TimesheetStatus.DRAFT,
   })
-  home!: MongooseSchema.Types.ObjectId;
+  status!: string;
 
   @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'Organization',
-    required: false,
+    type: [{ type: MongooseSchema.Types.ObjectId, ref: 'ShiftAssignment' }],
   })
-  agency?: MongooseSchema.Types.ObjectId;
+  shiftAssignments!: MongooseSchema.Types.ObjectId[];
 
-  @Prop({
-    type: String,
-    enum: TimesheetStatus,
-    default: TimesheetStatus.PENDING,
-  })
-  status: any = 'pending';
+  @Prop({ type: TimesheetSummary, required: true, default: {} })
+  summary!: TimesheetSummary;
 
-  @Prop({
-    type: String,
-    enum: InvoiceStatus,
-    default: null,
-  })
-  invoiceStatus?: InvoiceStatus;
+  @Prop({ type: PaymentSummary, required: true, default: {} })
+  paymentSummary!: PaymentSummary;
 
-  @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'Invoice',
-    default: null,
-  })
-  invoiceId?: MongooseSchema.Types.ObjectId;
+  @Prop({ type: [ApprovalHistory] })
+  approvalHistory?: ApprovalHistory[];
 
-  @Prop({ default: null })
-  invoicedAt?: Date;
+  @Prop({ type: Date })
+  submittedAt?: Date;
 
-  @Prop({ default: null })
-  invoiceNumber?: string;
+  @Prop({ type: Date })
+  approvedAt?: Date;
 
-  @Prop({ default: null })
+  @Prop({ type: Date })
   paidAt?: Date;
 
-  @Prop({ default: null })
-  paymentReference?: string;
-
   @Prop({
-    type: Number,
-    min: 1,
-    max: 5,
-    default: null,
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'User',
   })
-  rating?: number;
-
-  @Prop({ default: null })
-  review?: string;
-
-  @Prop({
-    type: String,
-    enum: RequestType,
-    default: RequestType.AUTO,
-  })
-  requestType?: RequestType;
-
-  @Prop()
-  documentUrl?: string;
+  submittedBy?: MongooseSchema.Types.ObjectId;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
@@ -149,53 +185,27 @@ export class Timesheet {
   approvedBy?: MongooseSchema.Types.ObjectId;
 
   @Prop()
-  tokenForQrCode?: string;
+  notes?: string;
 
-  @Prop({ type: Signature })
-  signature?: Signature;
+  @Prop({ type: String })
+  payrollReference?: string;
+
+  @Prop({ type: Object })
+  metadata?: Record<string, any>; // For industry-specific data
 }
 
 export const TimesheetSchema = SchemaFactory.createForClass(Timesheet);
 
-// Add indexes
-TimesheetSchema.index({ home: 1, invoiceStatus: 1 });
-TimesheetSchema.index({ agency: 1, invoiceStatus: 1 });
-TimesheetSchema.index({ carer: 1, status: 1 });
-TimesheetSchema.index({ shiftId: 1 }); // Renamed from shift_
-TimesheetSchema.index({ invoiceId: 1 });
+// Add indexes for better query performance
+TimesheetSchema.index({ organizationId: 1 });
+TimesheetSchema.index({ workerId: 1 });
 TimesheetSchema.index({ status: 1 });
-TimesheetSchema.index({ createdAt: -1 });
-TimesheetSchema.index({ invoiceStatus: 1, invoicedAt: 1 });
-TimesheetSchema.index({ tokenForQrCode: 1 });
-
-// Compound indexes
-TimesheetSchema.index({ home: 1, carer: 1, status: 1 });
-TimesheetSchema.index({ agency: 1, home: 1, invoiceStatus: 1 });
-TimesheetSchema.index({ shiftId: 1, status: 1, invoiceStatus: 1 }); // Renamed from shift_
-
-// Add virtual for shift
-TimesheetSchema.virtual('shift', {
-  ref: 'Shift',
-  localField: 'shiftId', // Changed from shift_
-  foreignField: '_id',
-  justOne: true,
-});
-
-// Add pre-save hook
-TimesheetSchema.pre('save', function (next) {
-  const doc = this as any;
-  if (doc.isModified('invoiceStatus')) {
-    switch (doc.invoiceStatus) {
-      case InvoiceStatus.INVOICED:
-        doc.invoicedAt = new Date();
-        break;
-      case InvoiceStatus.PAID:
-        doc.paidAt = new Date();
-        break;
-      case InvoiceStatus.PENDING_INVOICE:
-      default:
-        break;
-    }
-  }
-  next();
-});
+TimesheetSchema.index({ periodStart: 1 });
+TimesheetSchema.index({ periodEnd: 1 });
+TimesheetSchema.index({ year: 1, monthNumber: 1 });
+TimesheetSchema.index({ year: 1, weekNumber: 1 });
+TimesheetSchema.index({ organizationId: 1, status: 1 });
+TimesheetSchema.index(
+  { organizationId: 1, workerId: 1, periodStart: 1, periodEnd: 1 },
+  { unique: true }
+);
