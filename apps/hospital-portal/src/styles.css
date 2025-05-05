@@ -1,0 +1,142 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  background-color: hsl(var(--background));
+}
+
+@layer base {
+  :root {
+    --background: 230, 50%, 98%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* New blue primary color */
+    --primary: 214 89% 52%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    /* New purple accent color */
+    --accent: 263 70% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 68% 42%; /* IndianRed: #CD5C5C converted to HSL */
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 214 89% 52%;
+    --radius: 0.5rem;
+
+    /* Updated sidebar */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 214 89% 52%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 263 70% 50%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    /* New blue primary color for dark mode */
+    --primary: 214 89% 52%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    /* New purple accent color for dark mode */
+    --accent: 263 70% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 68% 42%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 214 89% 52%;
+
+    /* Updated sidebar for dark mode */
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 214 89% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 263 70% 50%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+/* Custom utility classes for gradients and theme elements */
+@layer components {
+  .bg-gradient-theme {
+    @apply bg-gradient-to-r from-blue-500 to-purple-500;
+  }
+
+  .hover-gradient-theme {
+    @apply hover:from-blue-600 hover:to-purple-600;
+  }
+
+  .text-gradient-theme {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500;
+  }
+
+  .btn-gradient {
+    @apply bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 shadow-md;
+  }
+
+  .day-available {
+    @apply bg-green-500 text-white;
+  }
+
+  .night-available {
+    @apply bg-indigo-500 text-white;
+  }
+
+  /* Full page background gradient */
+  .page-gradient {
+    @apply bg-gradient-to-br from-blue-500/20 to-purple-500/30;
+  }
+
+  /* Card with subtle gradient border */
+  .gradient-border-card {
+    @apply relative rounded-lg bg-white dark:bg-gray-900 p-px overflow-hidden;
+    background-image: linear-gradient(to right bottom, #3b82f6, #8b5cf6);
+  }
+
+  .gradient-border-card::before {
+    content: '';
+    @apply absolute inset-0.5 bg-white dark:bg-gray-900 rounded-md z-0;
+  }
+
+  .gradient-border-card > * {
+    @apply relative z-10;
+  }
+
+  .card-gradient {
+    @apply bg-gradient-to-br from-white to-stone-50;
+  }
+
+  .dark .card-gradient {
+    @apply bg-gradient-to-br from-gray-800 to-gray-900;
+  }
+}

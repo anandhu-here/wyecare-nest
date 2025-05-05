@@ -1,22 +1,27 @@
 // apps/api/src/app/app.module.ts
+
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { CoreModule } from '@wyecare-monorepo/api/core';
-import { FeaturesModule } from '@wyecare-monorepo/features';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { databaseConfig, appConfig } from '@wyecare-monorepo/shared/config';
+import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
+import { OrganizationsModule } from './organizations/organizations.module';
+import { RolesModule } from './roles/roles.module';
+import { CaslModule } from './casl/casl.module';
+import { HospitalModule } from './hospital/hospital.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, appConfig],
     }),
-    CoreModule,
-    FeaturesModule, // You'll need to add this back
+    PrismaModule,
+    AuthModule,
+    UsersModule,
+    OrganizationsModule,
+    RolesModule,
+    CaslModule,
+    HospitalModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

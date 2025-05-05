@@ -1,0 +1,416 @@
+  // apps/api/prisma/schema.prisma
+
+  generator client {
+    provider = "prisma-client-js"
+  }
+
+  datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+  }
+
+  enum StaffType {
+    DOCTOR
+    NURSE
+    TECHNICIAN
+    RECEPTION
+    SUPPORT
+  }
+
+  enum SalaryType {
+    HOURLY
+    MONTHLY
+    WEEKLY
+    PER_SHIFT
+  }
+
+  enum StaffStatus {
+    ACTIVE
+    ON_LEAVE
+    TERMINATED
+  }
+
+
+  // Organization Structure
+  model Organization {
+    id                String         @id @default(uuid())
+    name              String
+    category          OrgCategory
+    description       String?
+    email             String?
+    phone             String?
+    logoUrl           String?
+    websiteUrl        String?
+    address           Address?
+    createdAt         DateTime       @default(now())
+    updatedAt         DateTime       @updatedAt
+
+    // Relationships
+    departments       Department[]
+    users             User[]
+    roles             Role[]
+    sectorConfig      Json?          // Sector-specific configuration
+
+    shiftTypes         ShiftType[]
+    payPeriods         PayPeriod[]
+
+    invitations       Invitation[]
+  }
+
+  enum OrgCategory {
+    HOSPITAL
+    CARE_HOME
+    STAFF_PROVIDER
+    SOFTWARE_COMPANY
+    MANUFACTURING
+    EDUCATION
+    RETAIL
+    LOGISTICS
+    CONSTRUCTION
+    FINANCIAL
+    HOSPITALITY
+    HEALTHCARE
+    OTHER
+  }
+
+  model Address {
+    id              String         @id @default(uuid())
+    street          String
+    city            String
+    state           String
+    zipCode         String
+    country         String
+    countryCode     String?
+    
+    // Relationships
+    organizationId  String?        @unique
+    organization    Organization?  @relation(fields: [organizationId], references: [id])
+    createdAt       DateTime       @default(now())
+    updatedAt       DateTime       @updatedAt
+  }
+
+  model Department {
+    id                String         @id @default(uuid())
+    name              String
+    description       String?
+    parentId          String?
+    parent            Department?    @relation("DepartmentHierarchy", fields: [parentId], references: [id])
+    children          Department[]   @relation("DepartmentHierarchy")
+    organizationId    String
+    organization      Organization   @relation(fields: [organizationId], references: [id])
+    createdAt         DateTime       @default(now())
+    updatedAt         DateTime       @updatedAt
+    
+    // Relationships
+    users             UserDepartment[]
+
+    compensationRates  StaffCompensationRate[]
+    shiftSchedules     ShiftSchedule[]
+    
+    @@unique([name, organizationId, parentId])
+  }
+
+  // User Management
+  model User {
+    id                String              @id @default(uuid())
+    email             String              @unique
+    password          String              // Hashed password
+    firstName         String
+    lastName          String
+    isActive          Boolean             @default(true)
+    lastLoginAt       DateTime?
+    organizationId    String?
+    organization      Organization?       @relation(fields: [organizationId], references: [id])
+    createdAt         DateTime            @default(now())
+    updatedAt         DateTime            @updatedAt
+    
+    // Relationships
+    departments       UserDepartment[]
+    roles             UserRole[]
+    sectorProfile     Json?               // Sector-specific user metadata
+    staffProfile       StaffProfile?
+    approvedAttendance ShiftAttendance[]
+     permissions UserPermission[]
+    createdInvitations Invitation[] @relation("CreatedInvitations")
+    acceptedInvitations Invitation[] @relation("AcceptedInvitations")
+    revokedInvitations  Invitation[] @relation("RevokedInvitations")
+  }
+
+  model UserDepartment {
+    id                String              @id @default(uuid())
+    userId            String
+    user              User                @relation(fields: [userId], references: [id])
+    departmentId      String
+    department        Department          @relation(fields: [departmentId], references: [id])
+    position          String?             // Job title or position
+    isHead            Boolean             @default(false)
+    createdAt         DateTime            @default(now())
+    updatedAt         DateTime            @updatedAt
+    
+    @@unique([userId, departmentId])
+  }
+
+  // Role and Permission System
+  model Role {
+    id                String              @id @default(uuid())
+    name              String
+    description       String?
+    isSystemRole      Boolean             @default(false)
+    sector            OrgCategory?        // Null means cross-sector
+    organizationId    String?
+    organization      Organization?       @relation(fields: [organizationId], references: [id])
+    createdAt         DateTime            @default(now())
+    updatedAt         DateTime            @updatedAt
+    
+    // Relationships
+    users             UserRole[]
+    permissions       RolePermission[]
+    invitations       Invitation[]
+    
+    @@unique([name, organizationId])
+  }
+
+  model Permission {
+    id                String              @id @default(uuid())
+    action            String              // create, read, update, delete, manage
+    subject           String              // User, Patient, etc.
+
+    description       String?
+    createdAt         DateTime            @default(now())
+    updatedAt         DateTime            @updatedAt
+    
+    // Relationships
+    roles             RolePermission[]
+     userPermissions UserPermission[]
+    
+    @@unique([action, subject])
+  }
+
+  model RolePermission {
+    id                String              @id @default(uuid())
+    roleId            String
+    role              Role                @relation(fields: [roleId], references: [id])
+    permissionId      String
+    permission        Permission          @relation(fields: [permissionId], references: [id])
+    conditions        Json?               // CASL conditions as JSON
+    createdAt         DateTime            @default(now())
+    
+    @@unique([roleId, permissionId])
+  }
+
+  model UserRole {
+    id                String              @id @default(uuid())
+    userId            String
+    user              User                @relation(fields: [userId], references: [id])
+    roleId            String
+    role              Role                @relation(fields: [roleId], references: [id])
+    createdAt         DateTime            @default(now())
+    updatedAt         DateTime            @updatedAt
+    validUntil DateTime?
+    @@unique([userId, roleId])
+  }
+
+  // Hospital-specific models - as a starting point for sector-specific models
+  model Patient {
+    id                String              @id @default(uuid())
+    medicalRecordNumber String            @unique
+    firstName         String
+    lastName          String
+    dateOfBirth       DateTime
+    gender            String?
+    contactPhone      String?
+    contactEmail      String?
+    address           Json?
+    organizationId    String              // Hospital organization ID
+    departmentId      String?             // Current department
+    createdAt         DateTime            @default(now())
+    updatedAt         DateTime            @updatedAt
+  }
+
+  model StaffProfile {
+    id                String         @id @default(uuid())
+    userId            String         @unique
+    user              User           @relation(fields: [userId], references: [id])
+    staffType         StaffType
+    specialty         String?
+    experienceYears   Int            @default(0)
+    educationLevel    String?
+    certifications    Json?          // Array of certification objects
+    baseSalaryType    SalaryType     @default(MONTHLY)
+    baseSalaryAmount  Decimal        @default(0)
+    dateJoined        DateTime       @default(now())
+    status            StaffStatus    @default(ACTIVE)
+    createdAt         DateTime       @default(now())
+    updatedAt         DateTime       @updatedAt
+    
+    // Relationships
+    compensationRates StaffCompensationRate[]
+    shiftSchedules    ShiftSchedule[]
+    payments          StaffPayment[]
+  }
+
+  // Shift Type Model
+  model ShiftType {
+    id                String         @id @default(uuid())
+    name              String
+    startTime         DateTime       // Using DateTime for time portion
+    endTime           DateTime       // Using DateTime for time portion
+    isOvernight       Boolean        @default(false)
+    hoursCount        Float
+    basePayMultiplier Float          @default(1.0)
+    description       String?
+    organizationId    String         // For organization-specific shift types
+    organization      Organization   @relation(fields: [organizationId], references: [id])
+    createdAt         DateTime       @default(now())
+    updatedAt         DateTime       @updatedAt
+    
+    // Relationships
+    schedules         ShiftSchedule[]
+    
+    @@unique([name, organizationId])
+  }
+
+  // Staff Compensation Rate Model
+  model StaffCompensationRate {
+    id                  String         @id @default(uuid())
+    staffProfileId      String
+    staffProfile        StaffProfile   @relation(fields: [staffProfileId], references: [id])
+    departmentId        String
+    department          Department     @relation(fields: [departmentId], references: [id])
+    baseRate            Decimal
+    specialtyBonus      Decimal        @default(0)
+    experienceMultiplier Float         @default(1.0)
+    effectiveDate       DateTime       @default(now())
+    endDate             DateTime?
+    createdAt           DateTime       @default(now())
+    updatedAt           DateTime       @updatedAt
+    
+    @@unique([staffProfileId, departmentId, effectiveDate])
+  }
+
+  // Shift Schedule Model
+  model ShiftSchedule {
+    id              String          @id @default(uuid())
+    staffProfileId  String
+    staffProfile    StaffProfile    @relation(fields: [staffProfileId], references: [id])
+    shiftTypeId     String
+    shiftType       ShiftType       @relation(fields: [shiftTypeId], references: [id])
+    departmentId    String
+    department      Department      @relation(fields: [departmentId], references: [id])
+    startDateTime   DateTime
+    endDateTime     DateTime
+    status          String          @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELED, SWAPPED
+    isConfirmed     Boolean         @default(false)
+    notes           String?
+    createdAt       DateTime        @default(now())
+    updatedAt       DateTime        @updatedAt
+    
+    // Relationships
+    attendance      ShiftAttendance?
+  }
+
+  // Shift Attendance Model
+  model ShiftAttendance {
+    id                String          @id @default(uuid())
+    shiftScheduleId   String          @unique
+    shiftSchedule     ShiftSchedule   @relation(fields: [shiftScheduleId], references: [id])
+    actualStartTime   DateTime?
+    actualEndTime     DateTime?
+    status            String          @default("PENDING") // PENDING, PRESENT, LATE, ABSENT, PARTIALLY_COMPLETE
+    overtimeMinutes   Int             @default(0)
+    approvedById      String?
+    approvedBy        User?           @relation(fields: [approvedById], references: [id])
+    notes             String?
+    createdAt         DateTime        @default(now())
+    updatedAt         DateTime        @updatedAt
+  }
+
+  // Pay Period Model
+  model PayPeriod {
+    id              String          @id @default(uuid())
+    organizationId  String
+    organization    Organization    @relation(fields: [organizationId], references: [id])
+    startDate       DateTime
+    endDate         DateTime
+    status          String          @default("OPEN") // OPEN, CALCULATING, FINALIZED, PAID
+    createdAt       DateTime        @default(now())
+    updatedAt       DateTime        @updatedAt
+    
+    // Relationships
+    payments        StaffPayment[]
+    
+    @@unique([organizationId, startDate, endDate])
+  }
+
+  // Staff Payment Model
+  model StaffPayment {
+    id              String          @id @default(uuid())
+    staffProfileId  String
+    staffProfile    StaffProfile    @relation(fields: [staffProfileId], references: [id])
+    payPeriodId     String
+    payPeriod       PayPeriod       @relation(fields: [payPeriodId], references: [id])
+    regularHours    Float           @default(0)
+    overtimeHours   Float           @default(0)
+    regularPay      Decimal         @default(0)
+    overtimePay     Decimal         @default(0)
+    specialtyBonus  Decimal         @default(0)
+    otherBonuses    Decimal         @default(0)
+    deductions      Decimal         @default(0)
+    totalPay        Decimal         @default(0)
+    paymentStatus   String          @default("PENDING") // PENDING, PROCESSED, PAID
+    paymentDate     DateTime?
+    createdAt       DateTime        @default(now())
+    updatedAt       DateTime        @updatedAt
+    
+    @@unique([staffProfileId, payPeriodId])
+  }
+
+  model Invitation {
+    id            String      @id @default(uuid())
+    email         String
+    token         String      @unique
+    status        String      @default("PENDING") // PENDING, ACCEPTED, REVOKED
+    organizationId String?
+    roleId        String?
+    message       String?
+    expiresAt     DateTime?
+    createdAt     DateTime    @default(now())
+    createdById   String
+    acceptedAt    DateTime?
+    acceptedById  String?
+    revokedAt     DateTime?
+    revokedById   String?
+
+    organization  Organization? @relation(fields: [organizationId], references: [id])
+    role          Role?         @relation(fields: [roleId], references: [id])
+    createdBy     User          @relation("CreatedInvitations", fields: [createdById], references: [id])
+    acceptedBy    User?         @relation("AcceptedInvitations", fields: [acceptedById], references: [id])
+    revokedBy     User?         @relation("RevokedInvitations", fields: [revokedById], references: [id])
+
+    @@index([email])
+    @@index([organizationId])
+    @@index([roleId])
+    @@index([createdById])
+    @@index([status])
+  }
+
+  model SystemSettings {
+    id                String    @id @default("settings")
+    requireInvitation Boolean   @default(true)
+    defaultExpiryDays Int       @default(30)
+    updatedAt         DateTime  @updatedAt
+  }
+
+model UserPermission {
+  id            String      @id @default(uuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  permissionId  String
+  permission    Permission  @relation(fields: [permissionId], references: [id])
+  conditions    Json?       // CASL conditions as JSON
+  validUntil    DateTime?   // Optional expiration date for temporary permissions
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  @@unique([userId, permissionId])
+}

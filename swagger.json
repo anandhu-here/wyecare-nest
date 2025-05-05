@@ -1,0 +1,3978 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Login with email and password",
+        "tags": ["auth"]
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "operationId": "AuthController_register",
+        "parameters": [
+          {
+            "name": "invitationToken",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized - Invalid invitation"
+          }
+        },
+        "summary": "Register a new user account",
+        "tags": ["auth"]
+      }
+    },
+    "/auth/profile": {
+      "get": {
+        "operationId": "AuthController_getProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Returns the user profile"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get the current user profile",
+        "tags": ["auth"]
+      }
+    },
+    "/auth/create-super-admin": {
+      "post": {
+        "operationId": "AuthController_createSuperAdmin",
+        "parameters": [
+          {
+            "name": "secretKey",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Super admin created successfully"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized - Invalid secret key"
+          },
+          "409": {
+            "description": "Conflict - Super admin already exists"
+          }
+        },
+        "summary": "Create the initial super admin (one-time operation)",
+        "tags": ["auth"]
+      }
+    },
+    "/auth/register-with-organization": {
+      "post": {
+        "operationId": "AuthController_registerWithOrganization",
+        "parameters": [
+          {
+            "name": "invitationToken",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User registered successfully"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized - Invalid invitation"
+          }
+        },
+        "summary": "Register a new user with organization",
+        "tags": ["auth"]
+      }
+    },
+    "/auth/invitations": {
+      "post": {
+        "operationId": "InvitationsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInvitationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The invitation has been successfully created."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Role not found."
+          },
+          "409": {
+            "description": "Conflict."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new invitation",
+        "tags": ["auth/invitations"]
+      },
+      "get": {
+        "operationId": "InvitationsController_findAll",
+        "parameters": [
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return all invitations."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all invitations",
+        "tags": ["auth/invitations"]
+      }
+    },
+    "/auth/invitations/validate/{token}": {
+      "get": {
+        "operationId": "InvitationsController_validateToken",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return the invitation."
+          },
+          "400": {
+            "description": "Invitation expired or used."
+          },
+          "404": {
+            "description": "Invitation not found."
+          }
+        },
+        "summary": "Validate invitation token",
+        "tags": ["auth/invitations"]
+      }
+    },
+    "/auth/invitations/{id}": {
+      "get": {
+        "operationId": "InvitationsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return the invitation."
+          },
+          "404": {
+            "description": "Invitation not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get invitation by ID",
+        "tags": ["auth/invitations"]
+      }
+    },
+    "/auth/invitations/{id}/revoke": {
+      "patch": {
+        "operationId": "InvitationsController_revoke",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The invitation has been successfully revoked."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Invitation not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revoke invitation by ID",
+        "tags": ["auth/invitations"]
+      }
+    },
+    "/auth/invitations/{id}/resend": {
+      "patch": {
+        "operationId": "InvitationsController_resend",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The invitation has been successfully resent."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Invitation not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Resend invitation by ID",
+        "tags": ["auth/invitations"]
+      }
+    },
+    "/users": {
+      "post": {
+        "operationId": "UsersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The user has been successfully created."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "409": {
+            "description": "Conflict - Email already exists."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new user",
+        "tags": ["users"]
+      },
+      "get": {
+        "operationId": "UsersController_findAll",
+        "parameters": [
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "firstName",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lastName",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "email",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "organizationId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return all users."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all users",
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "operationId": "UsersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return the user."
+          },
+          "404": {
+            "description": "User not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get user by ID",
+        "tags": ["users"]
+      },
+      "patch": {
+        "operationId": "UsersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The user has been successfully updated."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "User not found."
+          },
+          "409": {
+            "description": "Conflict - Email already exists."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update user by ID",
+        "tags": ["users"]
+      },
+      "delete": {
+        "operationId": "UsersController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The user has been successfully deleted."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "User not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete user by ID",
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/roles": {
+      "post": {
+        "operationId": "UsersController_assignRole",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The role has been successfully assigned."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "User or Role not found."
+          },
+          "409": {
+            "description": "Conflict - User already has this role."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Assign a role to a user",
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/roles/{roleId}": {
+      "delete": {
+        "operationId": "UsersController_removeRole",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "roleId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The role has been successfully removed."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "User or Role not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove a role from a user",
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/departments": {
+      "post": {
+        "operationId": "UsersController_updateDepartment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDepartmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The department has been successfully assigned or updated."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "User or Department not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Assign or update a department for a user",
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/departments/{departmentId}": {
+      "delete": {
+        "operationId": "UsersController_removeDepartment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "departmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The department has been successfully removed."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "User or Department not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove a department from a user",
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/permissions": {
+      "get": {
+        "operationId": "UsersController_getUserPermissions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return user permissions."
+          },
+          "404": {
+            "description": "User not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get user permissions",
+        "tags": ["users"]
+      },
+      "post": {
+        "operationId": "UsersController_assignPermission",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignUserPermissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The permission has been successfully assigned."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "User or Permission not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Assign a permission to a user",
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/permissions/{permissionId}": {
+      "delete": {
+        "operationId": "UsersController_removePermission",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "permissionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The permission has been successfully removed."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "User or Permission not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove a permission from a user",
+        "tags": ["users"]
+      }
+    },
+    "/organizations": {
+      "post": {
+        "operationId": "OrganizationsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrganizationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The organization has been successfully created."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new organization",
+        "tags": ["organizations"]
+      },
+      "get": {
+        "operationId": "OrganizationsController_findAll",
+        "parameters": [
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "HOSPITAL",
+                "CARE_HOME",
+                "STAFF_PROVIDER",
+                "SOFTWARE_COMPANY",
+                "MANUFACTURING",
+                "EDUCATION",
+                "RETAIL",
+                "LOGISTICS",
+                "CONSTRUCTION",
+                "FINANCIAL",
+                "HOSPITALITY",
+                "HEALTHCARE",
+                "OTHER"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return all organizations."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all organizations",
+        "tags": ["organizations"]
+      }
+    },
+    "/organizations/{id}": {
+      "get": {
+        "operationId": "OrganizationsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return the organization."
+          },
+          "404": {
+            "description": "Organization not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get organization by ID",
+        "tags": ["organizations"]
+      },
+      "patch": {
+        "operationId": "OrganizationsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrganizationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The organization has been successfully updated."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Organization not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update organization by ID",
+        "tags": ["organizations"]
+      },
+      "delete": {
+        "operationId": "OrganizationsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The organization has been successfully deleted."
+          },
+          "400": {
+            "description": "Bad Request - Cannot delete organization with dependencies."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Organization not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete organization by ID",
+        "tags": ["organizations"]
+      }
+    },
+    "/organizations/{id}/departments": {
+      "post": {
+        "operationId": "OrganizationsController_createDepartment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDepartmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The department has been successfully created."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Organization not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new department in organization",
+        "tags": ["organizations"]
+      },
+      "get": {
+        "operationId": "OrganizationsController_getDepartments",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return all departments."
+          },
+          "404": {
+            "description": "Organization not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all departments in organization",
+        "tags": ["organizations"]
+      }
+    },
+    "/roles": {
+      "post": {
+        "operationId": "RolesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRolesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The role has been successfully created."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "409": {
+            "description": "Conflict - Role already exists."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new role",
+        "tags": ["roles"]
+      },
+      "get": {
+        "operationId": "RolesController_findAll",
+        "parameters": [
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "isSystemRole",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "organizationId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sector",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "HOSPITAL",
+                "CARE_HOME",
+                "STAFF_PROVIDER",
+                "SOFTWARE_COMPANY",
+                "MANUFACTURING",
+                "EDUCATION",
+                "RETAIL",
+                "LOGISTICS",
+                "CONSTRUCTION",
+                "FINANCIAL",
+                "HOSPITALITY",
+                "HEALTHCARE",
+                "OTHER"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return all roles."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all roles",
+        "tags": ["roles"]
+      }
+    },
+    "/roles/permissions": {
+      "get": {
+        "operationId": "RolesController_findAllPermissions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Return all permissions."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all permissions",
+        "tags": ["roles"]
+      }
+    },
+    "/roles/{id}": {
+      "get": {
+        "operationId": "RolesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return the role."
+          },
+          "404": {
+            "description": "Role not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get role by ID",
+        "tags": ["roles"]
+      },
+      "patch": {
+        "operationId": "RolesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRolesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The role has been successfully updated."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Role not found."
+          },
+          "409": {
+            "description": "Conflict - Role already exists."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update role by ID",
+        "tags": ["roles"]
+      },
+      "delete": {
+        "operationId": "RolesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The role has been successfully deleted."
+          },
+          "400": {
+            "description": "Bad Request - Cannot delete role with assigned users or system roles."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Role not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete role by ID",
+        "tags": ["roles"]
+      }
+    },
+    "/roles/{id}/permissions": {
+      "post": {
+        "operationId": "RolesController_assignPermission",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignPermissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The permission has been successfully assigned."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Role or Permission not found."
+          },
+          "409": {
+            "description": "Conflict - Role already has this permission."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Assign a permission to a role",
+        "tags": ["roles"]
+      }
+    },
+    "/roles/{id}/permissions/{permissionId}": {
+      "delete": {
+        "operationId": "RolesController_removePermission",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "permissionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The permission has been successfully removed."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Role or Permission not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove a permission from a role",
+        "tags": ["roles"]
+      }
+    },
+    "/hospital/shift-types": {
+      "post": {
+        "operationId": "ShiftTypesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateShiftTypeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The shift type has been successfully created."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "409": {
+            "description": "Conflict - Shift type already exists."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new shift type",
+        "tags": ["hospital/shift-types"]
+      },
+      "get": {
+        "operationId": "ShiftTypesController_findAll",
+        "parameters": [
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "organizationId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return all shift types."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all shift types",
+        "tags": ["hospital/shift-types"]
+      }
+    },
+    "/hospital/shift-types/{id}": {
+      "get": {
+        "operationId": "ShiftTypesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return the shift type."
+          },
+          "404": {
+            "description": "Shift type not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get shift type by ID",
+        "tags": ["hospital/shift-types"]
+      },
+      "patch": {
+        "operationId": "ShiftTypesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateShiftTypeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The shift type has been successfully updated."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Shift type not found."
+          },
+          "409": {
+            "description": "Conflict - Shift type already exists."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update shift type by ID",
+        "tags": ["hospital/shift-types"]
+      },
+      "delete": {
+        "operationId": "ShiftTypesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The shift type has been successfully deleted."
+          },
+          "400": {
+            "description": "Bad Request - Cannot delete shift type in use."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Shift type not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete shift type by ID",
+        "tags": ["hospital/shift-types"]
+      }
+    },
+    "/hospital/staff-profiles": {
+      "post": {
+        "operationId": "StaffProfilesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStaffProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The staff profile has been successfully created."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "409": {
+            "description": "Conflict - Staff profile already exists."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new staff profile",
+        "tags": ["hospital/staff-profiles"]
+      },
+      "get": {
+        "operationId": "StaffProfilesController_findAll",
+        "parameters": [
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "specialty",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": ["ACTIVE", "ON_LEAVE", "TERMINATED"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "staffType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": ["DOCTOR", "NURSE", "TECHNICIAN", "RECEPTION", "SUPPORT"],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return all staff profiles."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all staff profiles",
+        "tags": ["hospital/staff-profiles"]
+      }
+    },
+    "/hospital/staff-profiles/{id}": {
+      "get": {
+        "operationId": "StaffProfilesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return the staff profile."
+          },
+          "404": {
+            "description": "Staff profile not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get staff profile by ID",
+        "tags": ["hospital/staff-profiles"]
+      },
+      "patch": {
+        "operationId": "StaffProfilesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStaffProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The staff profile has been successfully updated."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Staff profile not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update staff profile by ID",
+        "tags": ["hospital/staff-profiles"]
+      },
+      "delete": {
+        "operationId": "StaffProfilesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The staff profile has been successfully deleted."
+          },
+          "400": {
+            "description": "Bad Request - Cannot delete staff profile with shifts or payments."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Staff profile not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete staff profile by ID",
+        "tags": ["hospital/staff-profiles"]
+      }
+    },
+    "/hospital/staff-profiles/{id}/compensation-rates": {
+      "post": {
+        "operationId": "StaffProfilesController_addCompensationRate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCompensationRateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The compensation rate has been successfully added."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Staff profile or department not found."
+          },
+          "409": {
+            "description": "Conflict - Compensation rate already exists."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add a compensation rate to a staff profile",
+        "tags": ["hospital/staff-profiles"]
+      }
+    },
+    "/hospital/staff-profiles/{id}/compensation-rates/{rateId}": {
+      "delete": {
+        "operationId": "StaffProfilesController_removeCompensationRate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rateId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The compensation rate has been successfully removed."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Staff profile or compensation rate not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove a compensation rate from a staff profile",
+        "tags": ["hospital/staff-profiles"]
+      }
+    },
+    "/hospital/shift-schedules": {
+      "post": {
+        "operationId": "ShiftSchedulesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateShiftScheduleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The shift schedule has been successfully created."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Staff Profile, Shift Type, or Department not found."
+          },
+          "409": {
+            "description": "Conflict - Staff member already has a shift during this time."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new shift schedule",
+        "tags": ["hospital/shift-schedules"]
+      },
+      "get": {
+        "operationId": "ShiftSchedulesController_findAll",
+        "parameters": [
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "departmentId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "staffProfileId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return all shift schedules."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all shift schedules",
+        "tags": ["hospital/shift-schedules"]
+      }
+    },
+    "/hospital/shift-schedules/{id}": {
+      "get": {
+        "operationId": "ShiftSchedulesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return the shift schedule."
+          },
+          "404": {
+            "description": "Shift schedule not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get shift schedule by ID",
+        "tags": ["hospital/shift-schedules"]
+      },
+      "patch": {
+        "operationId": "ShiftSchedulesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateShiftScheduleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The shift schedule has been successfully updated."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Shift schedule not found."
+          },
+          "409": {
+            "description": "Conflict - Staff member already has a shift during this time."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update shift schedule by ID",
+        "tags": ["hospital/shift-schedules"]
+      },
+      "delete": {
+        "operationId": "ShiftSchedulesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The shift schedule has been successfully deleted."
+          },
+          "400": {
+            "description": "Bad Request - Cannot delete shift with attendance records."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Shift schedule not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete shift schedule by ID",
+        "tags": ["hospital/shift-schedules"]
+      }
+    },
+    "/hospital/shift-attendances": {
+      "post": {
+        "operationId": "ShiftAttendancesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateShiftAttendanceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The shift attendance has been successfully created."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Shift Schedule not found."
+          },
+          "409": {
+            "description": "Conflict - Attendance record already exists."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new shift attendance record",
+        "tags": ["hospital/shift-attendances"]
+      },
+      "get": {
+        "operationId": "ShiftAttendancesController_findAll",
+        "parameters": [
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "departmentId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return all shift attendance records."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all shift attendance records",
+        "tags": ["hospital/shift-attendances"]
+      }
+    },
+    "/hospital/shift-attendances/{id}": {
+      "get": {
+        "operationId": "ShiftAttendancesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return the shift attendance record."
+          },
+          "404": {
+            "description": "Shift attendance not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get shift attendance by ID",
+        "tags": ["hospital/shift-attendances"]
+      },
+      "patch": {
+        "operationId": "ShiftAttendancesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateShiftAttendanceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The shift attendance has been successfully updated."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Shift attendance not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update shift attendance by ID",
+        "tags": ["hospital/shift-attendances"]
+      },
+      "delete": {
+        "operationId": "ShiftAttendancesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The shift attendance has been successfully deleted."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Shift attendance not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete shift attendance by ID",
+        "tags": ["hospital/shift-attendances"]
+      }
+    },
+    "/hospital/pay-periods": {
+      "post": {
+        "operationId": "PayPeriodsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayPeriodDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The pay period has been successfully created."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Organization not found."
+          },
+          "409": {
+            "description": "Conflict - Pay period already exists or overlaps."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new pay period",
+        "tags": ["hospital/pay-periods"]
+      },
+      "get": {
+        "operationId": "PayPeriodsController_findAll",
+        "parameters": [
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return all pay periods."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all pay periods",
+        "tags": ["hospital/pay-periods"]
+      }
+    },
+    "/hospital/pay-periods/{id}": {
+      "get": {
+        "operationId": "PayPeriodsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return the pay period."
+          },
+          "404": {
+            "description": "Pay period not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get pay period by ID",
+        "tags": ["hospital/pay-periods"]
+      },
+      "patch": {
+        "operationId": "PayPeriodsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePayPeriodDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The pay period has been successfully updated."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Pay period not found."
+          },
+          "409": {
+            "description": "Conflict - Pay period overlaps with another."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update pay period by ID",
+        "tags": ["hospital/pay-periods"]
+      },
+      "delete": {
+        "operationId": "PayPeriodsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The pay period has been successfully deleted."
+          },
+          "400": {
+            "description": "Bad Request - Cannot delete pay period with payments."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Pay period not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete pay period by ID",
+        "tags": ["hospital/pay-periods"]
+      }
+    },
+    "/hospital/staff-payments": {
+      "post": {
+        "operationId": "StaffPaymentsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStaffPaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The staff payment has been successfully created."
+          },
+          "400": {
+            "description": "Bad Request."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Staff Profile or Pay Period not found."
+          },
+          "409": {
+            "description": "Conflict - Payment already exists."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new staff payment",
+        "tags": ["hospital/staff-payments"]
+      },
+      "get": {
+        "operationId": "StaffPaymentsController_findAll",
+        "parameters": [
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "payPeriodId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "staffProfileId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "paymentStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return all staff payments."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all staff payments",
+        "tags": ["hospital/staff-payments"]
+      }
+    },
+    "/hospital/staff-payments/{id}": {
+      "get": {
+        "operationId": "StaffPaymentsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return the staff payment."
+          },
+          "404": {
+            "description": "Staff payment not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get staff payment by ID",
+        "tags": ["hospital/staff-payments"]
+      },
+      "patch": {
+        "operationId": "StaffPaymentsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStaffPaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The staff payment has been successfully updated."
+          },
+          "400": {
+            "description": "Bad Request - Cannot update payment for finalized pay period."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Staff payment not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update staff payment by ID",
+        "tags": ["hospital/staff-payments"]
+      },
+      "delete": {
+        "operationId": "StaffPaymentsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The staff payment has been successfully deleted."
+          },
+          "400": {
+            "description": "Bad Request - Cannot delete payment for finalized pay period."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Staff payment not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete staff payment by ID",
+        "tags": ["hospital/staff-payments"]
+      }
+    }
+  },
+  "info": {
+    "title": "Multi-Sector Management API",
+    "description": "API for managing organizations across multiple sectors",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "auth",
+      "description": "Authentication endpoints"
+    },
+    {
+      "name": "users",
+      "description": "User management endpoints"
+    },
+    {
+      "name": "organizations",
+      "description": "Organization management endpoints"
+    },
+    {
+      "name": "roles",
+      "description": "Role management endpoints"
+    }
+  ],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "admin@example.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "password123"
+          }
+        },
+        "required": ["email", "password"]
+      },
+      "UserDepartmentDto": {
+        "type": "object",
+        "properties": {
+          "departmentId": {
+            "type": "string",
+            "description": "Department ID"
+          },
+          "position": {
+            "type": "string",
+            "description": "User position in department"
+          },
+          "isHead": {
+            "type": "boolean",
+            "description": "Whether user is head of department"
+          }
+        },
+        "required": ["departmentId"]
+      },
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "User email"
+          },
+          "password": {
+            "type": "string",
+            "description": "User password"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "User first name"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "User last name"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "User active status",
+            "default": true
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Organization ID"
+          },
+          "roles": {
+            "description": "Role IDs to assign",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "departments": {
+            "description": "Departments to assign",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserDepartmentDto"
+            }
+          },
+          "sectorProfile": {
+            "type": "object",
+            "description": "Sector-specific user profile data"
+          }
+        },
+        "required": ["email", "password", "firstName", "lastName"]
+      },
+      "CreateInvitationDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email address of the invitee"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Organization ID (if inviting to specific org)"
+          },
+          "roleId": {
+            "type": "string",
+            "description": "Role ID to assign to the user upon acceptance"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Expiration date for the invitation"
+          },
+          "message": {
+            "type": "string",
+            "description": "Optional message to include with the invitation"
+          }
+        },
+        "required": ["email", "organizationId"]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "User email"
+          },
+          "password": {
+            "type": "string",
+            "description": "User password"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "User first name"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "User last name"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "User active status",
+            "default": true
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Organization ID"
+          },
+          "roles": {
+            "description": "Role IDs to assign",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "departments": {
+            "description": "Departments to assign",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserDepartmentDto"
+            }
+          },
+          "sectorProfile": {
+            "type": "object",
+            "description": "Sector-specific user profile data"
+          }
+        }
+      },
+      "AssignRoleDto": {
+        "type": "object",
+        "properties": {
+          "roleId": {
+            "type": "string",
+            "description": "Role ID to assign to the user"
+          },
+          "validUntil": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Expiration date for the role (temporary role)"
+          }
+        },
+        "required": ["roleId"]
+      },
+      "UpdateUserDepartmentDto": {
+        "type": "object",
+        "properties": {
+          "departmentId": {
+            "type": "string",
+            "description": "Department ID"
+          },
+          "position": {
+            "type": "string",
+            "description": "User position in department"
+          },
+          "isHead": {
+            "type": "boolean",
+            "description": "Whether user is head of department"
+          }
+        },
+        "required": ["departmentId"]
+      },
+      "AssignUserPermissionDto": {
+        "type": "object",
+        "properties": {
+          "permissionId": {
+            "type": "string",
+            "description": "Permission ID to assign to the user"
+          },
+          "conditions": {
+            "type": "object",
+            "description": "Conditions for the permission (CASL conditions)"
+          },
+          "validUntil": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Expiration date for the permission (temporary access)"
+          }
+        },
+        "required": ["permissionId"]
+      },
+      "AddressDto": {
+        "type": "object",
+        "properties": {
+          "street": {
+            "type": "string",
+            "description": "Street address"
+          },
+          "city": {
+            "type": "string",
+            "description": "City"
+          },
+          "state": {
+            "type": "string",
+            "description": "State/Province"
+          },
+          "zipCode": {
+            "type": "string",
+            "description": "Zip/Postal Code"
+          },
+          "country": {
+            "type": "string",
+            "description": "Country"
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "Country Code"
+          }
+        },
+        "required": ["street", "city", "state", "zipCode", "country"]
+      },
+      "CreateOrganizationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Organization name"
+          },
+          "category": {
+            "type": "string",
+            "description": "Organization category",
+            "enum": [
+              "HOSPITAL",
+              "CARE_HOME",
+              "STAFF_PROVIDER",
+              "SOFTWARE_COMPANY",
+              "MANUFACTURING",
+              "EDUCATION",
+              "RETAIL",
+              "LOGISTICS",
+              "CONSTRUCTION",
+              "FINANCIAL",
+              "HOSPITALITY",
+              "HEALTHCARE",
+              "OTHER"
+            ],
+            "example": "HOSPITAL"
+          },
+          "description": {
+            "type": "string",
+            "description": "Organization description"
+          },
+          "email": {
+            "type": "string",
+            "description": "Organization email"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Organization phone"
+          },
+          "websiteUrl": {
+            "type": "string",
+            "description": "Organization website URL"
+          },
+          "logoUrl": {
+            "type": "string",
+            "description": "Organization logo URL"
+          },
+          "sectorConfig": {
+            "type": "object",
+            "description": "Sector-specific configuration"
+          },
+          "address": {
+            "description": "Department address",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AddressDto"
+              }
+            ]
+          }
+        },
+        "required": ["name", "category"]
+      },
+      "UpdateOrganizationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Organization name"
+          },
+          "category": {
+            "type": "string",
+            "description": "Organization category",
+            "enum": [
+              "HOSPITAL",
+              "CARE_HOME",
+              "STAFF_PROVIDER",
+              "SOFTWARE_COMPANY",
+              "MANUFACTURING",
+              "EDUCATION",
+              "RETAIL",
+              "LOGISTICS",
+              "CONSTRUCTION",
+              "FINANCIAL",
+              "HOSPITALITY",
+              "HEALTHCARE",
+              "OTHER"
+            ],
+            "example": "HOSPITAL"
+          },
+          "description": {
+            "type": "string",
+            "description": "Organization description"
+          },
+          "email": {
+            "type": "string",
+            "description": "Organization email"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Organization phone"
+          },
+          "websiteUrl": {
+            "type": "string",
+            "description": "Organization website URL"
+          },
+          "logoUrl": {
+            "type": "string",
+            "description": "Organization logo URL"
+          },
+          "sectorConfig": {
+            "type": "object",
+            "description": "Sector-specific configuration"
+          },
+          "address": {
+            "description": "Organization address",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AddressDto"
+              }
+            ]
+          }
+        }
+      },
+      "CreateDepartmentDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Department name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Department description"
+          },
+          "parentId": {
+            "type": "string",
+            "description": "Parent department ID"
+          }
+        },
+        "required": ["name"]
+      },
+      "CreateRolesDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Role name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Role description"
+          },
+          "isSystemRole": {
+            "type": "boolean",
+            "description": "Is this a system-wide role",
+            "default": false
+          },
+          "sector": {
+            "type": "string",
+            "description": "Sector this role applies to (null means cross-sector)",
+            "enum": [
+              "HOSPITAL",
+              "CARE_HOME",
+              "STAFF_PROVIDER",
+              "SOFTWARE_COMPANY",
+              "MANUFACTURING",
+              "EDUCATION",
+              "RETAIL",
+              "LOGISTICS",
+              "CONSTRUCTION",
+              "FINANCIAL",
+              "HOSPITALITY",
+              "HEALTHCARE",
+              "OTHER"
+            ]
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Organization ID (null for system roles)"
+          },
+          "permissions": {
+            "description": "Permission IDs to assign",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["name"]
+      },
+      "UpdateRolesDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Role name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Role description"
+          },
+          "isSystemRole": {
+            "type": "boolean",
+            "description": "Is this a system-wide role",
+            "default": false
+          },
+          "sector": {
+            "type": "string",
+            "description": "Sector this role applies to (null means cross-sector)",
+            "enum": [
+              "HOSPITAL",
+              "CARE_HOME",
+              "STAFF_PROVIDER",
+              "SOFTWARE_COMPANY",
+              "MANUFACTURING",
+              "EDUCATION",
+              "RETAIL",
+              "LOGISTICS",
+              "CONSTRUCTION",
+              "FINANCIAL",
+              "HOSPITALITY",
+              "HEALTHCARE",
+              "OTHER"
+            ]
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Organization ID (null for system roles)"
+          },
+          "permissions": {
+            "description": "Permission IDs to assign",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "AssignPermissionDto": {
+        "type": "object",
+        "properties": {
+          "permissionId": {
+            "type": "string",
+            "description": "Permission ID to assign"
+          },
+          "conditions": {
+            "type": "object",
+            "description": "Conditions for this permission (CASL conditions as JSON)",
+            "example": {
+              "organizationId": {
+                "$eq": "$user.organizationId"
+              }
+            }
+          }
+        },
+        "required": ["permissionId"]
+      },
+      "CreateShiftTypeDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Shift type name (e.g., Morning, Night)"
+          },
+          "startTime": {
+            "type": "string",
+            "description": "Start time in 24-hour format (HH:MM)",
+            "example": "08:00"
+          },
+          "endTime": {
+            "type": "string",
+            "description": "End time in 24-hour format (HH:MM)",
+            "example": "16:00"
+          },
+          "isOvernight": {
+            "type": "boolean",
+            "description": "Whether the shift spans overnight (e.g., 22:00 to 06:00)",
+            "default": false
+          },
+          "basePayMultiplier": {
+            "type": "number",
+            "description": "Base pay multiplier (e.g., 1.5 for night shifts)",
+            "default": 1,
+            "minimum": 1,
+            "maximum": 3
+          },
+          "description": {
+            "type": "string",
+            "description": "Shift type description"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Organization ID"
+          }
+        },
+        "required": ["name", "startTime", "endTime", "organizationId"]
+      },
+      "UpdateShiftTypeDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Shift type name (e.g., Morning, Night)"
+          },
+          "startTime": {
+            "type": "string",
+            "description": "Start time in 24-hour format (HH:MM)",
+            "example": "08:00"
+          },
+          "endTime": {
+            "type": "string",
+            "description": "End time in 24-hour format (HH:MM)",
+            "example": "16:00"
+          },
+          "isOvernight": {
+            "type": "boolean",
+            "description": "Whether the shift spans overnight (e.g., 22:00 to 06:00)",
+            "default": false
+          },
+          "basePayMultiplier": {
+            "type": "number",
+            "description": "Base pay multiplier (e.g., 1.5 for night shifts)",
+            "default": 1,
+            "minimum": 1,
+            "maximum": 3
+          },
+          "description": {
+            "type": "string",
+            "description": "Shift type description"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Organization ID"
+          }
+        }
+      },
+      "CreateCompensationRateDto": {
+        "type": "object",
+        "properties": {
+          "departmentId": {
+            "type": "string",
+            "description": "Department ID"
+          },
+          "baseRate": {
+            "type": "number",
+            "description": "Base rate (hourly or per shift)",
+            "example": 50
+          },
+          "specialtyBonus": {
+            "type": "number",
+            "description": "Specialty bonus",
+            "default": 0,
+            "example": 10
+          },
+          "experienceMultiplier": {
+            "type": "number",
+            "description": "Experience multiplier",
+            "default": 1,
+            "minimum": 1,
+            "maximum": 2,
+            "example": 1.25
+          },
+          "effectiveDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Effective date",
+            "default": "Current date"
+          },
+          "endDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "End date (if applicable)"
+          }
+        },
+        "required": ["departmentId", "baseRate"]
+      },
+      "CreateStaffProfileDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "User ID"
+          },
+          "staffType": {
+            "type": "string",
+            "description": "Staff type",
+            "enum": ["DOCTOR", "NURSE", "TECHNICIAN", "RECEPTION", "SUPPORT"]
+          },
+          "specialty": {
+            "type": "string",
+            "description": "Specialty (e.g., Cardiology, Orthopedics)"
+          },
+          "experienceYears": {
+            "type": "number",
+            "description": "Years of experience",
+            "default": 0
+          },
+          "educationLevel": {
+            "type": "string",
+            "description": "Education level"
+          },
+          "certifications": {
+            "type": "object",
+            "description": "Certifications as JSON array",
+            "example": [
+              {
+                "name": "Basic Life Support",
+                "issuer": "AHA",
+                "expiry": "2025-01-01"
+              },
+              {
+                "name": "Advanced Cardiac Life Support",
+                "issuer": "AHA",
+                "expiry": "2025-01-01"
+              }
+            ]
+          },
+          "baseSalaryType": {
+            "type": "string",
+            "description": "Base salary type",
+            "enum": ["HOURLY", "MONTHLY", "WEEKLY", "PER_SHIFT"],
+            "default": "MONTHLY"
+          },
+          "baseSalaryAmount": {
+            "type": "number",
+            "description": "Base salary amount",
+            "default": 0
+          },
+          "dateJoined": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Date joined",
+            "default": "Current date"
+          },
+          "status": {
+            "type": "string",
+            "description": "Staff status",
+            "enum": ["ACTIVE", "ON_LEAVE", "TERMINATED"],
+            "default": "ACTIVE"
+          },
+          "compensationRates": {
+            "description": "Compensation rates",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateCompensationRateDto"
+            }
+          }
+        },
+        "required": ["userId", "staffType"]
+      },
+      "UpdateStaffProfileDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "User ID"
+          },
+          "staffType": {
+            "type": "string",
+            "description": "Staff type",
+            "enum": ["DOCTOR", "NURSE", "TECHNICIAN", "RECEPTION", "SUPPORT"]
+          },
+          "specialty": {
+            "type": "string",
+            "description": "Specialty (e.g., Cardiology, Orthopedics)"
+          },
+          "experienceYears": {
+            "type": "number",
+            "description": "Years of experience",
+            "default": 0
+          },
+          "educationLevel": {
+            "type": "string",
+            "description": "Education level"
+          },
+          "certifications": {
+            "type": "object",
+            "description": "Certifications as JSON array",
+            "example": [
+              {
+                "name": "Basic Life Support",
+                "issuer": "AHA",
+                "expiry": "2025-01-01"
+              },
+              {
+                "name": "Advanced Cardiac Life Support",
+                "issuer": "AHA",
+                "expiry": "2025-01-01"
+              }
+            ]
+          },
+          "baseSalaryType": {
+            "type": "string",
+            "description": "Base salary type",
+            "enum": ["HOURLY", "MONTHLY", "WEEKLY", "PER_SHIFT"],
+            "default": "MONTHLY"
+          },
+          "baseSalaryAmount": {
+            "type": "number",
+            "description": "Base salary amount",
+            "default": 0
+          },
+          "dateJoined": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Date joined",
+            "default": "Current date"
+          },
+          "status": {
+            "type": "string",
+            "description": "Staff status",
+            "enum": ["ACTIVE", "ON_LEAVE", "TERMINATED"],
+            "default": "ACTIVE"
+          },
+          "compensationRates": {
+            "description": "Compensation rates",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateCompensationRateDto"
+            }
+          }
+        }
+      },
+      "CreateShiftScheduleDto": {
+        "type": "object",
+        "properties": {
+          "staffProfileId": {
+            "type": "string",
+            "description": "Staff Profile ID"
+          },
+          "shiftTypeId": {
+            "type": "string",
+            "description": "Shift Type ID"
+          },
+          "departmentId": {
+            "type": "string",
+            "description": "Department ID"
+          },
+          "startDateTime": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Shift start date and time"
+          },
+          "endDateTime": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Shift end date and time"
+          },
+          "status": {
+            "type": "string",
+            "description": "Shift status",
+            "enum": ["SCHEDULED", "COMPLETED", "CANCELED", "SWAPPED"],
+            "default": "SCHEDULED"
+          },
+          "isConfirmed": {
+            "type": "boolean",
+            "description": "Whether the shift is confirmed by the staff",
+            "default": false
+          },
+          "notes": {
+            "type": "string",
+            "description": "Shift notes"
+          }
+        },
+        "required": [
+          "staffProfileId",
+          "shiftTypeId",
+          "departmentId",
+          "startDateTime",
+          "endDateTime"
+        ]
+      },
+      "UpdateShiftScheduleDto": {
+        "type": "object",
+        "properties": {
+          "staffProfileId": {
+            "type": "string",
+            "description": "Staff Profile ID"
+          },
+          "shiftTypeId": {
+            "type": "string",
+            "description": "Shift Type ID"
+          },
+          "departmentId": {
+            "type": "string",
+            "description": "Department ID"
+          },
+          "startDateTime": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Shift start date and time"
+          },
+          "endDateTime": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Shift end date and time"
+          },
+          "status": {
+            "type": "string",
+            "description": "Shift status",
+            "enum": ["SCHEDULED", "COMPLETED", "CANCELED", "SWAPPED"],
+            "default": "SCHEDULED"
+          },
+          "isConfirmed": {
+            "type": "boolean",
+            "description": "Whether the shift is confirmed by the staff",
+            "default": false
+          },
+          "notes": {
+            "type": "string",
+            "description": "Shift notes"
+          }
+        }
+      },
+      "CreateShiftAttendanceDto": {
+        "type": "object",
+        "properties": {
+          "shiftScheduleId": {
+            "type": "string",
+            "description": "Shift Schedule ID"
+          },
+          "actualStartTime": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Actual start time of the shift"
+          },
+          "actualEndTime": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Actual end time of the shift"
+          },
+          "status": {
+            "type": "string",
+            "description": "Attendance status",
+            "enum": [
+              "PENDING",
+              "PRESENT",
+              "LATE",
+              "ABSENT",
+              "PARTIALLY_COMPLETE"
+            ],
+            "default": "PENDING"
+          },
+          "overtimeMinutes": {
+            "type": "number",
+            "description": "Overtime minutes",
+            "default": 0
+          },
+          "notes": {
+            "type": "string",
+            "description": "Notes about the attendance"
+          }
+        },
+        "required": ["shiftScheduleId"]
+      },
+      "UpdateShiftAttendanceDto": {
+        "type": "object",
+        "properties": {
+          "shiftScheduleId": {
+            "type": "string",
+            "description": "Shift Schedule ID"
+          },
+          "actualStartTime": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Actual start time of the shift"
+          },
+          "actualEndTime": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Actual end time of the shift"
+          },
+          "status": {
+            "type": "string",
+            "description": "Attendance status",
+            "enum": [
+              "PENDING",
+              "PRESENT",
+              "LATE",
+              "ABSENT",
+              "PARTIALLY_COMPLETE"
+            ],
+            "default": "PENDING"
+          },
+          "overtimeMinutes": {
+            "type": "number",
+            "description": "Overtime minutes",
+            "default": 0
+          },
+          "notes": {
+            "type": "string",
+            "description": "Notes about the attendance"
+          }
+        }
+      },
+      "CreatePayPeriodDto": {
+        "type": "object",
+        "properties": {
+          "organizationId": {
+            "type": "string",
+            "description": "Organization ID"
+          },
+          "startDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Pay period start date"
+          },
+          "endDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Pay period end date"
+          },
+          "status": {
+            "type": "string",
+            "description": "Pay period status",
+            "enum": ["OPEN", "CALCULATING", "FINALIZED", "PAID"],
+            "default": "OPEN"
+          }
+        },
+        "required": ["organizationId", "startDate", "endDate"]
+      },
+      "UpdatePayPeriodDto": {
+        "type": "object",
+        "properties": {
+          "organizationId": {
+            "type": "string",
+            "description": "Organization ID"
+          },
+          "startDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Pay period start date"
+          },
+          "endDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Pay period end date"
+          },
+          "status": {
+            "type": "string",
+            "description": "Pay period status",
+            "enum": ["OPEN", "CALCULATING", "FINALIZED", "PAID"],
+            "default": "OPEN"
+          }
+        }
+      },
+      "CreateStaffPaymentDto": {
+        "type": "object",
+        "properties": {
+          "staffProfileId": {
+            "type": "string",
+            "description": "Staff Profile ID"
+          },
+          "payPeriodId": {
+            "type": "string",
+            "description": "Pay Period ID"
+          },
+          "regularHours": {
+            "type": "number",
+            "description": "Regular hours worked"
+          },
+          "overtimeHours": {
+            "type": "number",
+            "description": "Overtime hours worked",
+            "default": 0
+          },
+          "regularPay": {
+            "type": "number",
+            "description": "Regular pay amount"
+          },
+          "overtimePay": {
+            "type": "number",
+            "description": "Overtime pay amount",
+            "default": 0
+          },
+          "specialtyBonus": {
+            "type": "number",
+            "description": "Specialty bonus amount",
+            "default": 0
+          },
+          "otherBonuses": {
+            "type": "number",
+            "description": "Other bonuses amount",
+            "default": 0
+          },
+          "deductions": {
+            "type": "number",
+            "description": "Deductions amount",
+            "default": 0
+          },
+          "paymentStatus": {
+            "type": "string",
+            "description": "Payment status",
+            "enum": ["PENDING", "PROCESSING", "PAID", "FAILED"],
+            "default": "PENDING"
+          },
+          "paymentDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Payment date"
+          }
+        },
+        "required": [
+          "staffProfileId",
+          "payPeriodId",
+          "regularHours",
+          "regularPay"
+        ]
+      },
+      "UpdateStaffPaymentDto": {
+        "type": "object",
+        "properties": {
+          "staffProfileId": {
+            "type": "string",
+            "description": "Staff Profile ID"
+          },
+          "payPeriodId": {
+            "type": "string",
+            "description": "Pay Period ID"
+          },
+          "regularHours": {
+            "type": "number",
+            "description": "Regular hours worked"
+          },
+          "overtimeHours": {
+            "type": "number",
+            "description": "Overtime hours worked",
+            "default": 0
+          },
+          "regularPay": {
+            "type": "number",
+            "description": "Regular pay amount"
+          },
+          "overtimePay": {
+            "type": "number",
+            "description": "Overtime pay amount",
+            "default": 0
+          },
+          "specialtyBonus": {
+            "type": "number",
+            "description": "Specialty bonus amount",
+            "default": 0
+          },
+          "otherBonuses": {
+            "type": "number",
+            "description": "Other bonuses amount",
+            "default": 0
+          },
+          "deductions": {
+            "type": "number",
+            "description": "Deductions amount",
+            "default": 0
+          },
+          "paymentStatus": {
+            "type": "string",
+            "description": "Payment status",
+            "enum": ["PENDING", "PROCESSING", "PAID", "FAILED"],
+            "default": "PENDING"
+          },
+          "paymentDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Payment date"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,71 @@
+@baseUrl = http://localhost:3000/api
+
+### Environment Variables
+@superAdminEmail = anandhu@wyecare.com
+@superAdminPassword = testing@123
+@secretKey = f291f153f3cda6909d15651e80eb479c8227793adb9b09c137bfd4446dedeca3948bbccc4abb9f42f6547d5cb99cbd1d118b6d552ccf56e10c3d040f1691748b
+
+### Create Super Admin
+POST {{baseUrl}}/auth/create-super-admin?secretKey={{secretKey}}
+Content-Type: application/json
+
+{
+  "email": "{{superAdminEmail}}",
+  "password": "{{superAdminPassword}}",
+  "firstName": "Super",
+  "lastName": "Admin"
+}
+
+### Login as Super Admin
+# @name superAdminLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{superAdminEmail}}",
+  "password": "{{superAdminPassword}}"
+}
+
+### Store auth token from login response
+@authToken = {{superAdminLogin.response.body.token}}
+
+### Get Current User Profile (to verify super admin access)
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{authToken}}
+
+### Create Organization (example of using the token)
+POST {{baseUrl}}/organizations
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Example Hospital",
+  "category": "HOSPITAL",
+  "description": "A leading healthcare provider",
+  "email": "contact@example-hospital.com",
+  "phone": "9876543210",
+  "websiteUrl": "https://example-hospital.com",
+  "address": {
+    "street": "456 Hospital Avenue",
+    "city": "Medical City",
+    "state": "Health State",
+    "zipCode": "54321",
+    "country": "USA"
+  }
+}
+
+### Get All Organizations
+GET {{baseUrl}}/organizations
+Authorization: Bearer {{authToken}}
+
+### Invite Organization Admin
+POST {{baseUrl}}/auth/invitations
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "email": "org-admin@example-hospital.com",
+  "organizationId": "REPLACE_WITH_ACTUAL_ORG_ID_AFTER_CREATION",
+  "roleId": "REPLACE_WITH_ORG_ADMIN_ROLE_ID",
+  "message": "You are invited to join Example Hospital as an Organization Administrator"
+}
