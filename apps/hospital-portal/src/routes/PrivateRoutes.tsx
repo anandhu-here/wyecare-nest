@@ -1,19 +1,35 @@
 import React, { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAppSelector } from '@/app/hooks';
-import { selectIsAuthenticated, selectAuthLoading } from '@/features/auth/authSlice';
+import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { selectIsAuthenticated, selectAuthLoading, logout } from '@/features/auth/authSlice';
 import { useGetProfileQuery } from '@/features/auth/authApi';
 
 export function PrivateRoute() {
     const location = useLocation();
     const isAuthenticated = useAppSelector(selectIsAuthenticated);
     const isAuthLoading = useAppSelector(selectAuthLoading);
+    const dispatch = useAppDispatch();
 
     // Use RTK Query to fetch the user profile if we have a token but no user data
-    const { isLoading: isProfileLoading } = useGetProfileQuery(undefined, {
+    const { isLoading: isProfileLoading,
+        error: profileError,
+        data: profileData,
+        isError: isProfileError,
+        isSuccess: isProfileSuccess,
+    } = useGetProfileQuery(undefined, {
         // Skip the query if not authenticated
         skip: !isAuthenticated,
     });
+
+    useEffect(() => {
+        if (isProfileSuccess && profileData) {
+            // Handle successful profile fetch if needed
+            console.log('Profile fetched successfully:', profileData);
+        } else if (isProfileError) {
+            dispatch(logout()); // Log out if there's an error fetching the profile
+        }
+    }, [isProfileSuccess, profileData, isProfileError, dispatch]);
+
 
     // Combined loading state
     const isLoading = isAuthLoading || isProfileLoading;

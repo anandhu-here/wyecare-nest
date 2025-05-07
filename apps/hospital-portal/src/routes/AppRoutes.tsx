@@ -47,6 +47,8 @@ export function AppRoutes() {
     // Auto-redirect when auth state changes
     useEffect(() => {
         if (isAuthenticated && window.location.pathname === '/login') {
+            console
+                .log('Redirecting to dashboard...');
             navigate('/dashboard');
         }
     }, [isAuthenticated, navigate]);

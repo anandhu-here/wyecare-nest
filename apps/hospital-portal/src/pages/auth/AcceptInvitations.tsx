@@ -261,7 +261,7 @@ export function AcceptInvitationPage() {
     }
 
     return (
-        <div className="max-w-md mx-auto">
+        <div className="mx-auto">
             <Card className="p-6">
                 {needsOrganization ? (
                     <Tabs defaultValue="account" value={currentStep === 1 ? "account" : "organization"}>

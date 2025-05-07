@@ -140,7 +140,6 @@ export function LoginPage() {
                 <Button
                     type="submit"
                     className="w-full"
-                    variant="gradient"
                     disabled={isLoading}
                 >
                     {isLoading ? 'Signing in...' : 'Sign in'}

@@ -78,6 +78,22 @@ const authSlice = createSlice({
         }
       )
 
+      //check profile error and set authentication state accordingly
+
+      .addMatcher(
+        generatedApi.endpoints.authControllerGetProfile.matchRejected,
+        (state, action) => {
+          console.log('Profile error:', action.error);
+          if (action.payload?.status === 401) {
+            console.log('Unauthorized access, logging out...');
+            state.user = null;
+            state.token = null;
+            state.isAuthenticated = false;
+            localStorage.removeItem('token');
+          }
+        }
+      )
+
       // Handle successful login
       .addMatcher(
         generatedApi.endpoints.authControllerLogin.matchFulfilled,
