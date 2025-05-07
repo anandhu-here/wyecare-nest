@@ -431,26 +431,140 @@ export class UsersService {
     }
   }
 
-  async remove(id: string, currentUser?: User) {
+  async remove(id: string, currentUser: User) {
     try {
-      // First check if user exists and user has permission
-      const existingUser = await this.findOne(id, currentUser);
+      // Check if user exists
+      const user = await this.prisma.user.findUnique({
+        where: { id },
+        include: {
+          roles: {
+            include: { role: true },
+          },
+          departments: true,
+          permissions: true,
+          organization: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
 
-      // Delete user roles and department associations first
-      await this.prisma.$transaction([
-        this.prisma.userRole.deleteMany({ where: { userId: id } }),
-        this.prisma.userDepartment.deleteMany({ where: { userId: id } }),
-        this.prisma.user.delete({ where: { id } }),
-      ]);
+      if (!user) {
+        throw new NotFoundException(`User with ID ${id} not found`);
+      }
 
-      return { message: 'User deleted successfully' };
+      // Check if user is in the same organization or current user is super admin
+      if (user.organizationId !== currentUser.organizationId) {
+        // Verify if current user has super admin permissions
+        const userRoles = await this.prisma.userRole.findMany({
+          where: { userId: currentUser.id },
+          include: { role: true },
+        });
+
+        const isSuperAdmin = userRoles.some(
+          (ur) => ur.role.isSystemRole && ur.role.name === 'Super Admin'
+        );
+
+        if (!isSuperAdmin) {
+          throw new UnauthorizedException(
+            'You can only delete users in your organization'
+          );
+        }
+      }
+
+      // Check if user is a super admin and if they are the last one
+      const userIsSuperAdmin = user.roles.some(
+        (ur) => ur.role.isSystemRole && ur.role.name === 'Super Admin'
+      );
+
+      if (userIsSuperAdmin) {
+        // Count super admins
+        const superAdminCount = await this.prisma.userRole.count({
+          where: {
+            role: {
+              isSystemRole: true,
+              name: 'Super Admin',
+            },
+          },
+        });
+
+        if (superAdminCount <= 1) {
+          throw new BadRequestException(
+            'Cannot delete the last Super Admin user'
+          );
+        }
+      }
+
+      // Execute the deletion in a transaction to ensure atomicity
+      return await this.prisma.$transaction(async (tx) => {
+        // 1. Delete user permissions
+        await tx.userPermission.deleteMany({
+          where: { userId: id },
+        });
+
+        // 2. Delete user roles
+        await tx.userRole.deleteMany({
+          where: { userId: id },
+        });
+
+        // 3. Delete user departments
+        await tx.userDepartment.deleteMany({
+          where: { userId: id },
+        });
+
+        // 4. Delete staff profile if exists
+        await tx.staffProfile.deleteMany({
+          where: { userId: id },
+        });
+
+        // 5. Handle invitations
+        // Revoke pending invitations created by this user
+        await tx.invitation.updateMany({
+          where: { createdById: id, status: 'PENDING' },
+          data: {
+            status: 'REVOKED',
+            revokedById: currentUser.id,
+            revokedAt: new Date(),
+          },
+        });
+
+        // Clear references to this user in accepted invitations
+        await tx.invitation.updateMany({
+          where: { acceptedById: id },
+          data: { acceptedById: null },
+        });
+
+        // Clear references to this user in revoked invitations
+        await tx.invitation.updateMany({
+          where: { revokedById: id },
+          data: { revokedById: null },
+        });
+
+        // 6. Handle shift attendance approvals
+        await tx.shiftAttendance.updateMany({
+          where: { approvedById: id },
+          data: { approvedById: null },
+        });
+
+        // 7. Finally delete the user
+        await tx.user.delete({
+          where: { id },
+        });
+
+        // Return nothing for a successful deletion (HTTP 204 No Content)
+        return;
+      });
     } catch (error) {
       if (
         error instanceof NotFoundException ||
-        error instanceof UnauthorizedException
+        error instanceof UnauthorizedException ||
+        error instanceof BadRequestException
       ) {
         throw error;
       }
+
       throw new BadRequestException(`Failed to delete user: ${error.message}`);
     }
   }

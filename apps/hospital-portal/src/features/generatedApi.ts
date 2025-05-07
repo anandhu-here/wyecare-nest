@@ -29,14 +29,18 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['auth'],
       }),
-      authControllerRegister: build.mutation<
-        AuthControllerRegisterApiResponse,
-        AuthControllerRegisterApiArg
-      >({
+      authControllerRegister: build.mutation({
         query: (queryArg) => ({
           url: `/auth/register`,
           method: 'POST',
-          body: queryArg.createUserDto,
+          // Pass the user data directly as the body, not wrapped in createUserDto
+          body: {
+            email: queryArg.email,
+            password: queryArg.password,
+            firstName: queryArg.firstName,
+            lastName: queryArg.lastName,
+            // Include any other fields from CreateUserDto if needed
+          },
           params: {
             invitationToken: queryArg.invitationToken,
           },
@@ -64,15 +68,16 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['auth'],
       }),
-      authControllerRegisterWithOrganization: build.mutation<
-        AuthControllerRegisterWithOrganizationApiResponse,
-        AuthControllerRegisterWithOrganizationApiArg
-      >({
+      authControllerRegisterWithOrganization: build.mutation({
         query: (queryArg) => ({
           url: `/auth/register-with-organization`,
           method: 'POST',
           params: {
-            invitationToken: queryArg,
+            invitationToken: queryArg.invitationToken,
+          },
+          body: {
+            user: queryArg.user,
+            organization: queryArg.organization,
           },
         }),
         invalidatesTags: ['auth'],

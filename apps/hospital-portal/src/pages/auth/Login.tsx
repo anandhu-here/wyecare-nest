@@ -38,7 +38,7 @@ export function LoginPage() {
         setIsLoading(true);
 
         try {
-            await login({ email, password, rememberMe }).unwrap();
+            await login({ email, password }).unwrap();
             console.log('Login attempted with:', { email, password, rememberMe });
 
             // Successful login would redirect to dashboard

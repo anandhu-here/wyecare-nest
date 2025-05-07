@@ -45,6 +45,7 @@ export class InvitationsController {
   @ApiResponse({ status: 404, description: 'Role not found.' })
   @ApiResponse({ status: 409, description: 'Conflict.' })
   create(@Body() createInvitationDto: CreateInvitationDto, @Request() req) {
+    console.log('Create invitation request:', createInvitationDto, req.user);
     return this.invitationsService.create(createInvitationDto, req.user);
   }
 

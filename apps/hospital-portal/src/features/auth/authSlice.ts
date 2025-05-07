@@ -1,10 +1,11 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, isAnyOf } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
+import { generatedApi } from '../generatedApi';
 
 // Define the auth state interface
 export interface AuthState {
   token: string | null;
-  user: any | null; // We'll replace this with proper type once we generate the API
+  user: any | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -62,6 +63,75 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      // Handle pending API calls
+      .addMatcher(
+        isAnyOf(
+          generatedApi.endpoints.authControllerLogin.matchPending,
+          generatedApi.endpoints.authControllerGetProfile.matchPending
+        ),
+        (state) => {
+          state.isLoading = true;
+          state.error = null;
+        }
+      )
+
+      // Handle successful login
+      .addMatcher(
+        generatedApi.endpoints.authControllerLogin.matchFulfilled,
+        (state, { payload }) => {
+          console.log('Login payload:', payload);
+          state.token = payload.access_token;
+          state.isAuthenticated = true;
+          state.isLoading = false;
+          localStorage.setItem('token', payload.access_token);
+
+          // If user data is included in the response
+          if (payload.user) {
+            state.user = payload.user;
+          }
+
+          console.log(payload.user);
+        }
+      )
+
+      // Handle successful profile fetch
+      .addMatcher(
+        generatedApi.endpoints.authControllerGetProfile.matchFulfilled,
+        (state, { payload }) => {
+          state.user = payload;
+          state.isAuthenticated = true;
+          state.isLoading = false;
+        }
+      )
+
+      // Handle API failures
+      .addMatcher(
+        isAnyOf(
+          generatedApi.endpoints.authControllerLogin.matchRejected,
+          generatedApi.endpoints.authControllerGetProfile.matchRejected
+        ),
+        (state, action) => {
+          state.isLoading = false;
+
+          // Handle 401 Unauthorized - clear auth state
+          if (action.payload?.status === 401) {
+            state.user = null;
+            state.token = null;
+            state.isAuthenticated = false;
+            localStorage.removeItem('token');
+          }
+
+          // Set error message
+          const errorMessage =
+            action.payload?.data?.message ||
+            action.error?.message ||
+            'Authentication failed';
+          state.error = errorMessage;
+        }
+      );
   },
 });
 

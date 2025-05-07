@@ -11,13 +11,18 @@ export class EmailService {
 
   constructor(private configService: ConfigService) {
     // Create reusable transporter
+    const emailUser = this.configService.get<string>('EMAIL_USER');
+    const emailPass = this.configService.get<string>('EMAIL_PASS');
     this.transporter = nodemailer.createTransport({
-      host: this.configService.get<string>('EMAIL_HOST'),
-      port: this.configService.get<number>('EMAIL_PORT'),
-      secure: this.configService.get<boolean>('EMAIL_SECURE', false),
+      host: 'smtp.gmail.com', // Assuming Gmail is used
+      port: 587,
+      secure: false, // true for 465, false for other ports
       auth: {
-        user: this.configService.get<string>('EMAIL_USER'),
-        pass: this.configService.get<string>('EMAIL_PASSWORD'),
+        user: emailUser || 'noreply@wyecaresolutions.com',
+        pass: emailPass || '',
+      },
+      tls: {
+        rejectUnauthorized: false, // For development, can be removed in production
       },
     });
   }
@@ -30,8 +35,9 @@ export class EmailService {
     roleName?: string,
     message?: string
   ): Promise<boolean> {
-    const appUrl = this.configService.get<string>('APP_URL');
-    const registerUrl = `${appUrl}/register?token=${token}`;
+    const appUrl =
+      this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
+    const registerUrl = `${appUrl}/accept-invitation/${token}`;
 
     try {
       const info = await this.transporter.sendMail({

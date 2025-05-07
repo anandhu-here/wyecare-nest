@@ -1,4 +1,3 @@
-// apps/api/prisma/seed.ts
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt');
 const prisma = new PrismaClient({
@@ -9,530 +8,800 @@ const prisma = new PrismaClient({
   },
 });
 
-const hospitalPermissions = [
-  // ShiftType permissions
-  { action: 'create', subject: 'ShiftType', description: 'Create shift types' },
-  { action: 'read', subject: 'ShiftType', description: 'View shift types' },
-  { action: 'update', subject: 'ShiftType', description: 'Update shift types' },
-  { action: 'delete', subject: 'ShiftType', description: 'Delete shift types' },
-
-  // StaffProfile permissions
-  {
-    action: 'create',
-    subject: 'StaffProfile',
-    description: 'Create staff profiles',
-  },
-  {
-    action: 'read',
-    subject: 'StaffProfile',
-    description: 'View staff profiles',
-  },
-  {
-    action: 'update',
-    subject: 'StaffProfile',
-    description: 'Update staff profiles',
-  },
-  {
-    action: 'delete',
-    subject: 'StaffProfile',
-    description: 'Delete staff profiles',
-  },
-
-  // ShiftSchedule permissions
-  {
-    action: 'create',
-    subject: 'ShiftSchedule',
-    description: 'Create shift schedules',
-  },
-  {
-    action: 'read',
-    subject: 'ShiftSchedule',
-    description: 'View shift schedules',
-  },
-  {
-    action: 'update',
-    subject: 'ShiftSchedule',
-    description: 'Update shift schedules',
-  },
-  {
-    action: 'delete',
-    subject: 'ShiftSchedule',
-    description: 'Delete shift schedules',
-  },
-
-  // ShiftAttendance permissions
-  {
-    action: 'create',
-    subject: 'ShiftAttendance',
-    description: 'Create shift attendance records',
-  },
-  {
-    action: 'read',
-    subject: 'ShiftAttendance',
-    description: 'View shift attendance records',
-  },
-  {
-    action: 'update',
-    subject: 'ShiftAttendance',
-    description: 'Update shift attendance records',
-  },
-  {
-    action: 'delete',
-    subject: 'ShiftAttendance',
-    description: 'Delete shift attendance records',
-  },
-
-  // PayPeriod permissions
-  { action: 'create', subject: 'PayPeriod', description: 'Create pay periods' },
-  { action: 'read', subject: 'PayPeriod', description: 'View pay periods' },
-  { action: 'update', subject: 'PayPeriod', description: 'Update pay periods' },
-  { action: 'delete', subject: 'PayPeriod', description: 'Delete pay periods' },
-
-  // StaffPayment permissions
-  {
-    action: 'create',
-    subject: 'StaffPayment',
-    description: 'Create staff payments',
-  },
-  {
-    action: 'read',
-    subject: 'StaffPayment',
-    description: 'View staff payments',
-  },
-  {
-    action: 'update',
-    subject: 'StaffPayment',
-    description: 'Update staff payments',
-  },
-  {
-    action: 'delete',
-    subject: 'StaffPayment',
-    description: 'Delete staff payments',
-  },
-];
-
-async function seedHospitalData(prisma: any) {
-  // Create standard shift types for the hospital organization
-  const hospitalOrg = await prisma.organization.findFirst({
-    where: { category: 'HEALTHCARE' },
-  });
-
-  if (hospitalOrg) {
-    // Morning shift
-    await prisma.shiftType.upsert({
-      where: {
-        name_organizationId: {
-          name: 'Morning Shift',
-          organizationId: hospitalOrg.id,
-        },
-      },
-      update: {},
-      create: {
-        name: 'Morning Shift',
-        startTime: new Date('2000-01-01T07:00:00Z'),
-        endTime: new Date('2000-01-01T15:00:00Z'),
-        isOvernight: false,
-        hoursCount: 8,
-        basePayMultiplier: 1.0,
-        description: 'Standard morning shift from 7 AM to 3 PM',
-        organizationId: hospitalOrg.id,
-      },
-    });
-
-    // Evening shift
-    await prisma.shiftType.upsert({
-      where: {
-        name_organizationId: {
-          name: 'Evening Shift',
-          organizationId: hospitalOrg.id,
-        },
-      },
-      update: {},
-      create: {
-        name: 'Evening Shift',
-        startTime: new Date('2000-01-01T15:00:00Z'),
-        endTime: new Date('2000-01-01T23:00:00Z'),
-        isOvernight: false,
-        hoursCount: 8,
-        basePayMultiplier: 1.15,
-        description: 'Standard evening shift from 3 PM to 11 PM',
-        organizationId: hospitalOrg.id,
-      },
-    });
-
-    // Night shift
-    await prisma.shiftType.upsert({
-      where: {
-        name_organizationId: {
-          name: 'Night Shift',
-          organizationId: hospitalOrg.id,
-        },
-      },
-      update: {},
-      create: {
-        name: 'Night Shift',
-        startTime: new Date('2000-01-01T23:00:00Z'),
-        endTime: new Date('2000-01-01T07:00:00Z'),
-        isOvernight: true,
-        hoursCount: 8,
-        basePayMultiplier: 1.25,
-        description: 'Standard night shift from 11 PM to 7 AM',
-        organizationId: hospitalOrg.id,
-      },
-    });
-
-    // On-call shift
-    await prisma.shiftType.upsert({
-      where: {
-        name_organizationId: {
-          name: 'On-Call',
-          organizationId: hospitalOrg.id,
-        },
-      },
-      update: {},
-      create: {
-        name: 'On-Call',
-        startTime: new Date('2000-01-01T00:00:00Z'),
-        endTime: new Date('2000-01-01T00:00:00Z'),
-        isOvernight: false,
-        hoursCount: 24,
-        basePayMultiplier: 0.5,
-        description: 'On-call duty for 24 hours',
-        organizationId: hospitalOrg.id,
-      },
-    });
-
-    // Create hospital roles
-    // Doctor role
-    const doctorRole = await prisma.role.upsert({
-      where: {
-        name_organizationId: {
-          name: 'Doctor',
-          organizationId: hospitalOrg.id,
-        },
-      },
-      update: {},
-      create: {
-        name: 'Doctor',
-        description: 'Medical doctor with patient care responsibilities',
-        isSystemRole: false,
-        organizationId: hospitalOrg.id,
-      },
-    });
-
-    // Nurse role
-    const nurseRole = await prisma.role.upsert({
-      where: {
-        name_organizationId: {
-          name: 'Nurse',
-          organizationId: hospitalOrg.id,
-        },
-      },
-      update: {},
-      create: {
-        name: 'Nurse',
-        description: 'Registered nurse providing patient care',
-        isSystemRole: false,
-        organizationId: hospitalOrg.id,
-      },
-    });
-
-    // Department Head role
-    const deptHeadRole = await prisma.role.upsert({
-      where: {
-        name_organizationId: {
-          name: 'Department Head',
-          organizationId: hospitalOrg.id,
-        },
-      },
-      update: {},
-      create: {
-        name: 'Department Head',
-        description: 'Leads a clinical department and manages staff',
-        isSystemRole: false,
-        organizationId: hospitalOrg.id,
-      },
-    });
-
-    // Scheduler role
-    const schedulerRole = await prisma.role.upsert({
-      where: {
-        name_organizationId: {
-          name: 'Scheduler',
-          organizationId: hospitalOrg.id,
-        },
-      },
-      update: {},
-      create: {
-        name: 'Scheduler',
-        description: 'Manages staff scheduling and shift assignments',
-        isSystemRole: false,
-        organizationId: hospitalOrg.id,
-      },
-    });
-
-    // Hospital Admin role
-    const hospitalAdminRole = await prisma.role.upsert({
-      where: {
-        name_organizationId: {
-          name: 'Hospital Admin',
-          organizationId: hospitalOrg.id,
-        },
-      },
-      update: {},
-      create: {
-        name: 'Hospital Admin',
-        description: 'Hospital administrator with full system access',
-        isSystemRole: false,
-        organizationId: hospitalOrg.id,
-      },
-    });
-  }
-}
-
+/**
+ * Comprehensive seed file for roles and permissions
+ * Only creates roles and permissions, no users or organizations
+ */
 async function main() {
-  console.log('Seeding database...');
+  console.log('Starting database seeding process...');
 
-  // Clear existing data
-  await prisma.userRole.deleteMany();
-  await prisma.rolePermission.deleteMany();
-  await prisma.permission.deleteMany();
-  await prisma.role.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.organization.deleteMany();
+  try {
+    console.log('Creating permissions...');
 
-  // Create default permissions
-  const permissions = await Promise.all([
-    // Organization permissions
-    prisma.permission.create({
-      data: {
+    // Define core permissions
+    const corePermissions = [
+      // Organization permissions
+      {
         action: 'create',
         subject: 'Organization',
         description: 'Create organizations',
       },
-    }),
-    prisma.permission.create({
-      data: {
+      {
         action: 'read',
         subject: 'Organization',
-        description: 'Read organizations',
+        description: 'View organizations',
       },
-    }),
-    prisma.permission.create({
-      data: {
+      {
         action: 'update',
         subject: 'Organization',
         description: 'Update organizations',
       },
-    }),
-    prisma.permission.create({
-      data: {
+      {
         action: 'delete',
         subject: 'Organization',
         description: 'Delete organizations',
       },
-    }),
+      {
+        action: 'manage',
+        subject: 'Organization',
+        description: 'Full control over organizations',
+      },
 
-    // User permissions
-    prisma.permission.create({
-      data: { action: 'create', subject: 'User', description: 'Create users' },
-    }),
-    prisma.permission.create({
-      data: { action: 'read', subject: 'User', description: 'Read users' },
-    }),
-    prisma.permission.create({
-      data: { action: 'update', subject: 'User', description: 'Update users' },
-    }),
-    prisma.permission.create({
-      data: { action: 'delete', subject: 'User', description: 'Delete users' },
-    }),
+      // User permissions
+      { action: 'create', subject: 'User', description: 'Create users' },
+      { action: 'read', subject: 'User', description: 'View users' },
+      { action: 'update', subject: 'User', description: 'Update users' },
+      { action: 'delete', subject: 'User', description: 'Delete users' },
+      {
+        action: 'manage',
+        subject: 'User',
+        description: 'Full control over users',
+      },
 
-    // Role permissions
-    prisma.permission.create({
-      data: { action: 'create', subject: 'Role', description: 'Create roles' },
-    }),
-    prisma.permission.create({
-      data: { action: 'read', subject: 'Role', description: 'Read roles' },
-    }),
-    prisma.permission.create({
-      data: { action: 'update', subject: 'Role', description: 'Update roles' },
-    }),
-    prisma.permission.create({
-      data: { action: 'delete', subject: 'Role', description: 'Delete roles' },
-    }),
+      // Role permissions
+      { action: 'create', subject: 'Role', description: 'Create roles' },
+      { action: 'read', subject: 'Role', description: 'View roles' },
+      { action: 'update', subject: 'Role', description: 'Update roles' },
+      { action: 'delete', subject: 'Role', description: 'Delete roles' },
+      {
+        action: 'manage',
+        subject: 'Role',
+        description: 'Full control over roles',
+      },
 
-    // Hospital-specific permissions
-    prisma.permission.create({
-      data: {
+      // Permission management
+      {
         action: 'create',
-        subject: 'Patient',
-        description: 'Create patients',
+        subject: 'Permission',
+        description: 'Create permissions',
       },
-    }),
-    prisma.permission.create({
-      data: {
+      {
         action: 'read',
-        subject: 'Patient',
-        description: 'Read patients',
+        subject: 'Permission',
+        description: 'View permissions',
       },
-    }),
-    prisma.permission.create({
-      data: {
+      {
         action: 'update',
-        subject: 'Patient',
-        description: 'Update patients',
+        subject: 'Permission',
+        description: 'Update permissions',
       },
-    }),
-    prisma.permission.create({
-      data: {
+      {
         action: 'delete',
+        subject: 'Permission',
+        description: 'Delete permissions',
+      },
+      {
+        action: 'manage',
+        subject: 'Permission',
+        description: 'Full control over permissions',
+      },
+
+      // Department permissions
+      {
+        action: 'create',
+        subject: 'Department',
+        description: 'Create departments',
+      },
+      {
+        action: 'read',
+        subject: 'Department',
+        description: 'View departments',
+      },
+      {
+        action: 'update',
+        subject: 'Department',
+        description: 'Update departments',
+      },
+      {
+        action: 'delete',
+        subject: 'Department',
+        description: 'Delete departments',
+      },
+      {
+        action: 'manage',
+        subject: 'Department',
+        description: 'Full control over departments',
+      },
+
+      // Invitation permissions
+      {
+        action: 'create',
+        subject: 'Invitation',
+        description: 'Create invitations',
+      },
+      {
+        action: 'read',
+        subject: 'Invitation',
+        description: 'View invitations',
+      },
+      {
+        action: 'update',
+        subject: 'Invitation',
+        description: 'Update invitations',
+      },
+      {
+        action: 'delete',
+        subject: 'Invitation',
+        description: 'Delete invitations',
+      },
+      {
+        action: 'manage',
+        subject: 'Invitation',
+        description: 'Full control over invitations',
+      },
+    ];
+
+    // Define healthcare-specific permissions
+    const healthcarePermissions = [
+      // Patient permissions
+      { action: 'create', subject: 'Patient', description: 'Create patients' },
+      { action: 'read', subject: 'Patient', description: 'View patients' },
+      { action: 'update', subject: 'Patient', description: 'Update patients' },
+      { action: 'delete', subject: 'Patient', description: 'Delete patients' },
+      {
+        action: 'manage',
         subject: 'Patient',
-        description: 'Delete patients',
+        description: 'Full control over patients',
       },
-    }),
-  ]);
 
-  console.log(`Created ${permissions.length} permissions`);
-
-  // Create default roles
-  const adminRole = await prisma.role.create({
-    data: {
-      name: 'Super Admin',
-      description: 'System-wide administrator with all permissions',
-      isSystemRole: true,
-    },
-  });
-
-  const orgAdminRole = await prisma.role.create({
-    data: {
-      name: 'Organization Admin',
-      description: 'Administrator for a specific organization',
-      isSystemRole: true,
-    },
-  });
-
-  const staffRole = await prisma.role.create({
-    data: {
-      name: 'Staff',
-      description: 'Basic staff role',
-      isSystemRole: true,
-    },
-  });
-
-  console.log(`Created default roles`);
-
-  // Assign permissions to roles
-  // Assign all permissions to admin role
-  for (const permission of permissions) {
-    await prisma.rolePermission.create({
-      data: {
-        roleId: adminRole.id,
-        permissionId: permission.id,
+      // Medical Record permissions
+      {
+        action: 'create',
+        subject: 'MedicalRecord',
+        description: 'Create medical records',
       },
-    });
-  }
-
-  // Assign organization and user permissions to org admin
-  const orgAdminPermissions = permissions.filter(
-    (p) =>
-      (p.subject === 'Organization' ||
-        p.subject === 'User' ||
-        p.subject === 'Role') &&
-      p.action !== 'delete'
-  );
-
-  for (const permission of orgAdminPermissions) {
-    await prisma.rolePermission.create({
-      data: {
-        roleId: orgAdminRole.id,
-        permissionId: permission.id,
-        conditions: { organizationId: { $eq: '$user.organizationId' } },
+      {
+        action: 'read',
+        subject: 'MedicalRecord',
+        description: 'View medical records',
       },
-    });
-  }
-
-  // Assign read permissions to staff
-  const staffPermissions = permissions.filter((p) => p.action === 'read');
-
-  for (const permission of staffPermissions) {
-    await prisma.rolePermission.create({
-      data: {
-        roleId: staffRole.id,
-        permissionId: permission.id,
-        conditions:
-          permission.subject !== 'Organization'
-            ? { organizationId: { $eq: '$user.organizationId' } }
-            : undefined,
+      {
+        action: 'update',
+        subject: 'MedicalRecord',
+        description: 'Update medical records',
       },
-    });
-  }
+      {
+        action: 'delete',
+        subject: 'MedicalRecord',
+        description: 'Delete medical records',
+      },
+      {
+        action: 'manage',
+        subject: 'MedicalRecord',
+        description: 'Full control over medical records',
+      },
 
-  for (const perm of hospitalPermissions) {
-    await prisma.permission.upsert({
-      where: {
-        action_subject: {
-          action: perm.action,
-          subject: perm.subject,
+      // Appointment permissions
+      {
+        action: 'create',
+        subject: 'Appointment',
+        description: 'Create appointments',
+      },
+      {
+        action: 'read',
+        subject: 'Appointment',
+        description: 'View appointments',
+      },
+      {
+        action: 'update',
+        subject: 'Appointment',
+        description: 'Update appointments',
+      },
+      {
+        action: 'delete',
+        subject: 'Appointment',
+        description: 'Delete appointments',
+      },
+      {
+        action: 'manage',
+        subject: 'Appointment',
+        description: 'Full control over appointments',
+      },
+
+      // ShiftType permissions
+      {
+        action: 'create',
+        subject: 'ShiftType',
+        description: 'Create shift types',
+      },
+      { action: 'read', subject: 'ShiftType', description: 'View shift types' },
+      {
+        action: 'update',
+        subject: 'ShiftType',
+        description: 'Update shift types',
+      },
+      {
+        action: 'delete',
+        subject: 'ShiftType',
+        description: 'Delete shift types',
+      },
+      {
+        action: 'manage',
+        subject: 'ShiftType',
+        description: 'Full control over shift types',
+      },
+
+      // StaffProfile permissions
+      {
+        action: 'create',
+        subject: 'StaffProfile',
+        description: 'Create staff profiles',
+      },
+      {
+        action: 'read',
+        subject: 'StaffProfile',
+        description: 'View staff profiles',
+      },
+      {
+        action: 'update',
+        subject: 'StaffProfile',
+        description: 'Update staff profiles',
+      },
+      {
+        action: 'delete',
+        subject: 'StaffProfile',
+        description: 'Delete staff profiles',
+      },
+      {
+        action: 'manage',
+        subject: 'StaffProfile',
+        description: 'Full control over staff profiles',
+      },
+
+      // ShiftSchedule permissions
+      {
+        action: 'create',
+        subject: 'ShiftSchedule',
+        description: 'Create shift schedules',
+      },
+      {
+        action: 'read',
+        subject: 'ShiftSchedule',
+        description: 'View shift schedules',
+      },
+      {
+        action: 'update',
+        subject: 'ShiftSchedule',
+        description: 'Update shift schedules',
+      },
+      {
+        action: 'delete',
+        subject: 'ShiftSchedule',
+        description: 'Delete shift schedules',
+      },
+      {
+        action: 'manage',
+        subject: 'ShiftSchedule',
+        description: 'Full control over shift schedules',
+      },
+
+      // ShiftAttendance permissions
+      {
+        action: 'create',
+        subject: 'ShiftAttendance',
+        description: 'Create shift attendance records',
+      },
+      {
+        action: 'read',
+        subject: 'ShiftAttendance',
+        description: 'View shift attendance records',
+      },
+      {
+        action: 'update',
+        subject: 'ShiftAttendance',
+        description: 'Update shift attendance records',
+      },
+      {
+        action: 'delete',
+        subject: 'ShiftAttendance',
+        description: 'Delete shift attendance records',
+      },
+      {
+        action: 'manage',
+        subject: 'ShiftAttendance',
+        description: 'Full control over shift attendance',
+      },
+
+      // PayPeriod permissions
+      {
+        action: 'create',
+        subject: 'PayPeriod',
+        description: 'Create pay periods',
+      },
+      { action: 'read', subject: 'PayPeriod', description: 'View pay periods' },
+      {
+        action: 'update',
+        subject: 'PayPeriod',
+        description: 'Update pay periods',
+      },
+      {
+        action: 'delete',
+        subject: 'PayPeriod',
+        description: 'Delete pay periods',
+      },
+      {
+        action: 'manage',
+        subject: 'PayPeriod',
+        description: 'Full control over pay periods',
+      },
+
+      // StaffPayment permissions
+      {
+        action: 'create',
+        subject: 'StaffPayment',
+        description: 'Create staff payments',
+      },
+      {
+        action: 'read',
+        subject: 'StaffPayment',
+        description: 'View staff payments',
+      },
+      {
+        action: 'update',
+        subject: 'StaffPayment',
+        description: 'Update staff payments',
+      },
+      {
+        action: 'delete',
+        subject: 'StaffPayment',
+        description: 'Delete staff payments',
+      },
+      {
+        action: 'manage',
+        subject: 'StaffPayment',
+        description: 'Full control over staff payments',
+      },
+    ];
+
+    // Combine all permissions
+    const allPermissions = [...corePermissions, ...healthcarePermissions];
+
+    // Create or update permissions
+    const permissionMap = new Map();
+    for (const permission of allPermissions) {
+      const existingPermission = await prisma.permission.findUnique({
+        where: {
+          action_subject: {
+            action: permission.action,
+            subject: permission.subject,
+          },
         },
-      },
-      update: {
-        description: perm.description,
-      },
-      create: {
-        action: perm.action,
-        subject: perm.subject,
-        description: perm.description,
+      });
+
+      let permissionRecord;
+      if (existingPermission) {
+        // Update existing permission
+        permissionRecord = await prisma.permission.update({
+          where: {
+            id: existingPermission.id,
+          },
+          data: {
+            description: permission.description,
+          },
+        });
+        console.log(
+          `Updated permission: ${permission.action} ${permission.subject}`
+        );
+      } else {
+        // Create new permission
+        permissionRecord = await prisma.permission.create({
+          data: {
+            action: permission.action,
+            subject: permission.subject,
+            description: permission.description,
+          },
+        });
+        console.log(
+          `Created permission: ${permission.action} ${permission.subject}`
+        );
+      }
+
+      // Store the permission for later use when assigning to roles
+      const key = `${permission.action}_${permission.subject}`;
+      permissionMap.set(key, permissionRecord);
+    }
+
+    console.log(`Processed ${allPermissions.length} permissions`);
+
+    // Create or update system roles
+    console.log('Creating or updating system roles...');
+
+    // Super Admin role with all permissions
+    let superAdminRole = await prisma.role.findFirst({
+      where: {
+        name: 'Super Admin',
+        isSystemRole: true,
       },
     });
+
+    if (superAdminRole) {
+      console.log('Super Admin role already exists');
+      await prisma.rolePermission.deleteMany({
+        where: {
+          roleId: superAdminRole.id,
+        },
+      });
+    } else {
+      superAdminRole = await prisma.role.create({
+        data: {
+          name: 'Super Admin',
+          description: 'System-wide administrator with all permissions',
+          isSystemRole: true,
+        },
+      });
+      console.log('Created Super Admin role');
+    }
+
+    // Organization Admin role
+    let orgAdminRole = await prisma.role.findFirst({
+      where: {
+        name: 'Organization Admin',
+        isSystemRole: true,
+      },
+    });
+
+    if (orgAdminRole) {
+      console.log('Organization Admin role already exists');
+      await prisma.rolePermission.deleteMany({
+        where: {
+          roleId: orgAdminRole.id,
+        },
+      });
+    } else {
+      orgAdminRole = await prisma.role.create({
+        data: {
+          name: 'Organization Admin',
+          description: 'Administrator for a specific organization',
+          isSystemRole: true,
+        },
+      });
+      console.log('Created Organization Admin role');
+    }
+
+    // Staff Member role
+    let staffRole = await prisma.role.findFirst({
+      where: {
+        name: 'Staff Member',
+        isSystemRole: true,
+      },
+    });
+
+    if (staffRole) {
+      console.log('Staff Member role already exists');
+      await prisma.rolePermission.deleteMany({
+        where: {
+          roleId: staffRole.id,
+        },
+      });
+    } else {
+      staffRole = await prisma.role.create({
+        data: {
+          name: 'Staff Member',
+          description: 'Basic staff role with limited permissions',
+          isSystemRole: true,
+        },
+      });
+      console.log('Created Staff Member role');
+    }
+
+    // Doctor role
+    let doctorRole = await prisma.role.findFirst({
+      where: {
+        name: 'Doctor',
+        isSystemRole: true,
+      },
+    });
+
+    if (doctorRole) {
+      console.log('Doctor role already exists');
+      await prisma.rolePermission.deleteMany({
+        where: {
+          roleId: doctorRole.id,
+        },
+      });
+    } else {
+      doctorRole = await prisma.role.create({
+        data: {
+          name: 'Doctor',
+          description: 'Medical doctor with patient care responsibilities',
+          isSystemRole: true,
+        },
+      });
+      console.log('Created Doctor role');
+    }
+
+    // Nurse role
+    let nurseRole = await prisma.role.findFirst({
+      where: {
+        name: 'Nurse',
+        isSystemRole: true,
+      },
+    });
+
+    if (nurseRole) {
+      console.log('Nurse role already exists');
+      await prisma.rolePermission.deleteMany({
+        where: {
+          roleId: nurseRole.id,
+        },
+      });
+    } else {
+      nurseRole = await prisma.role.create({
+        data: {
+          name: 'Nurse',
+          description: 'Registered nurse providing patient care',
+          isSystemRole: true,
+        },
+      });
+      console.log('Created Nurse role');
+    }
+
+    // Receptionist role
+    let receptionistRole = await prisma.role.findFirst({
+      where: {
+        name: 'Receptionist',
+        isSystemRole: true,
+      },
+    });
+
+    if (receptionistRole) {
+      console.log('Receptionist role already exists');
+      await prisma.rolePermission.deleteMany({
+        where: {
+          roleId: receptionistRole.id,
+        },
+      });
+    } else {
+      receptionistRole = await prisma.role.create({
+        data: {
+          name: 'Receptionist',
+          description: 'Front desk staff for patient management',
+          isSystemRole: true,
+        },
+      });
+      console.log('Created Receptionist role');
+    }
+
+    console.log('Assigning permissions to roles...');
+
+    // Assign all permissions to Super Admin
+    for (const permission of permissionMap.values()) {
+      await prisma.rolePermission.create({
+        data: {
+          roleId: superAdminRole.id,
+          permissionId: permission.id,
+        },
+      });
+    }
+    console.log('Assigned all permissions to Super Admin role');
+
+    // Assign organization management permissions to Organization Admin
+    const orgAdminPermissions = [
+      // Basic organization management
+      'read_Organization',
+      'update_Organization',
+
+      // User management within organization
+      'create_User',
+      'read_User',
+      'update_User',
+      'delete_User',
+
+      // Role management within organization
+      'create_Role',
+      'read_Role',
+      'update_Role',
+      'delete_Role',
+
+      // Department management
+      'create_Department',
+      'read_Department',
+      'update_Department',
+      'delete_Department',
+
+      // Invitation management
+      'create_Invitation',
+      'read_Invitation',
+      'update_Invitation',
+      'delete_Invitation',
+
+      // Staff profile management
+      'create_StaffProfile',
+      'read_StaffProfile',
+      'update_StaffProfile',
+      'delete_StaffProfile',
+
+      // Shift management
+      'create_ShiftType',
+      'read_ShiftType',
+      'update_ShiftType',
+      'delete_ShiftType',
+      'create_ShiftSchedule',
+      'read_ShiftSchedule',
+      'update_ShiftSchedule',
+      'delete_ShiftSchedule',
+      'read_ShiftAttendance',
+      'update_ShiftAttendance',
+
+      // Payment management
+      'create_PayPeriod',
+      'read_PayPeriod',
+      'update_PayPeriod',
+      'delete_PayPeriod',
+      'create_StaffPayment',
+      'read_StaffPayment',
+      'update_StaffPayment',
+    ];
+
+    for (const permKey of orgAdminPermissions) {
+      const permission = permissionMap.get(permKey);
+      if (permission) {
+        await prisma.rolePermission.create({
+          data: {
+            roleId: orgAdminRole.id,
+            permissionId: permission.id,
+            // Apply organization-specific conditions to limit scope
+            conditions: { organizationId: { $eq: '$user.organizationId' } },
+          },
+        });
+      }
+    }
+    console.log(
+      'Assigned organization management permissions to Organization Admin role'
+    );
+
+    // Assign basic read permissions to Staff Member
+    const staffPermissions = [
+      'read_Organization',
+      'read_User',
+      'read_Role',
+      'read_Department',
+      'read_ShiftType',
+      'read_ShiftSchedule',
+      'read_StaffProfile',
+    ];
+
+    for (const permKey of staffPermissions) {
+      const permission = permissionMap.get(permKey);
+      if (permission) {
+        await prisma.rolePermission.create({
+          data: {
+            roleId: staffRole.id,
+            permissionId: permission.id,
+            // Apply organization and user-specific conditions
+            conditions: { organizationId: { $eq: '$user.organizationId' } },
+          },
+        });
+      }
+    }
+    console.log('Assigned basic read permissions to Staff Member role');
+
+    // Doctor permissions
+    const doctorPermissions = [
+      'read_Organization',
+      'read_Department',
+      'read_Patient',
+      'create_Patient',
+      'update_Patient',
+      'read_MedicalRecord',
+      'create_MedicalRecord',
+      'update_MedicalRecord',
+      'read_Appointment',
+      'create_Appointment',
+      'update_Appointment',
+      'delete_Appointment',
+      'read_ShiftSchedule',
+      'read_ShiftType',
+      'read_StaffProfile',
+    ];
+
+    for (const permKey of doctorPermissions) {
+      const permission = permissionMap.get(permKey);
+      if (permission) {
+        await prisma.rolePermission.create({
+          data: {
+            roleId: doctorRole.id,
+            permissionId: permission.id,
+            conditions: { organizationId: { $eq: '$user.organizationId' } },
+          },
+        });
+      }
+    }
+    console.log('Assigned patient care permissions to Doctor role');
+
+    // Nurse permissions
+    const nursePermissions = [
+      'read_Organization',
+      'read_Department',
+      'read_Patient',
+      'update_Patient',
+      'read_MedicalRecord',
+      'update_MedicalRecord',
+      'read_Appointment',
+      'update_Appointment',
+      'read_ShiftSchedule',
+      'read_ShiftType',
+      'read_StaffProfile',
+      'create_ShiftAttendance',
+      'read_ShiftAttendance',
+      'update_ShiftAttendance',
+    ];
+
+    for (const permKey of nursePermissions) {
+      const permission = permissionMap.get(permKey);
+      if (permission) {
+        await prisma.rolePermission.create({
+          data: {
+            roleId: nurseRole.id,
+            permissionId: permission.id,
+            conditions: { organizationId: { $eq: '$user.organizationId' } },
+          },
+        });
+      }
+    }
+    console.log('Assigned patient care permissions to Nurse role');
+
+    // Receptionist permissions
+    const receptionistPermissions = [
+      'read_Organization',
+      'read_Department',
+      'read_Patient',
+      'create_Patient',
+      'update_Patient',
+      'read_Appointment',
+      'create_Appointment',
+      'update_Appointment',
+      'read_ShiftSchedule',
+    ];
+
+    for (const permKey of receptionistPermissions) {
+      const permission = permissionMap.get(permKey);
+      if (permission) {
+        await prisma.rolePermission.create({
+          data: {
+            roleId: receptionistRole.id,
+            permissionId: permission.id,
+            conditions: { organizationId: { $eq: '$user.organizationId' } },
+          },
+        });
+      }
+    }
+    console.log('Assigned front desk permissions to Receptionist role');
+
+    console.log('Database seeding completed successfully!');
+  } catch (error) {
+    console.error('Error during database seeding:', error);
+    throw error;
   }
-
-  console.log(`Assigned permissions to roles`);
-
-  // Create a default organization
-  const organization = await prisma.organization.create({
-    data: {
-      name: 'Demo Hospital',
-      category: 'HOSPITAL',
-      description: 'Demo hospital for testing',
-      email: 'admin@demohospital.com',
-      phone: '123-456-7890',
-    },
-  });
-
-  console.log(`Created demo organization`);
-
-  // Create admin user
-  const adminPassword = await bcrypt.hash('admin123', 10);
-  const adminUser = await prisma.user.create({
-    data: {
-      email: 'admin@example.com',
-      password: adminPassword,
-      firstName: 'Admin',
-      lastName: 'User',
-      organizationId: organization.id,
-    },
-  });
-
-  // Assign super admin role to admin user
-  await prisma.userRole.create({
-    data: {
-      userId: adminUser.id,
-      roleId: adminRole.id,
-    },
-  });
-
-  await seedHospitalData(prisma);
-
-  console.log(`Created admin user`);
-
-  console.log('Seeding completed!');
 }
 
+// Execute the seed function
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('Failed to seed database:', e);
     process.exit(1);
   })
   .finally(async () => {
+    // Close the database connection when done
     await prisma.$disconnect();
   });

@@ -1,12 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useAppSelector } from '@/app/hooks';
+import { selectIsAuthenticated, selectAuthLoading } from '@/features/auth/authSlice';
+import { useGetProfileQuery } from '@/features/auth/authApi';
 
 export function PrivateRoute() {
     const location = useLocation();
+    const isAuthenticated = useAppSelector(selectIsAuthenticated);
+    const isAuthLoading = useAppSelector(selectAuthLoading);
 
-    // TODO: Replace with actual auth state from Redux
-    const isAuthenticated = false;
-    const isLoading = false;
+    // Use RTK Query to fetch the user profile if we have a token but no user data
+    const { isLoading: isProfileLoading } = useGetProfileQuery(undefined, {
+        // Skip the query if not authenticated
+        skip: !isAuthenticated,
+    });
+
+    // Combined loading state
+    const isLoading = isAuthLoading || isProfileLoading;
 
     // Show loading state while checking authentication
     if (isLoading) {

@@ -9,18 +9,17 @@ export const api = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
     baseUrl: API_BASE_URL,
-    prepareHeaders: (headers, { getState }) => {
+    prepareHeaders: async (headers, { getState }) => {
       // Get the token from the auth state
-      const token = (getState() as RootState).auth.token;
-
-      // If we have a token, add it to the headers
+      const token = await localStorage.getItem('token');
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }
+      headers.set('Accept', 'application/json');
+      headers.set('Content-Type', 'application/json');
 
       return headers;
     },
-    credentials: 'include', // For handling cookies if needed
   }),
   // Define tags for cache invalidation
   tagTypes: [

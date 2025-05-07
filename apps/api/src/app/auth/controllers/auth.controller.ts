@@ -36,7 +36,9 @@ export class AuthController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async login(@Body() loginDto: LoginDto, @Request() req) {
-    return this.authService.login(req.user);
+    const response = await this.authService.login(req.user);
+    console.log('Login response:', response);
+    return response;
   }
 
   @Post('register')

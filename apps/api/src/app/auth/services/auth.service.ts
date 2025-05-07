@@ -49,36 +49,41 @@ export class AuthService {
   }
 
   async login(user: any) {
-    // Get user roles
-    const userRoles = await this.prisma.userRole.findMany({
-      where: { userId: user.id },
-      include: { role: true },
-    });
+    try {
+      // Get user roles
+      const userRoles = await this.prisma.userRole.findMany({
+        where: { userId: user.id },
+        include: { role: true },
+      });
 
-    const roles = userRoles.map((ur) => ({
-      id: ur.role.id,
-      name: ur.role.name,
-      isSystemRole: ur.role.isSystemRole,
-    }));
+      const roles = userRoles.map((ur) => ({
+        id: ur.role.id,
+        name: ur.role.name,
+        isSystemRole: ur.role.isSystemRole,
+      }));
 
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      organizationId: user.organizationId,
-      roles,
-    };
-
-    return {
-      access_token: this.jwtService.sign(payload),
-      user: {
-        id: user.id,
+      const payload = {
+        sub: user.id,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
         organizationId: user.organizationId,
         roles,
-      },
-    };
+      };
+
+      return {
+        access_token: this.jwtService.sign(payload),
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          organizationId: user.organizationId,
+          roles,
+        },
+      };
+    } catch (error) {
+      console.error('Login error:', error);
+      throw new BadRequestException(`Login failed: ${error.message}`);
+    }
   }
 
   async register(

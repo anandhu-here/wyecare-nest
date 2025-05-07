@@ -17,6 +17,13 @@ async function bootstrap() {
     })
   );
 
+  app.enableCors({
+    origin: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  });
+
   // Swagger documentation
   const config = new DocumentBuilder()
     .setTitle('Multi-Sector Management API')

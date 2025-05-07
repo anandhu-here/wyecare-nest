@@ -123,6 +123,9 @@ export class RolesService {
   }) {
     const { skip, take, where, orderBy, currentUser } = params;
 
+    console.log('Initial where condition:', JSON.stringify(where));
+    console.log('Current user:', currentUser?.id, currentUser?.email);
+
     // If user is not system admin, restrict to their organization and system roles
     let finalWhere = where;
     if (currentUser && currentUser.organizationId) {
@@ -132,9 +135,20 @@ export class RolesService {
         include: { role: true },
       });
 
+      console.log(
+        'User roles:',
+        userRoles.map((ur) => ({
+          id: ur.role.id,
+          name: ur.role.name,
+          isSystemRole: ur.role.isSystemRole,
+        }))
+      );
+
       const isSuperAdmin = userRoles.some(
         (ur) => ur.role.isSystemRole && ur.role.name === 'Super Admin'
       );
+
+      console.log('Is super admin:', isSuperAdmin);
 
       if (!isSuperAdmin) {
         finalWhere = {
@@ -147,7 +161,13 @@ export class RolesService {
       }
     }
 
+    console.log('Final where condition:', JSON.stringify(finalWhere));
+
     try {
+      // For debugging, check the total count without any filters
+      const totalRolesInDb = await this.prisma.role.count();
+      console.log('Total roles in database:', totalRolesInDb);
+
       const [roles, total] = await Promise.all([
         this.prisma.role.findMany({
           skip,
@@ -184,6 +204,8 @@ export class RolesService {
         this.prisma.role.count({ where: finalWhere }),
       ]);
 
+      console.log('Roles found with filter:', roles.length);
+
       // Transform the result to flatten the structure
       const transformedRoles = roles.map((role) => ({
         ...role,
@@ -202,6 +224,7 @@ export class RolesService {
         take,
       };
     } catch (error) {
+      console.error('Error fetching roles:', error);
       throw new BadRequestException(`Failed to fetch roles: ${error.message}`);
     }
   }

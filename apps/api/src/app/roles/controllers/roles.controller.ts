@@ -74,11 +74,13 @@ export class RolesController {
     @Query('organizationId') organizationId?: string,
     @Request() req?
   ) {
+    const parsedOrgId = organizationId === 'null' ? null : null;
+
     const where: any = {
       ...(name && { name: { contains: name, mode: 'insensitive' } }),
       ...(isSystemRole !== undefined && { isSystemRole }),
       ...(sector && { sector }),
-      ...(organizationId && { organizationId }),
+      ...(parsedOrgId !== undefined && { organizationId: parsedOrgId }),
     };
 
     return this.rolesService.findAll({

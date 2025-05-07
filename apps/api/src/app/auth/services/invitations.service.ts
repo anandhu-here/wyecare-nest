@@ -22,26 +22,25 @@ export class InvitationsService {
 
   async create(createInvitationDto: CreateInvitationDto, currentUser: User) {
     try {
-      // Check if user is inviting to their own organization or is super admin
+      // Check if user is super admin
+      const userRoles = await this.prisma.userRole.findMany({
+        where: { userId: currentUser.id },
+        include: { role: true },
+      });
+
+      const isSuperAdmin = userRoles.some(
+        (ur) => ur.role.isSystemRole && ur.role.name === 'Super Admin'
+      );
+
+      // If not super admin, ensure they're inviting to their org
       if (
+        !isSuperAdmin &&
         createInvitationDto.organizationId &&
         createInvitationDto.organizationId !== currentUser.organizationId
       ) {
-        // Check if user has super admin permissions
-        const userRoles = await this.prisma.userRole.findMany({
-          where: { userId: currentUser.id },
-          include: { role: true },
-        });
-
-        const isSuperAdmin = userRoles.some(
-          (ur) => ur.role.isSystemRole && ur.role.name === 'Super Admin'
+        throw new UnauthorizedException(
+          'You can only invite users to your organization'
         );
-
-        if (!isSuperAdmin) {
-          throw new UnauthorizedException(
-            'You can only invite users to your organization'
-          );
-        }
       }
 
       // Check if role exists and is valid
@@ -56,9 +55,10 @@ export class InvitationsService {
           );
         }
 
-        // Check if role belongs to the organization
+        // If not a system role, check if it belongs to the organization
         if (
           !role.isSystemRole &&
+          createInvitationDto.organizationId &&
           role.organizationId !== createInvitationDto.organizationId
         ) {
           throw new BadRequestException(
@@ -105,7 +105,7 @@ export class InvitationsService {
       const invitation = await this.prisma.invitation.create({
         data: {
           email: createInvitationDto.email,
-          organizationId: createInvitationDto.organizationId,
+          organizationId: createInvitationDto.organizationId || null,
           roleId: createInvitationDto.roleId,
           token,
           status: 'PENDING',
@@ -136,20 +136,19 @@ export class InvitationsService {
           },
         },
       });
-      const senderName = `${currentUser.firstName} ${currentUser.lastName}`;
-      if (invitation.organizationId) {
-        await this.emailService.sendInvitationEmail(
-          invitation.email,
-          invitation.token,
-          { name: senderName, email: currentUser.email },
-          invitation.organization?.name,
-          invitation.role?.name,
-          invitation.message
-        );
-      }
 
-      // In a real app, you would send an email with the invitation link here
-      // For now, just return the invitation object with the token
+      const senderName = `${currentUser.firstName} ${currentUser.lastName}`;
+
+      // If there's an organization, send an organization-specific invitation
+      // Otherwise, send a platform invitation (for Super Admin)
+      await this.emailService.sendInvitationEmail(
+        invitation.email,
+        invitation.token,
+        { name: senderName, email: currentUser.email },
+        invitation.organization?.name,
+        invitation.role?.name,
+        invitation.message
+      );
 
       return invitation;
     } catch (error) {
