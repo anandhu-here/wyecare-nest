@@ -9,6 +9,7 @@ import { OrganizationsModule } from './organizations/organizations.module';
 import { RolesModule } from './roles/roles.module';
 import { CaslModule } from './casl/casl.module';
 import { HospitalModule } from './hospital/hospital.module';
+import { ShiftsModule } from './shifts/shifts.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { HospitalModule } from './hospital/hospital.module';
     RolesModule,
     CaslModule,
     HospitalModule,
+    ShiftsModule,
   ],
 })
 export class AppModule {}
