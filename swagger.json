@@ -9,19 +9,13 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginDto"
-              }
+              "schema": { "$ref": "#/components/schemas/LoginDto" }
             }
           }
         },
         "responses": {
-          "200": {
-            "description": "Login successful"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
+          "200": { "description": "Login successful" },
+          "401": { "description": "Unauthorized" }
         },
         "summary": "Login with email and password",
         "tags": ["auth"]
@@ -35,31 +29,21 @@
             "name": "invitationToken",
             "required": true,
             "in": "query",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserDto"
-              }
+              "schema": { "$ref": "#/components/schemas/CreateUserDto" }
             }
           }
         },
         "responses": {
-          "201": {
-            "description": "User registered successfully"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized - Invalid invitation"
-          }
+          "201": { "description": "User registered successfully" },
+          "400": { "description": "Bad Request" },
+          "401": { "description": "Unauthorized - Invalid invitation" }
         },
         "summary": "Register a new user account",
         "tags": ["auth"]
@@ -70,18 +54,10 @@
         "operationId": "AuthController_getProfile",
         "parameters": [],
         "responses": {
-          "200": {
-            "description": "Returns the user profile"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
+          "200": { "description": "Returns the user profile" },
+          "401": { "description": "Unauthorized" }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Get the current user profile",
         "tags": ["auth"]
       }
@@ -94,34 +70,22 @@
             "name": "secretKey",
             "required": true,
             "in": "query",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserDto"
-              }
+              "schema": { "$ref": "#/components/schemas/CreateUserDto" }
             }
           }
         },
         "responses": {
-          "201": {
-            "description": "Super admin created successfully"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized - Invalid secret key"
-          },
-          "409": {
-            "description": "Conflict - Super admin already exists"
-          }
+          "201": { "description": "Super admin created successfully" },
+          "400": { "description": "Bad Request" },
+          "401": { "description": "Unauthorized - Invalid secret key" },
+          "409": { "description": "Conflict - Super admin already exists" }
         },
         "summary": "Create the initial super admin (one-time operation)",
         "tags": ["auth"]
@@ -135,21 +99,13 @@
             "name": "invitationToken",
             "required": true,
             "in": "query",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
-          "201": {
-            "description": "User registered successfully"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized - Invalid invitation"
-          }
+          "201": { "description": "User registered successfully" },
+          "400": { "description": "Bad Request" },
+          "401": { "description": "Unauthorized - Invalid invitation" }
         },
         "summary": "Register a new user with organization",
         "tags": ["auth"]
@@ -163,9 +119,7 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateInvitationDto"
-              }
+              "schema": { "$ref": "#/components/schemas/CreateInvitationDto" }
             }
           }
         },
@@ -173,24 +127,12 @@
           "201": {
             "description": "The invitation has been successfully created."
           },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Role not found."
-          },
-          "409": {
-            "description": "Conflict."
-          }
+          "400": { "description": "Bad Request." },
+          "403": { "description": "Forbidden." },
+          "404": { "description": "Role not found." },
+          "409": { "description": "Conflict." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Create a new invitation",
         "tags": ["auth/invitations"]
       },
@@ -201,37 +143,23 @@
             "name": "skip",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "number"
-            }
+            "schema": { "type": "number" }
           },
           {
             "name": "take",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "number"
-            }
+            "schema": { "type": "number" }
           },
           {
             "name": "status",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Return all invitations."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "responses": { "200": { "description": "Return all invitations." } },
+        "security": [{ "bearer": [] }],
         "summary": "Get all invitations",
         "tags": ["auth/invitations"]
       }
@@ -244,21 +172,13 @@
             "name": "token",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
-          "200": {
-            "description": "Return the invitation."
-          },
-          "400": {
-            "description": "Invitation expired or used."
-          },
-          "404": {
-            "description": "Invitation not found."
-          }
+          "200": { "description": "Return the invitation." },
+          "400": { "description": "Invitation expired or used." },
+          "404": { "description": "Invitation not found." }
         },
         "summary": "Validate invitation token",
         "tags": ["auth/invitations"]
@@ -272,24 +192,14 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
-          "200": {
-            "description": "Return the invitation."
-          },
-          "404": {
-            "description": "Invitation not found."
-          }
+          "200": { "description": "Return the invitation." },
+          "404": { "description": "Invitation not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Get invitation by ID",
         "tags": ["auth/invitations"]
       }
@@ -302,30 +212,18 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
           "200": {
             "description": "The invitation has been successfully revoked."
           },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Invitation not found."
-          }
+          "400": { "description": "Bad Request." },
+          "403": { "description": "Forbidden." },
+          "404": { "description": "Invitation not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Revoke invitation by ID",
         "tags": ["auth/invitations"]
       }
@@ -338,30 +236,18 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
           "200": {
             "description": "The invitation has been successfully resent."
           },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Invitation not found."
-          }
+          "400": { "description": "Bad Request." },
+          "403": { "description": "Forbidden." },
+          "404": { "description": "Invitation not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Resend invitation by ID",
         "tags": ["auth/invitations"]
       }
@@ -374,31 +260,17 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserDto"
-              }
+              "schema": { "$ref": "#/components/schemas/CreateUserDto" }
             }
           }
         },
         "responses": {
-          "201": {
-            "description": "The user has been successfully created."
-          },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "409": {
-            "description": "Conflict - Email already exists."
-          }
+          "201": { "description": "The user has been successfully created." },
+          "400": { "description": "Bad Request." },
+          "403": { "description": "Forbidden." },
+          "409": { "description": "Conflict - Email already exists." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Create a new user",
         "tags": ["users"]
       },
@@ -409,61 +281,41 @@
             "name": "skip",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "number"
-            }
+            "schema": { "type": "number" }
           },
           {
             "name": "take",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "number"
-            }
+            "schema": { "type": "number" }
           },
           {
             "name": "firstName",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           },
           {
             "name": "lastName",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           },
           {
             "name": "email",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           },
           {
             "name": "organizationId",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Return all users."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "responses": { "200": { "description": "Return all users." } },
+        "security": [{ "bearer": [] }],
         "summary": "Get all users",
         "tags": ["users"]
       }
@@ -476,24 +328,14 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
-          "200": {
-            "description": "Return the user."
-          },
-          "404": {
-            "description": "User not found."
-          }
+          "200": { "description": "Return the user." },
+          "404": { "description": "User not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Get user by ID",
         "tags": ["users"]
       },
@@ -504,43 +346,25 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUserDto"
-              }
+              "schema": { "$ref": "#/components/schemas/UpdateUserDto" }
             }
           }
         },
         "responses": {
-          "200": {
-            "description": "The user has been successfully updated."
-          },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "User not found."
-          },
-          "409": {
-            "description": "Conflict - Email already exists."
-          }
+          "200": { "description": "The user has been successfully updated." },
+          "400": { "description": "Bad Request." },
+          "403": { "description": "Forbidden." },
+          "404": { "description": "User not found." },
+          "409": { "description": "Conflict - Email already exists." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Update user by ID",
         "tags": ["users"]
       },
@@ -551,30 +375,16 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
-          "204": {
-            "description": "The user has been successfully deleted."
-          },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "User not found."
-          }
+          "204": { "description": "The user has been successfully deleted." },
+          "400": { "description": "Bad Request." },
+          "403": { "description": "Forbidden." },
+          "404": { "description": "User not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Delete user by ID",
         "tags": ["users"]
       }
@@ -587,43 +397,25 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AssignRoleDto"
-              }
+              "schema": { "$ref": "#/components/schemas/AssignRoleDto" }
             }
           }
         },
         "responses": {
-          "200": {
-            "description": "The role has been successfully assigned."
-          },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "User or Role not found."
-          },
-          "409": {
-            "description": "Conflict - User already has this role."
-          }
+          "200": { "description": "The role has been successfully assigned." },
+          "400": { "description": "Bad Request." },
+          "403": { "description": "Forbidden." },
+          "404": { "description": "User or Role not found." },
+          "409": { "description": "Conflict - User already has this role." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Assign a role to a user",
         "tags": ["users"]
       }
@@ -636,38 +428,22 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           },
           {
             "name": "roleId",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
-          "200": {
-            "description": "The role has been successfully removed."
-          },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "User or Role not found."
-          }
+          "200": { "description": "The role has been successfully removed." },
+          "400": { "description": "Bad Request." },
+          "403": { "description": "Forbidden." },
+          "404": { "description": "User or Role not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Remove a role from a user",
         "tags": ["users"]
       }
@@ -680,9 +456,7 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "requestBody": {
@@ -699,21 +473,11 @@
           "200": {
             "description": "The department has been successfully assigned or updated."
           },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "User or Department not found."
-          }
+          "400": { "description": "Bad Request." },
+          "403": { "description": "Forbidden." },
+          "404": { "description": "User or Department not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Assign or update a department for a user",
         "tags": ["users"]
       }
@@ -726,38 +490,24 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           },
           {
             "name": "departmentId",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
           "200": {
             "description": "The department has been successfully removed."
           },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "User or Department not found."
-          }
+          "400": { "description": "Bad Request." },
+          "403": { "description": "Forbidden." },
+          "404": { "description": "User or Department not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Remove a department from a user",
         "tags": ["users"]
       }
@@ -770,24 +520,14 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
-          "200": {
-            "description": "Return user permissions."
-          },
-          "404": {
-            "description": "User not found."
-          }
+          "200": { "description": "Return user permissions." },
+          "404": { "description": "User not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Get user permissions",
         "tags": ["users"]
       },
@@ -798,9 +538,7 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "requestBody": {
@@ -817,18 +555,10 @@
           "200": {
             "description": "The permission has been successfully assigned."
           },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "User or Permission not found."
-          }
+          "403": { "description": "Forbidden." },
+          "404": { "description": "User or Permission not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Assign a permission to a user",
         "tags": ["users"]
       }
@@ -841,35 +571,23 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           },
           {
             "name": "permissionId",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
           "200": {
             "description": "The permission has been successfully removed."
           },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "User or Permission not found."
-          }
+          "403": { "description": "Forbidden." },
+          "404": { "description": "User or Permission not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Remove a permission from a user",
         "tags": ["users"]
       }
@@ -882,9 +600,7 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateOrganizationDto"
-              }
+              "schema": { "$ref": "#/components/schemas/CreateOrganizationDto" }
             }
           }
         },
@@ -892,18 +608,10 @@
           "201": {
             "description": "The organization has been successfully created."
           },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          }
+          "400": { "description": "Bad Request." },
+          "403": { "description": "Forbidden." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Create a new organization",
         "tags": ["organizations"]
       },
@@ -914,25 +622,19 @@
             "name": "skip",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "number"
-            }
+            "schema": { "type": "number" }
           },
           {
             "name": "take",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "number"
-            }
+            "schema": { "type": "number" }
           },
           {
             "name": "name",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           },
           {
             "name": "category",
@@ -958,16 +660,8 @@
             }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Return all organizations."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "responses": { "200": { "description": "Return all organizations." } },
+        "security": [{ "bearer": [] }],
         "summary": "Get all organizations",
         "tags": ["organizations"]
       }
@@ -980,24 +674,14 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
-          "200": {
-            "description": "Return the organization."
-          },
-          "404": {
-            "description": "Organization not found."
-          }
+          "200": { "description": "Return the organization." },
+          "404": { "description": "Organization not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Get organization by ID",
         "tags": ["organizations"]
       },
@@ -1008,18 +692,14 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateOrganizationDto"
-              }
+              "schema": { "$ref": "#/components/schemas/UpdateOrganizationDto" }
             }
           }
         },
@@ -1027,21 +707,11 @@
           "200": {
             "description": "The organization has been successfully updated."
           },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Organization not found."
-          }
+          "400": { "description": "Bad Request." },
+          "403": { "description": "Forbidden." },
+          "404": { "description": "Organization not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Update organization by ID",
         "tags": ["organizations"]
       },
@@ -1052,9 +722,7 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
@@ -1064,18 +732,10 @@
           "400": {
             "description": "Bad Request - Cannot delete organization with dependencies."
           },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Organization not found."
-          }
+          "403": { "description": "Forbidden." },
+          "404": { "description": "Organization not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Delete organization by ID",
         "tags": ["organizations"]
       }
@@ -1088,18 +748,14 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateDepartmentDto"
-              }
+              "schema": { "$ref": "#/components/schemas/CreateDepartmentDto" }
             }
           }
         },
@@ -1107,21 +763,11 @@
           "201": {
             "description": "The department has been successfully created."
           },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Organization not found."
-          }
+          "400": { "description": "Bad Request." },
+          "403": { "description": "Forbidden." },
+          "404": { "description": "Organization not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Create a new department in organization",
         "tags": ["organizations"]
       },
@@ -1132,24 +778,14 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
-          "200": {
-            "description": "Return all departments."
-          },
-          "404": {
-            "description": "Organization not found."
-          }
+          "200": { "description": "Return all departments." },
+          "404": { "description": "Organization not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Get all departments in organization",
         "tags": ["organizations"]
       }
@@ -1162,31 +798,17 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateRolesDto"
-              }
+              "schema": { "$ref": "#/components/schemas/CreateRolesDto" }
             }
           }
         },
         "responses": {
-          "201": {
-            "description": "The role has been successfully created."
-          },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "409": {
-            "description": "Conflict - Role already exists."
-          }
+          "201": { "description": "The role has been successfully created." },
+          "400": { "description": "Bad Request." },
+          "403": { "description": "Forbidden." },
+          "409": { "description": "Conflict - Role already exists." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Create a new role",
         "tags": ["roles"]
       },
@@ -1197,41 +819,31 @@
             "name": "skip",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "number"
-            }
+            "schema": { "type": "number" }
           },
           {
             "name": "take",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "number"
-            }
+            "schema": { "type": "number" }
           },
           {
             "name": "name",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           },
           {
             "name": "isSystemRole",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
+            "schema": { "type": "boolean" }
           },
           {
             "name": "organizationId",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           },
           {
             "name": "sector",
@@ -1257,16 +869,8 @@
             }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Return all roles."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "responses": { "200": { "description": "Return all roles." } },
+        "security": [{ "bearer": [] }],
         "summary": "Get all roles",
         "tags": ["roles"]
       }
@@ -1275,16 +879,8 @@
       "get": {
         "operationId": "RolesController_findAllPermissions",
         "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Return all permissions."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "responses": { "200": { "description": "Return all permissions." } },
+        "security": [{ "bearer": [] }],
         "summary": "Get all permissions",
         "tags": ["roles"]
       }
@@ -1297,24 +893,14 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
-          "200": {
-            "description": "Return the role."
-          },
-          "404": {
-            "description": "Role not found."
-          }
+          "200": { "description": "Return the role." },
+          "404": { "description": "Role not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Get role by ID",
         "tags": ["roles"]
       },
@@ -1325,43 +911,25 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateRolesDto"
-              }
+              "schema": { "$ref": "#/components/schemas/UpdateRolesDto" }
             }
           }
         },
         "responses": {
-          "200": {
-            "description": "The role has been successfully updated."
-          },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Role not found."
-          },
-          "409": {
-            "description": "Conflict - Role already exists."
-          }
+          "200": { "description": "The role has been successfully updated." },
+          "400": { "description": "Bad Request." },
+          "403": { "description": "Forbidden." },
+          "404": { "description": "Role not found." },
+          "409": { "description": "Conflict - Role already exists." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Update role by ID",
         "tags": ["roles"]
       },
@@ -1372,30 +940,18 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
-          "204": {
-            "description": "The role has been successfully deleted."
-          },
+          "204": { "description": "The role has been successfully deleted." },
           "400": {
             "description": "Bad Request - Cannot delete role with assigned users or system roles."
           },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Role not found."
-          }
+          "403": { "description": "Forbidden." },
+          "404": { "description": "Role not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Delete role by ID",
         "tags": ["roles"]
       }
@@ -1408,18 +964,14 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AssignPermissionDto"
-              }
+              "schema": { "$ref": "#/components/schemas/AssignPermissionDto" }
             }
           }
         },
@@ -1427,24 +979,14 @@
           "200": {
             "description": "The permission has been successfully assigned."
           },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Role or Permission not found."
-          },
+          "400": { "description": "Bad Request." },
+          "403": { "description": "Forbidden." },
+          "404": { "description": "Role or Permission not found." },
           "409": {
             "description": "Conflict - Role already has this permission."
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Assign a permission to a role",
         "tags": ["roles"]
       }
@@ -1457,43 +999,29 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           },
           {
             "name": "permissionId",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
           "200": {
             "description": "The permission has been successfully removed."
           },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Role or Permission not found."
-          }
+          "400": { "description": "Bad Request." },
+          "403": { "description": "Forbidden." },
+          "404": { "description": "Role or Permission not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [{ "bearer": [] }],
         "summary": "Remove a permission from a role",
         "tags": ["roles"]
       }
     },
-    "/hospital/shift-types": {
+    "/shift-types": {
       "post": {
         "operationId": "ShiftTypesController_create",
         "parameters": [],
@@ -1501,85 +1029,21 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateShiftTypeDto"
-              }
+              "schema": { "$ref": "#/components/schemas/CreateShiftTypeDto" }
             }
           }
         },
-        "responses": {
-          "201": {
-            "description": "The shift type has been successfully created."
-          },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "409": {
-            "description": "Conflict - Shift type already exists."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a new shift type",
-        "tags": ["hospital/shift-types"]
+        "responses": { "201": { "description": "" } },
+        "tags": ["ShiftTypes"]
       },
       "get": {
         "operationId": "ShiftTypesController_findAll",
-        "parameters": [
-          {
-            "name": "skip",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "take",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "name",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "organizationId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Return all shift types."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get all shift types",
-        "tags": ["hospital/shift-types"]
+        "parameters": [],
+        "responses": { "200": { "description": "" } },
+        "tags": ["ShiftTypes"]
       }
     },
-    "/hospital/shift-types/{id}": {
+    "/shift-types/{id}": {
       "get": {
         "operationId": "ShiftTypesController_findOne",
         "parameters": [
@@ -1587,26 +1051,11 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Return the shift type."
-          },
-          "404": {
-            "description": "Shift type not found."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get shift type by ID",
-        "tags": ["hospital/shift-types"]
+        "responses": { "200": { "description": "" } },
+        "tags": ["ShiftTypes"]
       },
       "patch": {
         "operationId": "ShiftTypesController_update",
@@ -1615,45 +1064,19 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateShiftTypeDto"
-              }
+              "schema": { "$ref": "#/components/schemas/UpdateShiftTypeDto" }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "The shift type has been successfully updated."
-          },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Shift type not found."
-          },
-          "409": {
-            "description": "Conflict - Shift type already exists."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update shift type by ID",
-        "tags": ["hospital/shift-types"]
+        "responses": { "200": { "description": "" } },
+        "tags": ["ShiftTypes"]
       },
       "delete": {
         "operationId": "ShiftTypesController_remove",
@@ -1662,332 +1085,44 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "The shift type has been successfully deleted."
-          },
-          "400": {
-            "description": "Bad Request - Cannot delete shift type in use."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Shift type not found."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete shift type by ID",
-        "tags": ["hospital/shift-types"]
+        "responses": { "200": { "description": "" } },
+        "tags": ["ShiftTypes"]
       }
     },
-    "/hospital/staff-profiles": {
+    "/shift-types/{id}/clone": {
       "post": {
-        "operationId": "StaffProfilesController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateStaffProfileDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "The staff profile has been successfully created."
-          },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "409": {
-            "description": "Conflict - Staff profile already exists."
-          }
-        },
-        "security": [
+        "operationId": "ShiftTypesController_cloneShiftType",
+        "parameters": [
           {
-            "bearer": []
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
           }
         ],
-        "summary": "Create a new staff profile",
-        "tags": ["hospital/staff-profiles"]
-      },
+        "responses": { "201": { "description": "" } },
+        "tags": ["ShiftTypes"]
+      }
+    },
+    "/shift-types/organization/{organizationId}": {
       "get": {
-        "operationId": "StaffProfilesController_findAll",
+        "operationId": "ShiftTypesController_findByOrganization",
         "parameters": [
           {
-            "name": "skip",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "take",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "specialty",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": ["ACTIVE", "ON_LEAVE", "TERMINATED"],
-              "type": "string"
-            }
-          },
-          {
-            "name": "staffType",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": ["DOCTOR", "NURSE", "TECHNICIAN", "RECEPTION", "SUPPORT"],
-              "type": "string"
-            }
+            "name": "organizationId",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Return all staff profiles."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get all staff profiles",
-        "tags": ["hospital/staff-profiles"]
+        "responses": { "200": { "description": "" } },
+        "tags": ["ShiftTypes"]
       }
     },
-    "/hospital/staff-profiles/{id}": {
-      "get": {
-        "operationId": "StaffProfilesController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Return the staff profile."
-          },
-          "404": {
-            "description": "Staff profile not found."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get staff profile by ID",
-        "tags": ["hospital/staff-profiles"]
-      },
-      "patch": {
-        "operationId": "StaffProfilesController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateStaffProfileDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The staff profile has been successfully updated."
-          },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Staff profile not found."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update staff profile by ID",
-        "tags": ["hospital/staff-profiles"]
-      },
-      "delete": {
-        "operationId": "StaffProfilesController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The staff profile has been successfully deleted."
-          },
-          "400": {
-            "description": "Bad Request - Cannot delete staff profile with shifts or payments."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Staff profile not found."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete staff profile by ID",
-        "tags": ["hospital/staff-profiles"]
-      }
-    },
-    "/hospital/staff-profiles/{id}/compensation-rates": {
-      "post": {
-        "operationId": "StaffProfilesController_addCompensationRate",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateCompensationRateDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "The compensation rate has been successfully added."
-          },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Staff profile or department not found."
-          },
-          "409": {
-            "description": "Conflict - Compensation rate already exists."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Add a compensation rate to a staff profile",
-        "tags": ["hospital/staff-profiles"]
-      }
-    },
-    "/hospital/staff-profiles/{id}/compensation-rates/{rateId}": {
-      "delete": {
-        "operationId": "StaffProfilesController_removeCompensationRate",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "rateId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The compensation rate has been successfully removed."
-          },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Staff profile or compensation rate not found."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Remove a compensation rate from a staff profile",
-        "tags": ["hospital/staff-profiles"]
-      }
-    },
-    "/hospital/shift-schedules": {
+    "/shift-schedules": {
       "post": {
         "operationId": "ShiftSchedulesController_create",
         "parameters": [],
@@ -2001,108 +1136,35 @@
             }
           }
         },
-        "responses": {
-          "201": {
-            "description": "The shift schedule has been successfully created."
-          },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Staff Profile, Shift Type, or Department not found."
-          },
-          "409": {
-            "description": "Conflict - Staff member already has a shift during this time."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a new shift schedule",
-        "tags": ["hospital/shift-schedules"]
+        "responses": { "201": { "description": "" } },
+        "tags": ["ShiftSchedules"]
       },
       "get": {
         "operationId": "ShiftSchedulesController_findAll",
-        "parameters": [
-          {
-            "name": "skip",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "take",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "startDate",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "endDate",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "departmentId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "staffProfileId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Return all shift schedules."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get all shift schedules",
-        "tags": ["hospital/shift-schedules"]
+        "parameters": [],
+        "responses": { "200": { "description": "" } },
+        "tags": ["ShiftSchedules"]
       }
     },
-    "/hospital/shift-schedules/{id}": {
+    "/shift-schedules/bulk": {
+      "post": {
+        "operationId": "ShiftSchedulesController_bulkCreate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreateShiftScheduleDto"
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "" } },
+        "tags": ["ShiftSchedules"]
+      }
+    },
+    "/shift-schedules/{id}": {
       "get": {
         "operationId": "ShiftSchedulesController_findOne",
         "parameters": [
@@ -2110,26 +1172,11 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Return the shift schedule."
-          },
-          "404": {
-            "description": "Shift schedule not found."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get shift schedule by ID",
-        "tags": ["hospital/shift-schedules"]
+        "responses": { "200": { "description": "" } },
+        "tags": ["ShiftSchedules"]
       },
       "patch": {
         "operationId": "ShiftSchedulesController_update",
@@ -2138,9 +1185,7 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "requestBody": {
@@ -2153,30 +1198,8 @@
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "The shift schedule has been successfully updated."
-          },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Shift schedule not found."
-          },
-          "409": {
-            "description": "Conflict - Staff member already has a shift during this time."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update shift schedule by ID",
-        "tags": ["hospital/shift-schedules"]
+        "responses": { "200": { "description": "" } },
+        "tags": ["ShiftSchedules"]
       },
       "delete": {
         "operationId": "ShiftSchedulesController_remove",
@@ -2185,35 +1208,60 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "The shift schedule has been successfully deleted."
-          },
-          "400": {
-            "description": "Bad Request - Cannot delete shift with attendance records."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Shift schedule not found."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete shift schedule by ID",
-        "tags": ["hospital/shift-schedules"]
+        "responses": { "200": { "description": "" } },
+        "tags": ["ShiftSchedules"]
       }
     },
-    "/hospital/shift-attendances": {
+    "/shift-schedules/staff/{staffProfileId}": {
+      "get": {
+        "operationId": "ShiftSchedulesController_findByStaff",
+        "parameters": [
+          {
+            "name": "staffProfileId",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "" } },
+        "tags": ["ShiftSchedules"]
+      }
+    },
+    "/shift-schedules/department/{departmentId}": {
+      "get": {
+        "operationId": "ShiftSchedulesController_findByDepartment",
+        "parameters": [
+          {
+            "name": "departmentId",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "" } },
+        "tags": ["ShiftSchedules"]
+      }
+    },
+    "/shift-schedules/swap": {
+      "post": {
+        "operationId": "ShiftSchedulesController_swapShifts",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SwapShiftDto" }
+            }
+          }
+        },
+        "responses": { "201": { "description": "" } },
+        "tags": ["ShiftSchedules"]
+      }
+    },
+    "/shift-attendances": {
       "post": {
         "operationId": "ShiftAttendancesController_create",
         "parameters": [],
@@ -2229,89 +1277,43 @@
         },
         "responses": {
           "201": {
-            "description": "The shift attendance has been successfully created."
+            "description": "The shift attendance has been successfully created.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ShiftAttendance" }
+              }
+            }
           },
           "400": {
-            "description": "Bad Request."
+            "description": "Bad Request - Attendance already exists for this shift."
           },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Shift Schedule not found."
-          },
-          "409": {
-            "description": "Conflict - Attendance record already exists."
-          }
+          "403": { "description": "Forbidden - Insufficient permissions." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
         "summary": "Create a new shift attendance record",
-        "tags": ["hospital/shift-attendances"]
+        "tags": ["Shift Attendances"]
       },
       "get": {
         "operationId": "ShiftAttendancesController_findAll",
-        "parameters": [
-          {
-            "name": "skip",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "take",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "date",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "departmentId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Return all shift attendance records."
-          }
+            "description": "List of shift attendance records retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ShiftAttendance" }
+                }
+              }
+            }
+          },
+          "403": { "description": "Forbidden - Insufficient permissions." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get all shift attendance records",
-        "tags": ["hospital/shift-attendances"]
+        "summary": "Get all shift attendance records with optional filtering",
+        "tags": ["Shift Attendances"]
       }
     },
-    "/hospital/shift-attendances/{id}": {
+    "/shift-attendances/{id}": {
       "get": {
         "operationId": "ShiftAttendancesController_findOne",
         "parameters": [
@@ -2319,26 +1321,24 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "description": "The ID of the shift attendance record",
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
           "200": {
-            "description": "Return the shift attendance record."
+            "description": "The shift attendance record has been found.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ShiftAttendance" }
+              }
+            }
           },
-          "404": {
-            "description": "Shift attendance not found."
-          }
+          "403": { "description": "Forbidden - Insufficient permissions." },
+          "404": { "description": "Shift attendance record not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get shift attendance by ID",
-        "tags": ["hospital/shift-attendances"]
+        "summary": "Get a specific shift attendance record by ID",
+        "tags": ["Shift Attendances"]
       },
       "patch": {
         "operationId": "ShiftAttendancesController_update",
@@ -2347,9 +1347,8 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "description": "The ID of the shift attendance record to update",
+            "schema": { "type": "string" }
           }
         ],
         "requestBody": {
@@ -2364,25 +1363,18 @@
         },
         "responses": {
           "200": {
-            "description": "The shift attendance has been successfully updated."
+            "description": "The shift attendance record has been successfully updated.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ShiftAttendance" }
+              }
+            }
           },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Shift attendance not found."
-          }
+          "403": { "description": "Forbidden - Insufficient permissions." },
+          "404": { "description": "Shift attendance record not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update shift attendance by ID",
-        "tags": ["hospital/shift-attendances"]
+        "summary": "Update a shift attendance record",
+        "tags": ["Shift Attendances"]
       },
       "delete": {
         "operationId": "ShiftAttendancesController_remove",
@@ -2391,380 +1383,1072 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "description": "The ID of the shift attendance record to delete",
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
           "200": {
-            "description": "The shift attendance has been successfully deleted."
-          },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Shift attendance not found."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete shift attendance by ID",
-        "tags": ["hospital/shift-attendances"]
-      }
-    },
-    "/hospital/pay-periods": {
-      "post": {
-        "operationId": "PayPeriodsController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreatePayPeriodDto"
+            "description": "The shift attendance record has been successfully deleted.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ShiftAttendance" }
               }
             }
-          }
+          },
+          "403": { "description": "Forbidden - Insufficient permissions." },
+          "404": { "description": "Shift attendance record not found." }
         },
-        "responses": {
-          "201": {
-            "description": "The pay period has been successfully created."
-          },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Organization not found."
-          },
-          "409": {
-            "description": "Conflict - Pay period already exists or overlaps."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a new pay period",
-        "tags": ["hospital/pay-periods"]
-      },
-      "get": {
-        "operationId": "PayPeriodsController_findAll",
-        "parameters": [
-          {
-            "name": "skip",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "take",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "startDate",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "endDate",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Return all pay periods."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get all pay periods",
-        "tags": ["hospital/pay-periods"]
+        "summary": "Delete a shift attendance record",
+        "tags": ["Shift Attendances"]
       }
     },
-    "/hospital/pay-periods/{id}": {
-      "get": {
-        "operationId": "PayPeriodsController_findOne",
+    "/shift-attendances/{id}/approve": {
+      "post": {
+        "operationId": "ShiftAttendancesController_approve",
         "parameters": [
           {
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
+            "description": "The ID of the shift attendance record to approve",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "approvedById": {
+                    "type": "string",
+                    "description": "ID of the user approving the attendance"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Optional approval notes",
+                    "nullable": true
+                  }
+                },
+                "required": ["approvedById"]
+              }
             }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The shift attendance record has been successfully approved.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ShiftAttendance" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Attendance record is already approved."
+          },
+          "403": { "description": "Forbidden - Insufficient permissions." },
+          "404": { "description": "Shift attendance record not found." }
+        },
+        "summary": "Approve a shift attendance record",
+        "tags": ["Shift Attendances"]
+      }
+    },
+    "/shift-attendances/by-shift/{shiftScheduleId}": {
+      "get": {
+        "operationId": "ShiftAttendancesController_findByShiftSchedule",
+        "parameters": [
+          {
+            "name": "shiftScheduleId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the shift schedule",
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
           "200": {
-            "description": "Return the pay period."
+            "description": "The shift attendance record has been found.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ShiftAttendance" }
+              }
+            }
           },
-          "404": {
-            "description": "Pay period not found."
-          }
+          "403": { "description": "Forbidden - Insufficient permissions." }
         },
-        "security": [
+        "summary": "Get attendance record for a specific shift",
+        "tags": ["Shift Attendances"]
+      }
+    },
+    "/shift-attendances/clock-in/{shiftScheduleId}": {
+      "post": {
+        "operationId": "ShiftAttendancesController_clockIn",
+        "parameters": [
           {
-            "bearer": []
+            "name": "shiftScheduleId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the shift schedule to clock in for",
+            "schema": { "type": "string" }
           }
         ],
-        "summary": "Get pay period by ID",
-        "tags": ["hospital/pay-periods"]
+        "responses": {
+          "200": {
+            "description": "Successfully clocked in for the shift.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ShiftAttendance" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Already clocked in for this shift."
+          },
+          "403": { "description": "Forbidden - Insufficient permissions." },
+          "404": { "description": "Shift schedule not found." }
+        },
+        "summary": "Clock in for a shift",
+        "tags": ["Shift Attendances"]
+      }
+    },
+    "/shift-attendances/clock-out/{shiftScheduleId}": {
+      "post": {
+        "operationId": "ShiftAttendancesController_clockOut",
+        "parameters": [
+          {
+            "name": "shiftScheduleId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the shift schedule to clock out from",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully clocked out from the shift.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ShiftAttendance" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Already clocked out or not clocked in for this shift."
+          },
+          "403": { "description": "Forbidden - Insufficient permissions." },
+          "404": { "description": "Shift attendance record not found." }
+        },
+        "summary": "Clock out for a shift",
+        "tags": ["Shift Attendances"]
+      }
+    },
+    "/shift-reports/staff/{staffProfileId}": {
+      "get": {
+        "operationId": "ShiftReportsController_getStaffHoursReport",
+        "parameters": [
+          {
+            "name": "staffProfileId",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "" } },
+        "tags": ["ShiftReports"]
+      }
+    },
+    "/shift-reports/department/{departmentId}": {
+      "get": {
+        "operationId": "ShiftReportsController_getDepartmentHoursReport",
+        "parameters": [
+          {
+            "name": "departmentId",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "" } },
+        "tags": ["ShiftReports"]
+      }
+    },
+    "/shift-reports/organization/{organizationId}/coverage": {
+      "get": {
+        "operationId": "ShiftReportsController_getOrganizationCoverageReport",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "" } },
+        "tags": ["ShiftReports"]
+      }
+    },
+    "/shift-reports/organization/{organizationId}/overtime": {
+      "get": {
+        "operationId": "ShiftReportsController_getOvertimeReport",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "" } },
+        "tags": ["ShiftReports"]
+      }
+    },
+    "/api/payment-rules": {
+      "post": {
+        "description": "Creates a new payment rule that defines payment rates for a specific role and shift type combination",
+        "operationId": "PaymentRulesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreatePaymentRuleDto" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The payment rule has been successfully created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentRuleResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Create a new payment rule",
+        "tags": ["Payment Rules"]
+      },
+      "get": {
+        "description": "Retrieves all payment rules with optional filtering",
+        "operationId": "PaymentRulesController_findAll",
+        "parameters": [
+          {
+            "name": "shiftTypeId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by shift type ID",
+            "schema": {
+              "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+              "type": "string"
+            }
+          },
+          {
+            "name": "roleId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by role ID",
+            "schema": {
+              "example": "3fa85f64-5717-4562-b3fc-2c963f66afa7",
+              "type": "string"
+            }
+          },
+          {
+            "name": "organizationId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by organization ID",
+            "schema": {
+              "example": "3fa85f64-5717-4562-b3fc-2c963f66afa8",
+              "type": "string"
+            }
+          },
+          {
+            "name": "paymentType",
+            "required": false,
+            "in": "query",
+            "description": "Filter by payment type",
+            "schema": {
+              "enum": ["HOURLY", "WEEKLY", "MONTHLY", "PER_SHIFT"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "effectiveDate",
+            "required": false,
+            "in": "query",
+            "description": "Filter by effective date - returns rules effective at the specified date",
+            "schema": {
+              "format": "date-time",
+              "example": "2025-06-01T00:00:00.000Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "active",
+            "required": false,
+            "in": "query",
+            "description": "Filter active rules only (rules with no end date or end date in the future)",
+            "schema": { "example": true, "type": "boolean" }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "description": "Number of records to skip for pagination",
+            "schema": { "minimum": 0, "example": 0, "type": "number" }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "Number of records to take for pagination",
+            "schema": { "minimum": 1, "example": 10, "type": "number" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns all payment rules that match the query.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentRuleResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Find all payment rules",
+        "tags": ["Payment Rules"]
+      }
+    },
+    "/api/payment-rules/{id}": {
+      "get": {
+        "description": "Retrieves a specific payment rule by its unique identifier",
+        "operationId": "PaymentRulesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The payment rule ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the payment rule with the given ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentRuleResponseDto"
+                }
+              }
+            }
+          },
+          "404": { "description": "Payment rule not found." }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Find one payment rule by ID",
+        "tags": ["Payment Rules"]
       },
       "patch": {
-        "operationId": "PayPeriodsController_update",
+        "description": "Updates an existing payment rule with the provided data",
+        "operationId": "PaymentRulesController_update",
         "parameters": [
           {
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "description": "The payment rule ID",
+            "schema": { "type": "string" }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdatePayPeriodDto"
-              }
+              "schema": { "$ref": "#/components/schemas/UpdatePaymentRuleDto" }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "The pay period has been successfully updated."
+            "description": "The payment rule has been successfully updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentRuleResponseDto"
+                }
+              }
+            }
           },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Pay period not found."
-          },
-          "409": {
-            "description": "Conflict - Pay period overlaps with another."
-          }
+          "404": { "description": "Payment rule not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update pay period by ID",
-        "tags": ["hospital/pay-periods"]
+        "security": [{ "bearer": [] }],
+        "summary": "Update a payment rule",
+        "tags": ["Payment Rules"]
       },
       "delete": {
-        "operationId": "PayPeriodsController_remove",
+        "description": "Removes a payment rule from the system",
+        "operationId": "PaymentRulesController_remove",
         "parameters": [
           {
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "description": "The payment rule ID",
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
           "200": {
-            "description": "The pay period has been successfully deleted."
+            "description": "The payment rule has been successfully deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentRuleResponseDto"
+                }
+              }
+            }
           },
-          "400": {
-            "description": "Bad Request - Cannot delete pay period with payments."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Pay period not found."
-          }
+          "404": { "description": "Payment rule not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete pay period by ID",
-        "tags": ["hospital/pay-periods"]
+        "security": [{ "bearer": [] }],
+        "summary": "Delete a payment rule",
+        "tags": ["Payment Rules"]
       }
     },
-    "/hospital/staff-payments": {
+    "/api/payment-rules/organization/{organizationId}": {
+      "get": {
+        "description": "Retrieves all payment rules for a specific organization",
+        "operationId": "PaymentRulesController_findByOrganization",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "required": true,
+            "in": "path",
+            "description": "The organization ID",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "active",
+            "required": false,
+            "in": "query",
+            "schema": { "type": "boolean" }
+          },
+          {
+            "name": "effectiveDate",
+            "required": false,
+            "in": "query",
+            "schema": { "format": "date-time", "type": "string" }
+          },
+          {
+            "name": "paymentType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": ["HOURLY", "WEEKLY", "MONTHLY", "PER_SHIFT"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "roleId",
+            "required": false,
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "shiftTypeId",
+            "required": false,
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns all payment rules for the given organization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentRuleResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Find payment rules by organization",
+        "tags": ["Payment Rules"]
+      }
+    },
+    "/api/payment-rules/role/{roleId}": {
+      "get": {
+        "description": "Retrieves all payment rules for a specific role",
+        "operationId": "PaymentRulesController_findByRole",
+        "parameters": [
+          {
+            "name": "roleId",
+            "required": true,
+            "in": "path",
+            "description": "The role ID",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "active",
+            "required": false,
+            "in": "query",
+            "schema": { "type": "boolean" }
+          },
+          {
+            "name": "effectiveDate",
+            "required": false,
+            "in": "query",
+            "schema": { "format": "date-time", "type": "string" }
+          },
+          {
+            "name": "paymentType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": ["HOURLY", "WEEKLY", "MONTHLY", "PER_SHIFT"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "organizationId",
+            "required": false,
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "shiftTypeId",
+            "required": false,
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns all payment rules for the given role.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentRuleResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Find payment rules by role",
+        "tags": ["Payment Rules"]
+      }
+    },
+    "/api/payment-rules/shift-type/{shiftTypeId}": {
+      "get": {
+        "description": "Retrieves all payment rules for a specific shift type",
+        "operationId": "PaymentRulesController_findByShiftType",
+        "parameters": [
+          {
+            "name": "shiftTypeId",
+            "required": true,
+            "in": "path",
+            "description": "The shift type ID",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": { "type": "number" }
+          },
+          {
+            "name": "active",
+            "required": false,
+            "in": "query",
+            "schema": { "type": "boolean" }
+          },
+          {
+            "name": "effectiveDate",
+            "required": false,
+            "in": "query",
+            "schema": { "format": "date-time", "type": "string" }
+          },
+          {
+            "name": "paymentType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": ["HOURLY", "WEEKLY", "MONTHLY", "PER_SHIFT"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "organizationId",
+            "required": false,
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "roleId",
+            "required": false,
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns all payment rules for the given shift type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentRuleResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Find payment rules by shift type",
+        "tags": ["Payment Rules"]
+      }
+    },
+    "/api/shift-type-premiums": {
       "post": {
-        "operationId": "StaffPaymentsController_create",
+        "description": "Creates a premium payment rule for a specific shift type and compensation rate",
+        "operationId": "ShiftTypePremiumsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateStaffPaymentDto"
+                "$ref": "#/components/schemas/CreateShiftTypePremiumDto"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "The staff payment has been successfully created."
-          },
-          "400": {
-            "description": "Bad Request."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Staff Profile or Pay Period not found."
-          },
-          "409": {
-            "description": "Conflict - Payment already exists."
+            "description": "The shift premium has been successfully created.",
+            "content": {
+              "application/json": { "schema": { "type": "object" } }
+            }
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a new staff payment",
-        "tags": ["hospital/staff-payments"]
+        "security": [{ "bearer": [] }],
+        "summary": "Create a new shift type premium",
+        "tags": ["Shift Type Premiums"]
       },
       "get": {
-        "operationId": "StaffPaymentsController_findAll",
+        "description": "Retrieves all shift type premiums with optional filtering",
+        "operationId": "ShiftTypePremiumsController_findAll",
         "parameters": [
+          {
+            "name": "shiftTypeId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by shift type ID",
+            "schema": {
+              "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+              "type": "string"
+            }
+          },
+          {
+            "name": "compensationRateId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by compensation rate ID",
+            "schema": {
+              "example": "3fa85f64-5717-4562-b3fc-2c963f66afa7",
+              "type": "string"
+            }
+          },
+          {
+            "name": "effectiveDate",
+            "required": false,
+            "in": "query",
+            "description": "Filter by effective date - returns premiums effective at the specified date",
+            "schema": {
+              "format": "date-time",
+              "example": "2025-06-01T00:00:00.000Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "active",
+            "required": false,
+            "in": "query",
+            "description": "Filter active premiums only (premiums with no end date or end date in the future)",
+            "schema": { "example": true, "type": "boolean" }
+          },
           {
             "name": "skip",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "number"
-            }
+            "description": "Number of records to skip for pagination",
+            "schema": { "minimum": 0, "example": 0, "type": "number" }
           },
           {
             "name": "take",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "number"
+            "description": "Number of records to take for pagination",
+            "schema": { "minimum": 1, "example": 10, "type": "number" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns all shift premiums that match the query.",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "type": "object" } }
+              }
             }
+          }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Find all shift premiums",
+        "tags": ["Shift Type Premiums"]
+      }
+    },
+    "/api/shift-type-premiums/{id}": {
+      "get": {
+        "description": "Retrieves a specific shift premium by its unique identifier",
+        "operationId": "ShiftTypePremiumsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The shift premium ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the shift premium with the given ID.",
+            "content": {
+              "application/json": { "schema": { "type": "object" } }
+            }
+          },
+          "404": { "description": "Shift premium not found." }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Find one shift premium by ID",
+        "tags": ["Shift Type Premiums"]
+      },
+      "patch": {
+        "description": "Updates an existing shift premium with the provided data",
+        "operationId": "ShiftTypePremiumsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The shift premium ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateShiftTypePremiumDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The shift premium has been successfully updated.",
+            "content": {
+              "application/json": { "schema": { "type": "object" } }
+            }
+          },
+          "404": { "description": "Shift premium not found." }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Update a shift premium",
+        "tags": ["Shift Type Premiums"]
+      },
+      "delete": {
+        "description": "Removes a shift premium from the system",
+        "operationId": "ShiftTypePremiumsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The shift premium ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The shift premium has been successfully deleted.",
+            "content": {
+              "application/json": { "schema": { "type": "object" } }
+            }
+          },
+          "404": { "description": "Shift premium not found." }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Delete a shift premium",
+        "tags": ["Shift Type Premiums"]
+      }
+    },
+    "/api/shift-type-premiums/applicable/{staffProfileId}/{departmentId}/{shiftTypeId}": {
+      "get": {
+        "description": "Finds all applicable premiums for a staff member working a specific shift type in a department",
+        "operationId": "ShiftTypePremiumsController_findApplicablePremiums",
+        "parameters": [
+          {
+            "name": "staffProfileId",
+            "required": true,
+            "in": "path",
+            "description": "The staff profile ID",
+            "schema": { "type": "string" }
           },
           {
-            "name": "payPeriodId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
+            "name": "departmentId",
+            "required": true,
+            "in": "path",
+            "description": "The department ID",
+            "schema": { "type": "string" }
           },
+          {
+            "name": "shiftTypeId",
+            "required": true,
+            "in": "path",
+            "description": "The shift type ID",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns all applicable shift premiums.",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "type": "object" } }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Find applicable premiums",
+        "tags": ["Shift Type Premiums"]
+      }
+    },
+    "/api/staff-compensation-rates": {
+      "post": {
+        "description": "Creates a new base compensation rate for a staff member in a specific department",
+        "operationId": "StaffCompensationRatesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStaffCompensationRateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The compensation rate has been successfully created.",
+            "content": {
+              "application/json": { "schema": { "type": "object" } }
+            }
+          }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Create a new staff compensation rate",
+        "tags": ["Staff Compensation Rates"]
+      },
+      "get": {
+        "description": "Retrieves all compensation rates with optional filtering",
+        "operationId": "StaffCompensationRatesController_findAll",
+        "parameters": [
           {
             "name": "staffProfileId",
             "required": false,
             "in": "query",
+            "description": "Filter by staff profile ID",
             "schema": {
+              "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
               "type": "string"
             }
           },
           {
-            "name": "paymentStatus",
+            "name": "departmentId",
             "required": false,
             "in": "query",
+            "description": "Filter by department ID",
             "schema": {
+              "example": "3fa85f64-5717-4562-b3fc-2c963f66afa7",
               "type": "string"
             }
+          },
+          {
+            "name": "paymentType",
+            "required": false,
+            "in": "query",
+            "description": "Filter by payment type",
+            "schema": {
+              "enum": ["HOURLY", "WEEKLY", "MONTHLY"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "effectiveDate",
+            "required": false,
+            "in": "query",
+            "description": "Filter by effective date - returns rates effective at the specified date",
+            "schema": {
+              "format": "date-time",
+              "example": "2025-06-01T00:00:00.000Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "active",
+            "required": false,
+            "in": "query",
+            "description": "Filter active rates only (rates with no end date or end date in the future)",
+            "schema": { "example": true, "type": "boolean" }
+          },
+          {
+            "name": "includePremiums",
+            "required": false,
+            "in": "query",
+            "description": "Include shift type premiums in the response",
+            "schema": { "example": true, "type": "boolean" }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "description": "Number of records to skip for pagination",
+            "schema": { "minimum": 0, "example": 0, "type": "number" }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "Number of records to take for pagination",
+            "schema": { "minimum": 1, "example": 10, "type": "number" }
           }
         ],
         "responses": {
           "200": {
-            "description": "Return all staff payments."
+            "description": "Returns all compensation rates that match the query.",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "type": "object" } }
+              }
+            }
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get all staff payments",
-        "tags": ["hospital/staff-payments"]
+        "security": [{ "bearer": [] }],
+        "summary": "Find all compensation rates",
+        "tags": ["Staff Compensation Rates"]
       }
     },
-    "/hospital/staff-payments/{id}": {
+    "/api/staff-compensation-rates/{id}": {
       "get": {
-        "operationId": "StaffPaymentsController_findOne",
+        "description": "Retrieves a specific compensation rate by its unique identifier",
+        "operationId": "StaffCompensationRatesController_findOne",
         "parameters": [
           {
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "description": "The compensation rate ID",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "includePremiums",
+            "required": false,
+            "in": "query",
+            "description": "Include shift premiums in the response",
+            "schema": { "type": "boolean" }
           }
         ],
         "responses": {
           "200": {
-            "description": "Return the staff payment."
+            "description": "Returns the compensation rate with the given ID.",
+            "content": {
+              "application/json": { "schema": { "type": "object" } }
+            }
           },
-          "404": {
-            "description": "Staff payment not found."
-          }
+          "404": { "description": "Compensation rate not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get staff payment by ID",
-        "tags": ["hospital/staff-payments"]
+        "security": [{ "bearer": [] }],
+        "summary": "Find one compensation rate by ID",
+        "tags": ["Staff Compensation Rates"]
       },
       "patch": {
-        "operationId": "StaffPaymentsController_update",
+        "description": "Updates an existing compensation rate with the provided data",
+        "operationId": "StaffCompensationRatesController_update",
         "parameters": [
           {
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "description": "The compensation rate ID",
+            "schema": { "type": "string" }
           }
         ],
         "requestBody": {
@@ -2772,66 +2456,128 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateStaffPaymentDto"
+                "$ref": "#/components/schemas/UpdateStaffCompensationRateDto"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "The staff payment has been successfully updated."
+            "description": "The compensation rate has been successfully updated.",
+            "content": {
+              "application/json": { "schema": { "type": "object" } }
+            }
           },
-          "400": {
-            "description": "Bad Request - Cannot update payment for finalized pay period."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Staff payment not found."
-          }
+          "404": { "description": "Compensation rate not found." }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update staff payment by ID",
-        "tags": ["hospital/staff-payments"]
+        "security": [{ "bearer": [] }],
+        "summary": "Update a compensation rate",
+        "tags": ["Staff Compensation Rates"]
       },
       "delete": {
-        "operationId": "StaffPaymentsController_remove",
+        "description": "Removes a compensation rate from the system",
+        "operationId": "StaffCompensationRatesController_remove",
         "parameters": [
           {
             "name": "id",
             "required": true,
             "in": "path",
-            "schema": {
-              "type": "string"
-            }
+            "description": "The compensation rate ID",
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
           "200": {
-            "description": "The staff payment has been successfully deleted."
+            "description": "The compensation rate has been successfully deleted.",
+            "content": {
+              "application/json": { "schema": { "type": "object" } }
+            }
           },
-          "400": {
-            "description": "Bad Request - Cannot delete payment for finalized pay period."
-          },
-          "403": {
-            "description": "Forbidden."
-          },
-          "404": {
-            "description": "Staff payment not found."
-          }
+          "404": { "description": "Compensation rate not found." }
         },
-        "security": [
+        "security": [{ "bearer": [] }],
+        "summary": "Delete a compensation rate",
+        "tags": ["Staff Compensation Rates"]
+      }
+    },
+    "/api/staff-compensation-rates/staff/{staffProfileId}/department/{departmentId}": {
+      "get": {
+        "description": "Returns the currently effective compensation rate for a specific staff member in a specific department",
+        "operationId": "StaffCompensationRatesController_findCurrentRate",
+        "parameters": [
           {
-            "bearer": []
+            "name": "staffProfileId",
+            "required": true,
+            "in": "path",
+            "description": "The staff profile ID",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "departmentId",
+            "required": true,
+            "in": "path",
+            "description": "The department ID",
+            "schema": { "type": "string" }
           }
         ],
-        "summary": "Delete staff payment by ID",
-        "tags": ["hospital/staff-payments"]
+        "responses": {
+          "200": {
+            "description": "Returns the current effective compensation rate.",
+            "content": {
+              "application/json": { "schema": { "type": "object" } }
+            }
+          },
+          "404": { "description": "No active compensation rate found." }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Find current compensation rate for a staff member in a department",
+        "tags": ["Staff Compensation Rates"]
+      }
+    },
+    "/api/staff-compensation-rates/calculate-pay": {
+      "get": {
+        "description": "Calculates the payment for a staff member working a specific shift type for a given number of hours",
+        "operationId": "StaffCompensationRatesController_calculateShiftPay",
+        "parameters": [
+          {
+            "name": "staffProfileId",
+            "required": true,
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "departmentId",
+            "required": true,
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "shiftTypeId",
+            "required": true,
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "hoursWorked",
+            "required": true,
+            "in": "query",
+            "schema": { "type": "number" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the calculated payment details.",
+            "content": {
+              "application/json": { "schema": { "type": "object" } }
+            }
+          },
+          "404": {
+            "description": "Staff, department, or shift type not found."
+          }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Calculate pay for a shift",
+        "tags": ["Staff Compensation Rates"]
       }
     }
   },
@@ -2842,54 +2588,32 @@
     "contact": {}
   },
   "tags": [
-    {
-      "name": "auth",
-      "description": "Authentication endpoints"
-    },
-    {
-      "name": "users",
-      "description": "User management endpoints"
-    },
+    { "name": "auth", "description": "Authentication endpoints" },
+    { "name": "users", "description": "User management endpoints" },
     {
       "name": "organizations",
       "description": "Organization management endpoints"
     },
-    {
-      "name": "roles",
-      "description": "Role management endpoints"
-    }
+    { "name": "roles", "description": "Role management endpoints" }
   ],
   "servers": [],
   "components": {
     "securitySchemes": {
-      "bearer": {
-        "scheme": "bearer",
-        "bearerFormat": "JWT",
-        "type": "http"
-      }
+      "bearer": { "scheme": "bearer", "bearerFormat": "JWT", "type": "http" }
     },
     "schemas": {
       "LoginDto": {
         "type": "object",
         "properties": {
-          "email": {
-            "type": "string",
-            "example": "admin@example.com"
-          },
-          "password": {
-            "type": "string",
-            "example": "password123"
-          }
+          "email": { "type": "string", "example": "admin@example.com" },
+          "password": { "type": "string", "example": "password123" }
         },
         "required": ["email", "password"]
       },
       "UserDepartmentDto": {
         "type": "object",
         "properties": {
-          "departmentId": {
-            "type": "string",
-            "description": "Department ID"
-          },
+          "departmentId": { "type": "string", "description": "Department ID" },
           "position": {
             "type": "string",
             "description": "User position in department"
@@ -2904,22 +2628,10 @@
       "CreateUserDto": {
         "type": "object",
         "properties": {
-          "email": {
-            "type": "string",
-            "description": "User email"
-          },
-          "password": {
-            "type": "string",
-            "description": "User password"
-          },
-          "firstName": {
-            "type": "string",
-            "description": "User first name"
-          },
-          "lastName": {
-            "type": "string",
-            "description": "User last name"
-          },
+          "email": { "type": "string", "description": "User email" },
+          "password": { "type": "string", "description": "User password" },
+          "firstName": { "type": "string", "description": "User first name" },
+          "lastName": { "type": "string", "description": "User last name" },
           "isActive": {
             "type": "boolean",
             "description": "User active status",
@@ -2932,21 +2644,18 @@
           "roles": {
             "description": "Role IDs to assign",
             "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "items": { "type": "string" }
           },
           "departments": {
             "description": "Departments to assign",
             "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserDepartmentDto"
-            }
+            "items": { "$ref": "#/components/schemas/UserDepartmentDto" }
           },
           "sectorProfile": {
             "type": "object",
             "description": "Sector-specific user profile data"
-          }
+          },
+          "address": { "type": "object", "description": "User address" }
         },
         "required": ["email", "password", "firstName", "lastName"]
       },
@@ -2980,22 +2689,10 @@
       "UpdateUserDto": {
         "type": "object",
         "properties": {
-          "email": {
-            "type": "string",
-            "description": "User email"
-          },
-          "password": {
-            "type": "string",
-            "description": "User password"
-          },
-          "firstName": {
-            "type": "string",
-            "description": "User first name"
-          },
-          "lastName": {
-            "type": "string",
-            "description": "User last name"
-          },
+          "email": { "type": "string", "description": "User email" },
+          "password": { "type": "string", "description": "User password" },
+          "firstName": { "type": "string", "description": "User first name" },
+          "lastName": { "type": "string", "description": "User last name" },
           "isActive": {
             "type": "boolean",
             "description": "User active status",
@@ -3008,21 +2705,18 @@
           "roles": {
             "description": "Role IDs to assign",
             "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "items": { "type": "string" }
           },
           "departments": {
             "description": "Departments to assign",
             "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserDepartmentDto"
-            }
+            "items": { "$ref": "#/components/schemas/UserDepartmentDto" }
           },
           "sectorProfile": {
             "type": "object",
             "description": "Sector-specific user profile data"
-          }
+          },
+          "address": { "type": "object", "description": "User address" }
         }
       },
       "AssignRoleDto": {
@@ -3043,10 +2737,7 @@
       "UpdateUserDepartmentDto": {
         "type": "object",
         "properties": {
-          "departmentId": {
-            "type": "string",
-            "description": "Department ID"
-          },
+          "departmentId": { "type": "string", "description": "Department ID" },
           "position": {
             "type": "string",
             "description": "User position in department"
@@ -3080,40 +2771,19 @@
       "AddressDto": {
         "type": "object",
         "properties": {
-          "street": {
-            "type": "string",
-            "description": "Street address"
-          },
-          "city": {
-            "type": "string",
-            "description": "City"
-          },
-          "state": {
-            "type": "string",
-            "description": "State/Province"
-          },
-          "zipCode": {
-            "type": "string",
-            "description": "Zip/Postal Code"
-          },
-          "country": {
-            "type": "string",
-            "description": "Country"
-          },
-          "countryCode": {
-            "type": "string",
-            "description": "Country Code"
-          }
+          "street": { "type": "string", "description": "Street address" },
+          "city": { "type": "string", "description": "City" },
+          "state": { "type": "string", "description": "State/Province" },
+          "zipCode": { "type": "string", "description": "Zip/Postal Code" },
+          "country": { "type": "string", "description": "Country" },
+          "countryCode": { "type": "string", "description": "Country Code" }
         },
         "required": ["street", "city", "state", "zipCode", "country"]
       },
       "CreateOrganizationDto": {
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string",
-            "description": "Organization name"
-          },
+          "name": { "type": "string", "description": "Organization name" },
           "category": {
             "type": "string",
             "description": "Organization category",
@@ -3138,14 +2808,8 @@
             "type": "string",
             "description": "Organization description"
           },
-          "email": {
-            "type": "string",
-            "description": "Organization email"
-          },
-          "phone": {
-            "type": "string",
-            "description": "Organization phone"
-          },
+          "email": { "type": "string", "description": "Organization email" },
+          "phone": { "type": "string", "description": "Organization phone" },
           "websiteUrl": {
             "type": "string",
             "description": "Organization website URL"
@@ -3160,11 +2824,7 @@
           },
           "address": {
             "description": "Department address",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AddressDto"
-              }
-            ]
+            "allOf": [{ "$ref": "#/components/schemas/AddressDto" }]
           }
         },
         "required": ["name", "category"]
@@ -3172,10 +2832,7 @@
       "UpdateOrganizationDto": {
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string",
-            "description": "Organization name"
-          },
+          "name": { "type": "string", "description": "Organization name" },
           "category": {
             "type": "string",
             "description": "Organization category",
@@ -3200,14 +2857,8 @@
             "type": "string",
             "description": "Organization description"
           },
-          "email": {
-            "type": "string",
-            "description": "Organization email"
-          },
-          "phone": {
-            "type": "string",
-            "description": "Organization phone"
-          },
+          "email": { "type": "string", "description": "Organization email" },
+          "phone": { "type": "string", "description": "Organization phone" },
           "websiteUrl": {
             "type": "string",
             "description": "Organization website URL"
@@ -3222,21 +2873,14 @@
           },
           "address": {
             "description": "Organization address",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AddressDto"
-              }
-            ]
+            "allOf": [{ "$ref": "#/components/schemas/AddressDto" }]
           }
         }
       },
       "CreateDepartmentDto": {
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string",
-            "description": "Department name"
-          },
+          "name": { "type": "string", "description": "Department name" },
           "description": {
             "type": "string",
             "description": "Department description"
@@ -3251,10 +2895,7 @@
       "CreateRolesDto": {
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string",
-            "description": "Role name"
-          },
+          "name": { "type": "string", "description": "Role name" },
           "description": {
             "type": "string",
             "description": "Role description"
@@ -3290,9 +2931,7 @@
           "permissions": {
             "description": "Permission IDs to assign",
             "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "items": { "type": "string" }
           }
         },
         "required": ["name"]
@@ -3300,10 +2939,7 @@
       "UpdateRolesDto": {
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string",
-            "description": "Role name"
-          },
+          "name": { "type": "string", "description": "Role name" },
           "description": {
             "type": "string",
             "description": "Role description"
@@ -3339,9 +2975,7 @@
           "permissions": {
             "description": "Permission IDs to assign",
             "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "items": { "type": "string" }
           }
         }
       },
@@ -3355,11 +2989,7 @@
           "conditions": {
             "type": "object",
             "description": "Conditions for this permission (CASL conditions as JSON)",
-            "example": {
-              "organizationId": {
-                "$eq": "$user.organizationId"
-              }
-            }
+            "example": { "organizationId": { "$eq": "$user.organizationId" } }
           }
         },
         "required": ["permissionId"]
@@ -3367,31 +2997,29 @@
       "CreateShiftTypeDto": {
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string",
-            "description": "Shift type name (e.g., Morning, Night)"
-          },
+          "name": { "type": "string", "description": "Shift type name" },
           "startTime": {
+            "format": "date-time",
             "type": "string",
-            "description": "Start time in 24-hour format (HH:MM)",
-            "example": "08:00"
+            "description": "Shift type description"
           },
           "endTime": {
+            "format": "date-time",
             "type": "string",
-            "description": "End time in 24-hour format (HH:MM)",
-            "example": "16:00"
+            "description": "Shift type description"
           },
           "isOvernight": {
             "type": "boolean",
-            "description": "Whether the shift spans overnight (e.g., 22:00 to 06:00)",
+            "description": "Whether the shift type is overnight",
             "default": false
+          },
+          "hoursCount": {
+            "type": "number",
+            "description": "Shift type hours count"
           },
           "basePayMultiplier": {
             "type": "number",
-            "description": "Base pay multiplier (e.g., 1.5 for night shifts)",
-            "default": 1,
-            "minimum": 1,
-            "maximum": 3
+            "description": "Shift type base pay multiplier"
           },
           "description": {
             "type": "string",
@@ -3402,574 +3030,405 @@
             "description": "Organization ID"
           }
         },
-        "required": ["name", "startTime", "endTime", "organizationId"]
+        "required": ["name", "endTime", "hoursCount", "organizationId"]
       },
-      "UpdateShiftTypeDto": {
+      "UpdateShiftTypeDto": { "type": "object", "properties": {} },
+      "CreateShiftScheduleDto": { "type": "object", "properties": {} },
+      "BulkCreateShiftScheduleDto": {
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string",
-            "description": "Shift type name (e.g., Morning, Night)"
-          },
-          "startTime": {
-            "type": "string",
-            "description": "Start time in 24-hour format (HH:MM)",
-            "example": "08:00"
-          },
-          "endTime": {
-            "type": "string",
-            "description": "End time in 24-hour format (HH:MM)",
-            "example": "16:00"
-          },
-          "isOvernight": {
-            "type": "boolean",
-            "description": "Whether the shift spans overnight (e.g., 22:00 to 06:00)",
-            "default": false
-          },
-          "basePayMultiplier": {
-            "type": "number",
-            "description": "Base pay multiplier (e.g., 1.5 for night shifts)",
-            "default": 1,
-            "minimum": 1,
-            "maximum": 3
-          },
-          "description": {
-            "type": "string",
-            "description": "Shift type description"
-          },
-          "organizationId": {
-            "type": "string",
-            "description": "Organization ID"
+          "shifts": {
+            "description": "Array of shift schedules to be created",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CreateShiftScheduleDto" }
           }
-        }
+        },
+        "required": ["shifts"]
       },
-      "CreateCompensationRateDto": {
+      "UpdateShiftScheduleDto": { "type": "object", "properties": {} },
+      "SwapShiftDto": { "type": "object", "properties": {} },
+      "CreateShiftAttendanceDto": { "type": "object", "properties": {} },
+      "ShiftAttendance": { "type": "object", "properties": {} },
+      "UpdateShiftAttendanceDto": { "type": "object", "properties": {} },
+      "CreatePaymentRuleDto": {
         "type": "object",
         "properties": {
-          "departmentId": {
+          "shiftTypeId": {
             "type": "string",
-            "description": "Department ID"
+            "description": "The ID of the shift type for this payment rule",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "roleId": {
+            "type": "string",
+            "description": "The ID of the role for this payment rule",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa7"
+          },
+          "paymentType": {
+            "type": "string",
+            "description": "The type of payment (hourly, weekly, monthly, or per shift)",
+            "enum": ["HOURLY", "WEEKLY", "MONTHLY", "PER_SHIFT"],
+            "example": "HOURLY"
           },
           "baseRate": {
             "type": "number",
-            "description": "Base rate (hourly or per shift)",
-            "example": 50
+            "description": "The base payment rate",
+            "example": 25.5,
+            "minimum": 0
           },
           "specialtyBonus": {
             "type": "number",
-            "description": "Specialty bonus",
-            "default": 0,
-            "example": 10
+            "description": "Additional bonus for specialized skills (optional)",
+            "example": 5,
+            "minimum": 0
           },
           "experienceMultiplier": {
             "type": "number",
-            "description": "Experience multiplier",
-            "default": 1,
-            "minimum": 1,
-            "maximum": 2,
-            "example": 1.25
+            "description": "Multiplier applied based on experience level (optional)",
+            "example": 1.2,
+            "minimum": 1
           },
           "effectiveDate": {
             "format": "date-time",
             "type": "string",
-            "description": "Effective date",
-            "default": "Current date"
+            "description": "The date when this payment rule becomes effective",
+            "example": "2025-01-01T00:00:00.000Z"
           },
           "endDate": {
             "format": "date-time",
             "type": "string",
-            "description": "End date (if applicable)"
-          }
-        },
-        "required": ["departmentId", "baseRate"]
-      },
-      "CreateStaffProfileDto": {
-        "type": "object",
-        "properties": {
-          "userId": {
+            "description": "The date when this payment rule expires (optional)",
+            "example": "2025-12-31T00:00:00.000Z"
+          },
+          "organizationId": {
             "type": "string",
-            "description": "User ID"
-          },
-          "staffType": {
-            "type": "string",
-            "description": "Staff type",
-            "enum": ["DOCTOR", "NURSE", "TECHNICIAN", "RECEPTION", "SUPPORT"]
-          },
-          "specialty": {
-            "type": "string",
-            "description": "Specialty (e.g., Cardiology, Orthopedics)"
-          },
-          "experienceYears": {
-            "type": "number",
-            "description": "Years of experience",
-            "default": 0
-          },
-          "educationLevel": {
-            "type": "string",
-            "description": "Education level"
-          },
-          "certifications": {
-            "type": "object",
-            "description": "Certifications as JSON array",
-            "example": [
-              {
-                "name": "Basic Life Support",
-                "issuer": "AHA",
-                "expiry": "2025-01-01"
-              },
-              {
-                "name": "Advanced Cardiac Life Support",
-                "issuer": "AHA",
-                "expiry": "2025-01-01"
-              }
-            ]
-          },
-          "baseSalaryType": {
-            "type": "string",
-            "description": "Base salary type",
-            "enum": ["HOURLY", "MONTHLY", "WEEKLY", "PER_SHIFT"],
-            "default": "MONTHLY"
-          },
-          "baseSalaryAmount": {
-            "type": "number",
-            "description": "Base salary amount",
-            "default": 0
-          },
-          "dateJoined": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Date joined",
-            "default": "Current date"
-          },
-          "status": {
-            "type": "string",
-            "description": "Staff status",
-            "enum": ["ACTIVE", "ON_LEAVE", "TERMINATED"],
-            "default": "ACTIVE"
-          },
-          "compensationRates": {
-            "description": "Compensation rates",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CreateCompensationRateDto"
-            }
-          }
-        },
-        "required": ["userId", "staffType"]
-      },
-      "UpdateStaffProfileDto": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string",
-            "description": "User ID"
-          },
-          "staffType": {
-            "type": "string",
-            "description": "Staff type",
-            "enum": ["DOCTOR", "NURSE", "TECHNICIAN", "RECEPTION", "SUPPORT"]
-          },
-          "specialty": {
-            "type": "string",
-            "description": "Specialty (e.g., Cardiology, Orthopedics)"
-          },
-          "experienceYears": {
-            "type": "number",
-            "description": "Years of experience",
-            "default": 0
-          },
-          "educationLevel": {
-            "type": "string",
-            "description": "Education level"
-          },
-          "certifications": {
-            "type": "object",
-            "description": "Certifications as JSON array",
-            "example": [
-              {
-                "name": "Basic Life Support",
-                "issuer": "AHA",
-                "expiry": "2025-01-01"
-              },
-              {
-                "name": "Advanced Cardiac Life Support",
-                "issuer": "AHA",
-                "expiry": "2025-01-01"
-              }
-            ]
-          },
-          "baseSalaryType": {
-            "type": "string",
-            "description": "Base salary type",
-            "enum": ["HOURLY", "MONTHLY", "WEEKLY", "PER_SHIFT"],
-            "default": "MONTHLY"
-          },
-          "baseSalaryAmount": {
-            "type": "number",
-            "description": "Base salary amount",
-            "default": 0
-          },
-          "dateJoined": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Date joined",
-            "default": "Current date"
-          },
-          "status": {
-            "type": "string",
-            "description": "Staff status",
-            "enum": ["ACTIVE", "ON_LEAVE", "TERMINATED"],
-            "default": "ACTIVE"
-          },
-          "compensationRates": {
-            "description": "Compensation rates",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CreateCompensationRateDto"
-            }
-          }
-        }
-      },
-      "CreateShiftScheduleDto": {
-        "type": "object",
-        "properties": {
-          "staffProfileId": {
-            "type": "string",
-            "description": "Staff Profile ID"
-          },
-          "shiftTypeId": {
-            "type": "string",
-            "description": "Shift Type ID"
-          },
-          "departmentId": {
-            "type": "string",
-            "description": "Department ID"
-          },
-          "startDateTime": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Shift start date and time"
-          },
-          "endDateTime": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Shift end date and time"
-          },
-          "status": {
-            "type": "string",
-            "description": "Shift status",
-            "enum": ["SCHEDULED", "COMPLETED", "CANCELED", "SWAPPED"],
-            "default": "SCHEDULED"
-          },
-          "isConfirmed": {
-            "type": "boolean",
-            "description": "Whether the shift is confirmed by the staff",
-            "default": false
-          },
-          "notes": {
-            "type": "string",
-            "description": "Shift notes"
+            "description": "The ID of the organization this payment rule belongs to",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa8"
           }
         },
         "required": [
-          "staffProfileId",
           "shiftTypeId",
-          "departmentId",
-          "startDateTime",
-          "endDateTime"
+          "roleId",
+          "paymentType",
+          "baseRate",
+          "effectiveDate",
+          "organizationId"
         ]
       },
-      "UpdateShiftScheduleDto": {
+      "PaymentRuleResponseDto": {
         "type": "object",
         "properties": {
-          "staffProfileId": {
+          "id": {
             "type": "string",
-            "description": "Staff Profile ID"
+            "description": "Unique identifier for the payment rule",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa9"
           },
           "shiftTypeId": {
             "type": "string",
-            "description": "Shift Type ID"
+            "description": "The ID of the shift type for this payment rule",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
           },
-          "departmentId": {
+          "roleId": {
             "type": "string",
-            "description": "Department ID"
+            "description": "The ID of the role for this payment rule",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa7"
           },
-          "startDateTime": {
+          "paymentType": {
+            "type": "string",
+            "description": "The type of payment",
+            "enum": ["HOURLY", "WEEKLY", "MONTHLY", "PER_SHIFT"],
+            "example": "HOURLY"
+          },
+          "baseRate": {
+            "type": "number",
+            "description": "The base payment rate",
+            "example": 25.5
+          },
+          "specialtyBonus": {
+            "type": "number",
+            "description": "Additional bonus for specialized skills",
+            "example": 5
+          },
+          "experienceMultiplier": {
+            "type": "number",
+            "description": "Multiplier applied based on experience level",
+            "example": 1.2
+          },
+          "effectiveDate": {
             "format": "date-time",
             "type": "string",
-            "description": "Shift start date and time"
+            "description": "The date when this payment rule becomes effective",
+            "example": "2025-01-01T00:00:00.000Z"
           },
-          "endDateTime": {
+          "endDate": {
             "format": "date-time",
             "type": "string",
-            "description": "Shift end date and time"
+            "description": "The date when this payment rule expires",
+            "example": "2025-12-31T00:00:00.000Z",
+            "nullable": true
           },
-          "status": {
+          "organizationId": {
             "type": "string",
-            "description": "Shift status",
-            "enum": ["SCHEDULED", "COMPLETED", "CANCELED", "SWAPPED"],
-            "default": "SCHEDULED"
+            "description": "The ID of the organization this payment rule belongs to",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa8"
           },
-          "isConfirmed": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "When the payment rule was created",
+            "example": "2025-01-01T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "When the payment rule was last updated",
+            "example": "2025-01-01T00:00:00.000Z"
+          },
+          "shiftType": {
+            "type": "object",
+            "description": "The related shift type details"
+          },
+          "role": {
+            "type": "object",
+            "description": "The related role details"
+          }
+        },
+        "required": [
+          "id",
+          "shiftTypeId",
+          "roleId",
+          "paymentType",
+          "baseRate",
+          "specialtyBonus",
+          "experienceMultiplier",
+          "effectiveDate",
+          "organizationId",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UpdatePaymentRuleDto": {
+        "type": "object",
+        "properties": {
+          "shiftTypeId": {
+            "type": "string",
+            "description": "The ID of the shift type for this payment rule",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "roleId": {
+            "type": "string",
+            "description": "The ID of the role for this payment rule",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa7"
+          },
+          "paymentType": {
+            "type": "string",
+            "description": "The type of payment (hourly, weekly, monthly, or per shift)",
+            "enum": ["HOURLY", "WEEKLY", "MONTHLY", "PER_SHIFT"],
+            "example": "HOURLY"
+          },
+          "baseRate": {
+            "type": "number",
+            "description": "The base payment rate",
+            "example": 25.5,
+            "minimum": 0
+          },
+          "specialtyBonus": {
+            "type": "number",
+            "description": "Additional bonus for specialized skills",
+            "example": 5,
+            "minimum": 0
+          },
+          "experienceMultiplier": {
+            "type": "number",
+            "description": "Multiplier applied based on experience level",
+            "example": 1.2,
+            "minimum": 1
+          },
+          "effectiveDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "The date when this payment rule becomes effective",
+            "example": "2025-01-01T00:00:00.000Z"
+          },
+          "endDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "The date when this payment rule expires",
+            "example": "2025-12-31T00:00:00.000Z",
+            "nullable": true
+          }
+        }
+      },
+      "CreateShiftTypePremiumDto": {
+        "type": "object",
+        "properties": {
+          "shiftTypeId": {
+            "type": "string",
+            "description": "The ID of the shift type this premium applies to",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "compensationRateId": {
+            "type": "string",
+            "description": "The ID of the compensation rate this premium applies to",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa7"
+          },
+          "isPremiumPercentage": {
             "type": "boolean",
-            "description": "Whether the shift is confirmed by the staff",
-            "default": false
+            "description": "Whether the premium is calculated as a percentage (true) or fixed amount (false)",
+            "example": true
           },
-          "notes": {
-            "type": "string",
-            "description": "Shift notes"
-          }
-        }
-      },
-      "CreateShiftAttendanceDto": {
-        "type": "object",
-        "properties": {
-          "shiftScheduleId": {
-            "type": "string",
-            "description": "Shift Schedule ID"
-          },
-          "actualStartTime": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Actual start time of the shift"
-          },
-          "actualEndTime": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Actual end time of the shift"
-          },
-          "status": {
-            "type": "string",
-            "description": "Attendance status",
-            "enum": [
-              "PENDING",
-              "PRESENT",
-              "LATE",
-              "ABSENT",
-              "PARTIALLY_COMPLETE"
-            ],
-            "default": "PENDING"
-          },
-          "overtimeMinutes": {
+          "premiumValue": {
             "type": "number",
-            "description": "Overtime minutes",
-            "default": 0
+            "description": "The premium value (percentage or fixed amount)",
+            "example": 0.25,
+            "minimum": 0
           },
-          "notes": {
-            "type": "string",
-            "description": "Notes about the attendance"
-          }
-        },
-        "required": ["shiftScheduleId"]
-      },
-      "UpdateShiftAttendanceDto": {
-        "type": "object",
-        "properties": {
-          "shiftScheduleId": {
-            "type": "string",
-            "description": "Shift Schedule ID"
-          },
-          "actualStartTime": {
+          "effectiveDate": {
             "format": "date-time",
             "type": "string",
-            "description": "Actual start time of the shift"
-          },
-          "actualEndTime": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Actual end time of the shift"
-          },
-          "status": {
-            "type": "string",
-            "description": "Attendance status",
-            "enum": [
-              "PENDING",
-              "PRESENT",
-              "LATE",
-              "ABSENT",
-              "PARTIALLY_COMPLETE"
-            ],
-            "default": "PENDING"
-          },
-          "overtimeMinutes": {
-            "type": "number",
-            "description": "Overtime minutes",
-            "default": 0
-          },
-          "notes": {
-            "type": "string",
-            "description": "Notes about the attendance"
-          }
-        }
-      },
-      "CreatePayPeriodDto": {
-        "type": "object",
-        "properties": {
-          "organizationId": {
-            "type": "string",
-            "description": "Organization ID"
-          },
-          "startDate": {
-            "format": "date-time",
-            "type": "string",
-            "description": "Pay period start date"
+            "description": "The date when this shift premium becomes effective",
+            "example": "2025-01-01T00:00:00.000Z"
           },
           "endDate": {
             "format": "date-time",
             "type": "string",
-            "description": "Pay period end date"
-          },
-          "status": {
-            "type": "string",
-            "description": "Pay period status",
-            "enum": ["OPEN", "CALCULATING", "FINALIZED", "PAID"],
-            "default": "OPEN"
+            "description": "The date when this shift premium expires (optional)",
+            "example": "2025-12-31T00:00:00.000Z"
           }
         },
-        "required": ["organizationId", "startDate", "endDate"]
+        "required": [
+          "shiftTypeId",
+          "compensationRateId",
+          "isPremiumPercentage",
+          "premiumValue",
+          "effectiveDate"
+        ]
       },
-      "UpdatePayPeriodDto": {
+      "UpdateShiftTypePremiumDto": {
         "type": "object",
         "properties": {
-          "organizationId": {
-            "type": "string",
-            "description": "Organization ID"
+          "isPremiumPercentage": {
+            "type": "boolean",
+            "description": "Whether the premium is calculated as a percentage (true) or fixed amount (false)",
+            "example": true
           },
-          "startDate": {
+          "premiumValue": {
+            "type": "number",
+            "description": "The premium value (percentage or fixed amount)",
+            "example": 0.25,
+            "minimum": 0
+          },
+          "effectiveDate": {
             "format": "date-time",
             "type": "string",
-            "description": "Pay period start date"
+            "description": "The date when this shift premium becomes effective",
+            "example": "2025-01-01T00:00:00.000Z"
           },
           "endDate": {
             "format": "date-time",
             "type": "string",
-            "description": "Pay period end date"
-          },
-          "status": {
-            "type": "string",
-            "description": "Pay period status",
-            "enum": ["OPEN", "CALCULATING", "FINALIZED", "PAID"],
-            "default": "OPEN"
+            "description": "The date when this shift premium expires",
+            "example": "2025-12-31T00:00:00.000Z",
+            "nullable": true
           }
         }
       },
-      "CreateStaffPaymentDto": {
+      "CreateStaffCompensationRateDto": {
         "type": "object",
         "properties": {
           "staffProfileId": {
             "type": "string",
-            "description": "Staff Profile ID"
+            "description": "The ID of the staff profile this compensation applies to",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
           },
-          "payPeriodId": {
+          "departmentId": {
             "type": "string",
-            "description": "Pay Period ID"
+            "description": "The ID of the department this compensation applies to",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa7"
           },
-          "regularHours": {
+          "baseRate": {
             "type": "number",
-            "description": "Regular hours worked"
+            "description": "The base compensation rate amount",
+            "example": 25.5,
+            "minimum": 0
           },
-          "overtimeHours": {
-            "type": "number",
-            "description": "Overtime hours worked",
-            "default": 0
-          },
-          "regularPay": {
-            "type": "number",
-            "description": "Regular pay amount"
-          },
-          "overtimePay": {
-            "type": "number",
-            "description": "Overtime pay amount",
-            "default": 0
+          "paymentType": {
+            "type": "string",
+            "description": "The type of payment (hourly, weekly, or monthly)",
+            "enum": ["HOURLY", "WEEKLY", "MONTHLY"],
+            "example": "HOURLY"
           },
           "specialtyBonus": {
             "type": "number",
-            "description": "Specialty bonus amount",
-            "default": 0
+            "description": "Additional bonus for specialized skills (optional)",
+            "example": 5,
+            "minimum": 0
           },
-          "otherBonuses": {
+          "experienceMultiplier": {
             "type": "number",
-            "description": "Other bonuses amount",
-            "default": 0
+            "description": "Multiplier applied based on experience level (optional)",
+            "example": 1.2,
+            "minimum": 1
           },
-          "deductions": {
-            "type": "number",
-            "description": "Deductions amount",
-            "default": 0
-          },
-          "paymentStatus": {
-            "type": "string",
-            "description": "Payment status",
-            "enum": ["PENDING", "PROCESSING", "PAID", "FAILED"],
-            "default": "PENDING"
-          },
-          "paymentDate": {
+          "effectiveDate": {
             "format": "date-time",
             "type": "string",
-            "description": "Payment date"
+            "description": "The date when this compensation rate becomes effective",
+            "example": "2025-01-01T00:00:00.000Z"
+          },
+          "endDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "The date when this compensation rate expires (optional)",
+            "example": "2025-12-31T00:00:00.000Z"
           }
         },
         "required": [
           "staffProfileId",
-          "payPeriodId",
-          "regularHours",
-          "regularPay"
+          "departmentId",
+          "baseRate",
+          "paymentType",
+          "effectiveDate"
         ]
       },
-      "UpdateStaffPaymentDto": {
+      "UpdateStaffCompensationRateDto": {
         "type": "object",
         "properties": {
-          "staffProfileId": {
+          "baseRate": {
+            "type": "number",
+            "description": "The base compensation rate amount",
+            "example": 25.5,
+            "minimum": 0
+          },
+          "paymentType": {
             "type": "string",
-            "description": "Staff Profile ID"
-          },
-          "payPeriodId": {
-            "type": "string",
-            "description": "Pay Period ID"
-          },
-          "regularHours": {
-            "type": "number",
-            "description": "Regular hours worked"
-          },
-          "overtimeHours": {
-            "type": "number",
-            "description": "Overtime hours worked",
-            "default": 0
-          },
-          "regularPay": {
-            "type": "number",
-            "description": "Regular pay amount"
-          },
-          "overtimePay": {
-            "type": "number",
-            "description": "Overtime pay amount",
-            "default": 0
+            "description": "The type of payment (hourly, weekly, or monthly)",
+            "enum": ["HOURLY", "WEEKLY", "MONTHLY"],
+            "example": "HOURLY"
           },
           "specialtyBonus": {
             "type": "number",
-            "description": "Specialty bonus amount",
-            "default": 0
+            "description": "Additional bonus for specialized skills",
+            "example": 5,
+            "minimum": 0
           },
-          "otherBonuses": {
+          "experienceMultiplier": {
             "type": "number",
-            "description": "Other bonuses amount",
-            "default": 0
+            "description": "Multiplier applied based on experience level",
+            "example": 1.2,
+            "minimum": 1
           },
-          "deductions": {
-            "type": "number",
-            "description": "Deductions amount",
-            "default": 0
-          },
-          "paymentStatus": {
-            "type": "string",
-            "description": "Payment status",
-            "enum": ["PENDING", "PROCESSING", "PAID", "FAILED"],
-            "default": "PENDING"
-          },
-          "paymentDate": {
+          "effectiveDate": {
             "format": "date-time",
             "type": "string",
-            "description": "Payment date"
+            "description": "The date when this compensation rate becomes effective",
+            "example": "2025-01-01T00:00:00.000Z"
+          },
+          "endDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "The date when this compensation rate expires",
+            "example": "2025-12-31T00:00:00.000Z",
+            "nullable": true
           }
         }
       }

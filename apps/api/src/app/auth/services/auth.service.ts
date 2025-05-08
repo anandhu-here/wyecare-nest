@@ -14,6 +14,7 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from '../../users/dto/create-user.dto';
 import { ConfigService } from '@nestjs/config';
 import { CreateOrganizationDto } from '../../organizations/dto/create-organization.dto';
+import { OrganizationsService } from '../../organizations/services/organizations.service';
 
 @Injectable()
 export class AuthService {
@@ -21,8 +22,8 @@ export class AuthService {
     private prisma: PrismaService,
     private usersService: UsersService,
     private jwtService: JwtService,
-
-    private configService: ConfigService
+    private configService: ConfigService,
+    private organizationsService: OrganizationsService
   ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
@@ -280,5 +281,15 @@ export class AuthService {
         `Failed to create super admin: ${error.message}`
       );
     }
+  }
+
+  async getCurrentOrganization(orgId: string) {
+    const organization = await this.organizationsService.findOne(orgId);
+
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+
+    return organization;
   }
 }

@@ -122,7 +122,13 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
     @Request() req
   ) {
-    return this.usersService.update(id, updateUserDto, req.user);
+    try {
+      console.log('Updating user with ID:', id, 'by user:', req.user);
+      return this.usersService.update(id, updateUserDto, req.user);
+    } catch (error) {
+      console.error('Error updating user:', error);
+      throw error;
+    }
   }
 
   @Delete(':id')

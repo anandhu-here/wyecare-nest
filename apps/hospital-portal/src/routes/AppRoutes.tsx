@@ -13,6 +13,12 @@ import AcceptInvitationPage from '@/pages/auth/AcceptInvitations';
 import AppLayout from '@/components/layout/Applayout';
 import UserInvitePage from '@/pages/users/UserInvitePage';
 import UsersPage from '@/pages/users/UsersList';
+import SettingsLayout from '@/pages/organizations/Settings';
+import ProfileTab from '@/pages/organizations/components/settings/profile';
+import CareHomePreferences from '@/pages/organizations/components/settings/home-preference';
+import ShiftSettingsPage from '@/pages/organizations/components/settings/shift-settings';
+import ShiftPaymentsPage from '@/pages/organizations/components/settings/shift-payments';
+import CompensationPage from '@/pages/organizations/components/settings/staff-compensation';
 
 
 // Dashboard placeholder
@@ -80,6 +86,28 @@ export function AppRoutes() {
                             <p>Welcome to the Schedule page</p>
                         </div>
                     } />
+
+                    {/* settings */}
+
+                    {/* <Route path="/settings/profile" element={<div>Settings</div>} />
+                    <Route path="/settings/notifications" element={<div>Settings</div>} />
+                    <Route path="/settings/organization" element={<SettingsLayout />} /> */}
+
+
+                    <Route path="/settings">
+                        <Route path="profile" element={<ProfileTab />} />
+                        <Route path='shifts' element={<ShiftSettingsPage />} />
+                        <Route path='Shifts-payments' element={<CompensationPage />} />
+                        <Route path="account-settings" element={<div>Account Settings</div>} />
+                        <Route path="staff-settings" element={<div>Staff Settings</div>} />
+                        <Route path="subscription" element={<div>Subscription</div>} />
+                    </Route>
+
+
+                    {/* Appointments */}
+
+                    {/* Patients */}
+
 
                     {/* Users */}
                     <Route path="/users" element={<UsersPage />} />

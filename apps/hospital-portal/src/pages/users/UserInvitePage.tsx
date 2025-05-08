@@ -104,13 +104,6 @@ export function UserInvitePage() {
         },
     });
 
-    // Check if user has permission to invite users
-    React.useEffect(() => {
-        if (!ability.can('invite', 'User')) {
-            toast.error('You do not have permission to invite users.');
-            navigate('/dashboard');
-        }
-    }, [ability, navigate]);
 
     // Handle form submission
     const onSubmit = async (values) => {

@@ -14,6 +14,7 @@ import { InvitationsService } from './services/invitations.service';
 import { UsersService } from '../users/services/users.service';
 import { EmailService } from '../shared/services/email.service';
 import { AbilityFactory } from '../casl/abilities/ability.factory';
+import { OrganizationsService } from '../organizations/services/organizations.service';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { AbilityFactory } from '../casl/abilities/ability.factory';
     EmailService,
     JwtStrategy,
     LocalStrategy,
+    OrganizationsService,
   ],
   exports: [AuthService, InvitationsService],
 })

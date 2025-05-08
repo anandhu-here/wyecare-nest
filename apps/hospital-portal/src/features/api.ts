@@ -2,7 +2,21 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { RootState } from '../app/store';
 
 // Define the base URL for API requests
-const API_BASE_URL = import.meta.env.NX_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.NX_API_URL || 'http://localhost:3333/api';
+
+export const addTagTypes = [
+  'auth',
+  'auth/invitations',
+  'users',
+  'organizations',
+  'roles',
+  'hospital/shift-types',
+  'hospital/staff-profiles',
+  'hospital/shift-schedules',
+  'hospital/shift-attendances',
+  'hospital/pay-periods',
+  'hospital/staff-payments',
+] as const;
 
 // Create the base API with authentication headers
 export const api = createApi({
@@ -23,6 +37,7 @@ export const api = createApi({
   }),
   // Define tags for cache invalidation
   tagTypes: [
+    ...addTagTypes,
     'User',
     'Users',
     'Role',

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { selectIsAuthenticated, selectAuthLoading, logout } from '@/features/auth/authSlice';
-import { useGetProfileQuery } from '@/features/auth/authApi';
+import { useAuthControllerGetProfileQuery } from '@/features/generatedApi';
 
 export function PrivateRoute() {
     const location = useLocation();
@@ -16,7 +16,7 @@ export function PrivateRoute() {
         data: profileData,
         isError: isProfileError,
         isSuccess: isProfileSuccess,
-    } = useGetProfileQuery(undefined, {
+    } = useAuthControllerGetProfileQuery(undefined, {
         // Skip the query if not authenticated
         skip: !isAuthenticated,
     });

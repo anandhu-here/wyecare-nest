@@ -16,7 +16,7 @@ export const shiftsApi = api
       // Shift Types
       createShiftType: build.mutation<ShiftType, CreateShiftTypeDto>({
         query: (createShiftTypeDto) => ({
-          url: `/shifts/shift-types`,
+          url: `shift-types`,
           method: 'POST',
           body: createShiftTypeDto,
         }),
@@ -25,7 +25,7 @@ export const shiftsApi = api
 
       findAllShiftTypes: build.query<ShiftType[], FindShiftTypeDto>({
         query: (query) => ({
-          url: `/shifts/shift-types`,
+          url: `shift-types`,
           params: query,
         }),
         providesTags: ['shifts/shift-types'],
@@ -33,7 +33,7 @@ export const shiftsApi = api
 
       findOneShiftType: build.query<ShiftType, string>({
         query: (id) => ({
-          url: `/shifts/shift-types/${id}`,
+          url: `shift-types/${id}`,
         }),
         providesTags: ['shifts/shift-types'],
       }),
@@ -43,7 +43,7 @@ export const shiftsApi = api
         { id: string; updateShiftTypeDto: UpdateShiftTypeDto }
       >({
         query: ({ id, updateShiftTypeDto }) => ({
-          url: `/shifts/shift-types/${id}`,
+          url: `shift-types/${id}`,
           method: 'PATCH',
           body: updateShiftTypeDto,
         }),
@@ -52,7 +52,7 @@ export const shiftsApi = api
 
       removeShiftType: build.mutation<ShiftType, string>({
         query: (id) => ({
-          url: `/shifts/shift-types/${id}`,
+          url: `shift-types/${id}`,
           method: 'DELETE',
         }),
         invalidatesTags: ['shifts/shift-types'],
@@ -63,7 +63,7 @@ export const shiftsApi = api
         { id: string; updateData: Partial<UpdateShiftTypeDto> }
       >({
         query: ({ id, updateData }) => ({
-          url: `/shifts/shift-types/${id}/clone`,
+          url: `shift-types/${id}/clone`,
           method: 'POST',
           body: updateData,
         }),
@@ -72,7 +72,7 @@ export const shiftsApi = api
 
       findShiftTypesByOrganization: build.query<ShiftType[], string>({
         query: (organizationId) => ({
-          url: `/shifts/shift-types/organization/${organizationId}`,
+          url: `shift-types/organization/${organizationId}`,
         }),
         providesTags: ['shifts/shift-types'],
       }),
@@ -83,7 +83,7 @@ export const shiftsApi = api
         CreateShiftScheduleDto
       >({
         query: (createShiftScheduleDto) => ({
-          url: `/shifts/shift-schedules`,
+          url: `shift-schedules`,
           method: 'POST',
           body: createShiftScheduleDto,
         }),
@@ -95,7 +95,7 @@ export const shiftsApi = api
         BulkCreateShiftScheduleDto
       >({
         query: (bulkCreateDto) => ({
-          url: `/shifts/shift-schedules/bulk`,
+          url: `shift-schedules/bulk`,
           method: 'POST',
           body: bulkCreateDto,
         }),
@@ -105,7 +105,7 @@ export const shiftsApi = api
       findAllShiftSchedules: build.query<ShiftSchedule[], FindShiftScheduleDto>(
         {
           query: (query) => ({
-            url: `/shifts/shift-schedules`,
+            url: `shift-schedules`,
             params: query,
           }),
           providesTags: ['shifts/shift-schedules'],
@@ -114,7 +114,7 @@ export const shiftsApi = api
 
       findOneShiftSchedule: build.query<ShiftSchedule, string>({
         query: (id) => ({
-          url: `/shifts/shift-schedules/${id}`,
+          url: `shift-schedules/${id}`,
         }),
         providesTags: ['shifts/shift-schedules'],
       }),
@@ -124,7 +124,7 @@ export const shiftsApi = api
         { id: string; updateShiftScheduleDto: UpdateShiftScheduleDto }
       >({
         query: ({ id, updateShiftScheduleDto }) => ({
-          url: `/shifts/shift-schedules/${id}`,
+          url: `shift-schedules/${id}`,
           method: 'PATCH',
           body: updateShiftScheduleDto,
         }),
@@ -133,7 +133,7 @@ export const shiftsApi = api
 
       removeShiftSchedule: build.mutation<ShiftSchedule, string>({
         query: (id) => ({
-          url: `/shifts/shift-schedules/${id}`,
+          url: `shift-schedules/${id}`,
           method: 'DELETE',
         }),
         invalidatesTags: ['shifts/shift-schedules'],
@@ -147,7 +147,7 @@ export const shiftsApi = api
         }
       >({
         query: ({ staffProfileId, query }) => ({
-          url: `/shifts/shift-schedules/staff/${staffProfileId}`,
+          url: `shift-schedules/staff/${staffProfileId}`,
           params: query,
         }),
         providesTags: ['shifts/shift-schedules'],
@@ -161,7 +161,7 @@ export const shiftsApi = api
         }
       >({
         query: ({ departmentId, query }) => ({
-          url: `/shifts/shift-schedules/department/${departmentId}`,
+          url: `shift-schedules/department/${departmentId}`,
           params: query,
         }),
         providesTags: ['shifts/shift-schedules'],
@@ -172,7 +172,7 @@ export const shiftsApi = api
         SwapShiftDto
       >({
         query: (swapShiftDto) => ({
-          url: `/shifts/shift-schedules/swap`,
+          url: `shift-schedules/swap`,
           method: 'POST',
           body: swapShiftDto,
         }),
@@ -185,7 +185,7 @@ export const shiftsApi = api
         CreateShiftAttendanceDto
       >({
         query: (createShiftAttendanceDto) => ({
-          url: `/shifts/shift-attendances`,
+          url: `shift-attendances`,
           method: 'POST',
           body: createShiftAttendanceDto,
         }),
@@ -197,7 +197,7 @@ export const shiftsApi = api
         FindShiftAttendanceDto
       >({
         query: (query) => ({
-          url: `/shifts/shift-attendances`,
+          url: `shift-attendances`,
           params: query,
         }),
         providesTags: ['shifts/shift-attendances'],
@@ -205,7 +205,7 @@ export const shiftsApi = api
 
       findOneShiftAttendance: build.query<ShiftAttendance, string>({
         query: (id) => ({
-          url: `/shifts/shift-attendances/${id}`,
+          url: `shift-attendances/${id}`,
         }),
         providesTags: ['shifts/shift-attendances'],
       }),
@@ -215,7 +215,7 @@ export const shiftsApi = api
         { id: string; updateShiftAttendanceDto: UpdateShiftAttendanceDto }
       >({
         query: ({ id, updateShiftAttendanceDto }) => ({
-          url: `/shifts/shift-attendances/${id}`,
+          url: `shift-attendances/${id}`,
           method: 'PATCH',
           body: updateShiftAttendanceDto,
         }),
@@ -224,7 +224,7 @@ export const shiftsApi = api
 
       removeShiftAttendance: build.mutation<ShiftAttendance, string>({
         query: (id) => ({
-          url: `/shifts/shift-attendances/${id}`,
+          url: `shift-attendances/${id}`,
           method: 'DELETE',
         }),
         invalidatesTags: ['shifts/shift-attendances'],
@@ -235,7 +235,7 @@ export const shiftsApi = api
         { id: string; approvalData: { approvedById: string; notes?: string } }
       >({
         query: ({ id, approvalData }) => ({
-          url: `/shifts/shift-attendances/${id}/approve`,
+          url: `shift-attendances/${id}/approve`,
           method: 'POST',
           body: approvalData,
         }),
@@ -244,14 +244,14 @@ export const shiftsApi = api
 
       findShiftAttendanceByShiftSchedule: build.query<ShiftAttendance, string>({
         query: (shiftScheduleId) => ({
-          url: `/shifts/shift-attendances/by-shift/${shiftScheduleId}`,
+          url: `shift-attendances/by-shift/${shiftScheduleId}`,
         }),
         providesTags: ['shifts/shift-attendances'],
       }),
 
       clockIn: build.mutation<ShiftAttendance, string>({
         query: (shiftScheduleId) => ({
-          url: `/shifts/shift-attendances/clock-in/${shiftScheduleId}`,
+          url: `shift-attendances/clock-in/${shiftScheduleId}`,
           method: 'POST',
         }),
         invalidatesTags: ['shifts/shift-attendances'],
@@ -259,7 +259,7 @@ export const shiftsApi = api
 
       clockOut: build.mutation<ShiftAttendance, string>({
         query: (shiftScheduleId) => ({
-          url: `/shifts/shift-attendances/clock-out/${shiftScheduleId}`,
+          url: `shift-attendances/clock-out/${shiftScheduleId}`,
           method: 'POST',
         }),
         invalidatesTags: ['shifts/shift-attendances'],
@@ -271,7 +271,7 @@ export const shiftsApi = api
         { staffProfileId: string; startDate?: Date; endDate?: Date }
       >({
         query: ({ staffProfileId, startDate, endDate }) => ({
-          url: `/shifts/shift-reports/staff/${staffProfileId}`,
+          url: `shift-reports/staff/${staffProfileId}`,
           params: {
             startDate: startDate ? startDate.toISOString() : undefined,
             endDate: endDate ? endDate.toISOString() : undefined,
@@ -285,7 +285,7 @@ export const shiftsApi = api
         { departmentId: string; startDate?: Date; endDate?: Date }
       >({
         query: ({ departmentId, startDate, endDate }) => ({
-          url: `/shifts/shift-reports/department/${departmentId}`,
+          url: `shift-reports/department/${departmentId}`,
           params: {
             startDate: startDate ? startDate.toISOString() : undefined,
             endDate: endDate ? endDate.toISOString() : undefined,
@@ -299,7 +299,7 @@ export const shiftsApi = api
         { organizationId: string; startDate?: Date; endDate?: Date }
       >({
         query: ({ organizationId, startDate, endDate }) => ({
-          url: `/shifts/shift-reports/organization/${organizationId}/coverage`,
+          url: `shift-reports/organization/${organizationId}/coverage`,
           params: {
             startDate: startDate ? startDate.toISOString() : undefined,
             endDate: endDate ? endDate.toISOString() : undefined,
@@ -313,7 +313,7 @@ export const shiftsApi = api
         { organizationId: string; startDate?: Date; endDate?: Date }
       >({
         query: ({ organizationId, startDate, endDate }) => ({
-          url: `/shifts/shift-reports/organization/${organizationId}/overtime`,
+          url: `shift-reports/organization/${organizationId}/overtime`,
           params: {
             startDate: startDate ? startDate.toISOString() : undefined,
             endDate: endDate ? endDate.toISOString() : undefined,

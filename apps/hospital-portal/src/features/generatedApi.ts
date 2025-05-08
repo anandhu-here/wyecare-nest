@@ -1,16 +1,17 @@
-import { api } from './api';
+import { api } from "./api";
 export const addTagTypes = [
-  'auth',
-  'auth/invitations',
-  'users',
-  'organizations',
-  'roles',
-  'hospital/shift-types',
-  'hospital/staff-profiles',
-  'hospital/shift-schedules',
-  'hospital/shift-attendances',
-  'hospital/pay-periods',
-  'hospital/staff-payments',
+  "auth",
+  "auth/invitations",
+  "users",
+  "organizations",
+  "roles",
+  "ShiftTypes",
+  "ShiftSchedules",
+  "Shift Attendances",
+  "ShiftReports",
+  "Payment Rules",
+  "Shift Type Premiums",
+  "Staff Compensation Rates",
 ] as const;
 const injectedRtkApi = api
   .enhanceEndpoints({
@@ -24,35 +25,31 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/auth/login`,
-          method: 'POST',
+          method: "POST",
           body: queryArg,
         }),
-        invalidatesTags: ['auth'],
+        invalidatesTags: ["auth"],
       }),
-      authControllerRegister: build.mutation({
+      authControllerRegister: build.mutation<
+        AuthControllerRegisterApiResponse,
+        AuthControllerRegisterApiArg
+      >({
         query: (queryArg) => ({
           url: `/auth/register`,
-          method: 'POST',
-          // Pass the user data directly as the body, not wrapped in createUserDto
-          body: {
-            email: queryArg.email,
-            password: queryArg.password,
-            firstName: queryArg.firstName,
-            lastName: queryArg.lastName,
-            // Include any other fields from CreateUserDto if needed
-          },
+          method: "POST",
+          body: queryArg.createUserDto,
           params: {
             invitationToken: queryArg.invitationToken,
           },
         }),
-        invalidatesTags: ['auth'],
+        invalidatesTags: ["auth"],
       }),
       authControllerGetProfile: build.query<
         AuthControllerGetProfileApiResponse,
         AuthControllerGetProfileApiArg
       >({
         query: () => ({ url: `/auth/profile` }),
-        providesTags: ['auth'],
+        providesTags: ["auth"],
       }),
       authControllerCreateSuperAdmin: build.mutation<
         AuthControllerCreateSuperAdminApiResponse,
@@ -60,27 +57,26 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/auth/create-super-admin`,
-          method: 'POST',
+          method: "POST",
           body: queryArg.createUserDto,
           params: {
             secretKey: queryArg.secretKey,
           },
         }),
-        invalidatesTags: ['auth'],
+        invalidatesTags: ["auth"],
       }),
-      authControllerRegisterWithOrganization: build.mutation({
+      authControllerRegisterWithOrganization: build.mutation<
+        AuthControllerRegisterWithOrganizationApiResponse,
+        AuthControllerRegisterWithOrganizationApiArg
+      >({
         query: (queryArg) => ({
           url: `/auth/register-with-organization`,
-          method: 'POST',
+          method: "POST",
           params: {
-            invitationToken: queryArg.invitationToken,
-          },
-          body: {
-            user: queryArg.user,
-            organization: queryArg.organization,
+            invitationToken: queryArg,
           },
         }),
-        invalidatesTags: ['auth'],
+        invalidatesTags: ["auth"],
       }),
       invitationsControllerCreate: build.mutation<
         InvitationsControllerCreateApiResponse,
@@ -88,10 +84,10 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/auth/invitations`,
-          method: 'POST',
+          method: "POST",
           body: queryArg,
         }),
-        invalidatesTags: ['auth/invitations'],
+        invalidatesTags: ["auth/invitations"],
       }),
       invitationsControllerFindAll: build.query<
         InvitationsControllerFindAllApiResponse,
@@ -105,7 +101,7 @@ const injectedRtkApi = api
             status: queryArg.status,
           },
         }),
-        providesTags: ['auth/invitations'],
+        providesTags: ["auth/invitations"],
       }),
       invitationsControllerValidateToken: build.query<
         InvitationsControllerValidateTokenApiResponse,
@@ -114,14 +110,14 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/auth/invitations/validate/${queryArg}`,
         }),
-        providesTags: ['auth/invitations'],
+        providesTags: ["auth/invitations"],
       }),
       invitationsControllerFindOne: build.query<
         InvitationsControllerFindOneApiResponse,
         InvitationsControllerFindOneApiArg
       >({
         query: (queryArg) => ({ url: `/auth/invitations/${queryArg}` }),
-        providesTags: ['auth/invitations'],
+        providesTags: ["auth/invitations"],
       }),
       invitationsControllerRevoke: build.mutation<
         InvitationsControllerRevokeApiResponse,
@@ -129,9 +125,9 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/auth/invitations/${queryArg}/revoke`,
-          method: 'PATCH',
+          method: "PATCH",
         }),
-        invalidatesTags: ['auth/invitations'],
+        invalidatesTags: ["auth/invitations"],
       }),
       invitationsControllerResend: build.mutation<
         InvitationsControllerResendApiResponse,
@@ -139,9 +135,9 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/auth/invitations/${queryArg}/resend`,
-          method: 'PATCH',
+          method: "PATCH",
         }),
-        invalidatesTags: ['auth/invitations'],
+        invalidatesTags: ["auth/invitations"],
       }),
       usersControllerCreate: build.mutation<
         UsersControllerCreateApiResponse,
@@ -149,10 +145,10 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/users`,
-          method: 'POST',
+          method: "POST",
           body: queryArg,
         }),
-        invalidatesTags: ['users'],
+        invalidatesTags: ["users"],
       }),
       usersControllerFindAll: build.query<
         UsersControllerFindAllApiResponse,
@@ -169,14 +165,14 @@ const injectedRtkApi = api
             organizationId: queryArg.organizationId,
           },
         }),
-        providesTags: ['users'],
+        providesTags: ["users"],
       }),
       usersControllerFindOne: build.query<
         UsersControllerFindOneApiResponse,
         UsersControllerFindOneApiArg
       >({
         query: (queryArg) => ({ url: `/users/${queryArg}` }),
-        providesTags: ['users'],
+        providesTags: ["users"],
       }),
       usersControllerUpdate: build.mutation<
         UsersControllerUpdateApiResponse,
@@ -184,17 +180,17 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/users/${queryArg.id}`,
-          method: 'PATCH',
+          method: "PATCH",
           body: queryArg.updateUserDto,
         }),
-        invalidatesTags: ['users'],
+        invalidatesTags: ["users"],
       }),
       usersControllerRemove: build.mutation<
         UsersControllerRemoveApiResponse,
         UsersControllerRemoveApiArg
       >({
-        query: (queryArg) => ({ url: `/users/${queryArg}`, method: 'DELETE' }),
-        invalidatesTags: ['users'],
+        query: (queryArg) => ({ url: `/users/${queryArg}`, method: "DELETE" }),
+        invalidatesTags: ["users"],
       }),
       usersControllerAssignRole: build.mutation<
         UsersControllerAssignRoleApiResponse,
@@ -202,10 +198,10 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/users/${queryArg.id}/roles`,
-          method: 'POST',
+          method: "POST",
           body: queryArg.assignRoleDto,
         }),
-        invalidatesTags: ['users'],
+        invalidatesTags: ["users"],
       }),
       usersControllerRemoveRole: build.mutation<
         UsersControllerRemoveRoleApiResponse,
@@ -213,9 +209,9 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/users/${queryArg.id}/roles/${queryArg.roleId}`,
-          method: 'DELETE',
+          method: "DELETE",
         }),
-        invalidatesTags: ['users'],
+        invalidatesTags: ["users"],
       }),
       usersControllerUpdateDepartment: build.mutation<
         UsersControllerUpdateDepartmentApiResponse,
@@ -223,10 +219,10 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/users/${queryArg.id}/departments`,
-          method: 'POST',
+          method: "POST",
           body: queryArg.updateUserDepartmentDto,
         }),
-        invalidatesTags: ['users'],
+        invalidatesTags: ["users"],
       }),
       usersControllerRemoveDepartment: build.mutation<
         UsersControllerRemoveDepartmentApiResponse,
@@ -234,16 +230,16 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/users/${queryArg.id}/departments/${queryArg.departmentId}`,
-          method: 'DELETE',
+          method: "DELETE",
         }),
-        invalidatesTags: ['users'],
+        invalidatesTags: ["users"],
       }),
       usersControllerGetUserPermissions: build.query<
         UsersControllerGetUserPermissionsApiResponse,
         UsersControllerGetUserPermissionsApiArg
       >({
         query: (queryArg) => ({ url: `/users/${queryArg}/permissions` }),
-        providesTags: ['users'],
+        providesTags: ["users"],
       }),
       usersControllerAssignPermission: build.mutation<
         UsersControllerAssignPermissionApiResponse,
@@ -251,10 +247,10 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/users/${queryArg.id}/permissions`,
-          method: 'POST',
+          method: "POST",
           body: queryArg.assignUserPermissionDto,
         }),
-        invalidatesTags: ['users'],
+        invalidatesTags: ["users"],
       }),
       usersControllerRemovePermission: build.mutation<
         UsersControllerRemovePermissionApiResponse,
@@ -262,9 +258,9 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/users/${queryArg.id}/permissions/${queryArg.permissionId}`,
-          method: 'DELETE',
+          method: "DELETE",
         }),
-        invalidatesTags: ['users'],
+        invalidatesTags: ["users"],
       }),
       organizationsControllerCreate: build.mutation<
         OrganizationsControllerCreateApiResponse,
@@ -272,10 +268,10 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/organizations`,
-          method: 'POST',
+          method: "POST",
           body: queryArg,
         }),
-        invalidatesTags: ['organizations'],
+        invalidatesTags: ["organizations"],
       }),
       organizationsControllerFindAll: build.query<
         OrganizationsControllerFindAllApiResponse,
@@ -290,14 +286,14 @@ const injectedRtkApi = api
             category: queryArg.category,
           },
         }),
-        providesTags: ['organizations'],
+        providesTags: ["organizations"],
       }),
       organizationsControllerFindOne: build.query<
         OrganizationsControllerFindOneApiResponse,
         OrganizationsControllerFindOneApiArg
       >({
         query: (queryArg) => ({ url: `/organizations/${queryArg}` }),
-        providesTags: ['organizations'],
+        providesTags: ["organizations"],
       }),
       organizationsControllerUpdate: build.mutation<
         OrganizationsControllerUpdateApiResponse,
@@ -305,10 +301,10 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/organizations/${queryArg.id}`,
-          method: 'PATCH',
+          method: "PATCH",
           body: queryArg.updateOrganizationDto,
         }),
-        invalidatesTags: ['organizations'],
+        invalidatesTags: ["organizations"],
       }),
       organizationsControllerRemove: build.mutation<
         OrganizationsControllerRemoveApiResponse,
@@ -316,9 +312,9 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/organizations/${queryArg}`,
-          method: 'DELETE',
+          method: "DELETE",
         }),
-        invalidatesTags: ['organizations'],
+        invalidatesTags: ["organizations"],
       }),
       organizationsControllerCreateDepartment: build.mutation<
         OrganizationsControllerCreateDepartmentApiResponse,
@@ -326,10 +322,10 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/organizations/${queryArg.id}/departments`,
-          method: 'POST',
+          method: "POST",
           body: queryArg.createDepartmentDto,
         }),
-        invalidatesTags: ['organizations'],
+        invalidatesTags: ["organizations"],
       }),
       organizationsControllerGetDepartments: build.query<
         OrganizationsControllerGetDepartmentsApiResponse,
@@ -338,7 +334,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/organizations/${queryArg}/departments`,
         }),
-        providesTags: ['organizations'],
+        providesTags: ["organizations"],
       }),
       rolesControllerCreate: build.mutation<
         RolesControllerCreateApiResponse,
@@ -346,10 +342,10 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/roles`,
-          method: 'POST',
+          method: "POST",
           body: queryArg,
         }),
-        invalidatesTags: ['roles'],
+        invalidatesTags: ["roles"],
       }),
       rolesControllerFindAll: build.query<
         RolesControllerFindAllApiResponse,
@@ -366,21 +362,21 @@ const injectedRtkApi = api
             sector: queryArg.sector,
           },
         }),
-        providesTags: ['roles'],
+        providesTags: ["roles"],
       }),
       rolesControllerFindAllPermissions: build.query<
         RolesControllerFindAllPermissionsApiResponse,
         RolesControllerFindAllPermissionsApiArg
       >({
         query: () => ({ url: `/roles/permissions` }),
-        providesTags: ['roles'],
+        providesTags: ["roles"],
       }),
       rolesControllerFindOne: build.query<
         RolesControllerFindOneApiResponse,
         RolesControllerFindOneApiArg
       >({
         query: (queryArg) => ({ url: `/roles/${queryArg}` }),
-        providesTags: ['roles'],
+        providesTags: ["roles"],
       }),
       rolesControllerUpdate: build.mutation<
         RolesControllerUpdateApiResponse,
@@ -388,17 +384,17 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/roles/${queryArg.id}`,
-          method: 'PATCH',
+          method: "PATCH",
           body: queryArg.updateRolesDto,
         }),
-        invalidatesTags: ['roles'],
+        invalidatesTags: ["roles"],
       }),
       rolesControllerRemove: build.mutation<
         RolesControllerRemoveApiResponse,
         RolesControllerRemoveApiArg
       >({
-        query: (queryArg) => ({ url: `/roles/${queryArg}`, method: 'DELETE' }),
-        invalidatesTags: ['roles'],
+        query: (queryArg) => ({ url: `/roles/${queryArg}`, method: "DELETE" }),
+        invalidatesTags: ["roles"],
       }),
       rolesControllerAssignPermission: build.mutation<
         RolesControllerAssignPermissionApiResponse,
@@ -406,10 +402,10 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/roles/${queryArg.id}/permissions`,
-          method: 'POST',
+          method: "POST",
           body: queryArg.assignPermissionDto,
         }),
-        invalidatesTags: ['roles'],
+        invalidatesTags: ["roles"],
       }),
       rolesControllerRemovePermission: build.mutation<
         RolesControllerRemovePermissionApiResponse,
@@ -417,363 +413,538 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/roles/${queryArg.id}/permissions/${queryArg.permissionId}`,
-          method: 'DELETE',
+          method: "DELETE",
         }),
-        invalidatesTags: ['roles'],
+        invalidatesTags: ["roles"],
       }),
       shiftTypesControllerCreate: build.mutation<
         ShiftTypesControllerCreateApiResponse,
         ShiftTypesControllerCreateApiArg
       >({
         query: (queryArg) => ({
-          url: `/hospital/shift-types`,
-          method: 'POST',
+          url: `/shift-types`,
+          method: "POST",
           body: queryArg,
         }),
-        invalidatesTags: ['hospital/shift-types'],
+        invalidatesTags: ["ShiftTypes"],
       }),
       shiftTypesControllerFindAll: build.query<
         ShiftTypesControllerFindAllApiResponse,
         ShiftTypesControllerFindAllApiArg
       >({
-        query: (queryArg) => ({
-          url: `/hospital/shift-types`,
-          params: {
-            skip: queryArg.skip,
-            take: queryArg.take,
-            name: queryArg.name,
-            organizationId: queryArg.organizationId,
-          },
-        }),
-        providesTags: ['hospital/shift-types'],
+        query: () => ({ url: `/shift-types` }),
+        providesTags: ["ShiftTypes"],
       }),
       shiftTypesControllerFindOne: build.query<
         ShiftTypesControllerFindOneApiResponse,
         ShiftTypesControllerFindOneApiArg
       >({
-        query: (queryArg) => ({ url: `/hospital/shift-types/${queryArg}` }),
-        providesTags: ['hospital/shift-types'],
+        query: (queryArg) => ({ url: `/shift-types/${queryArg}` }),
+        providesTags: ["ShiftTypes"],
       }),
       shiftTypesControllerUpdate: build.mutation<
         ShiftTypesControllerUpdateApiResponse,
         ShiftTypesControllerUpdateApiArg
       >({
         query: (queryArg) => ({
-          url: `/hospital/shift-types/${queryArg.id}`,
-          method: 'PATCH',
+          url: `/shift-types/${queryArg.id}`,
+          method: "PATCH",
           body: queryArg.updateShiftTypeDto,
         }),
-        invalidatesTags: ['hospital/shift-types'],
+        invalidatesTags: ["ShiftTypes"],
       }),
       shiftTypesControllerRemove: build.mutation<
         ShiftTypesControllerRemoveApiResponse,
         ShiftTypesControllerRemoveApiArg
       >({
         query: (queryArg) => ({
-          url: `/hospital/shift-types/${queryArg}`,
-          method: 'DELETE',
+          url: `/shift-types/${queryArg}`,
+          method: "DELETE",
         }),
-        invalidatesTags: ['hospital/shift-types'],
+        invalidatesTags: ["ShiftTypes"],
       }),
-      staffProfilesControllerCreate: build.mutation<
-        StaffProfilesControllerCreateApiResponse,
-        StaffProfilesControllerCreateApiArg
+      shiftTypesControllerCloneShiftType: build.mutation<
+        ShiftTypesControllerCloneShiftTypeApiResponse,
+        ShiftTypesControllerCloneShiftTypeApiArg
       >({
         query: (queryArg) => ({
-          url: `/hospital/staff-profiles`,
-          method: 'POST',
-          body: queryArg,
+          url: `/shift-types/${queryArg}/clone`,
+          method: "POST",
         }),
-        invalidatesTags: ['hospital/staff-profiles'],
+        invalidatesTags: ["ShiftTypes"],
       }),
-      staffProfilesControllerFindAll: build.query<
-        StaffProfilesControllerFindAllApiResponse,
-        StaffProfilesControllerFindAllApiArg
+      shiftTypesControllerFindByOrganization: build.query<
+        ShiftTypesControllerFindByOrganizationApiResponse,
+        ShiftTypesControllerFindByOrganizationApiArg
       >({
-        query: (queryArg) => ({
-          url: `/hospital/staff-profiles`,
-          params: {
-            skip: queryArg.skip,
-            take: queryArg.take,
-            specialty: queryArg.specialty,
-            status: queryArg.status,
-            staffType: queryArg.staffType,
-          },
-        }),
-        providesTags: ['hospital/staff-profiles'],
-      }),
-      staffProfilesControllerFindOne: build.query<
-        StaffProfilesControllerFindOneApiResponse,
-        StaffProfilesControllerFindOneApiArg
-      >({
-        query: (queryArg) => ({ url: `/hospital/staff-profiles/${queryArg}` }),
-        providesTags: ['hospital/staff-profiles'],
-      }),
-      staffProfilesControllerUpdate: build.mutation<
-        StaffProfilesControllerUpdateApiResponse,
-        StaffProfilesControllerUpdateApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/hospital/staff-profiles/${queryArg.id}`,
-          method: 'PATCH',
-          body: queryArg.updateStaffProfileDto,
-        }),
-        invalidatesTags: ['hospital/staff-profiles'],
-      }),
-      staffProfilesControllerRemove: build.mutation<
-        StaffProfilesControllerRemoveApiResponse,
-        StaffProfilesControllerRemoveApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/hospital/staff-profiles/${queryArg}`,
-          method: 'DELETE',
-        }),
-        invalidatesTags: ['hospital/staff-profiles'],
-      }),
-      staffProfilesControllerAddCompensationRate: build.mutation<
-        StaffProfilesControllerAddCompensationRateApiResponse,
-        StaffProfilesControllerAddCompensationRateApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/hospital/staff-profiles/${queryArg.id}/compensation-rates`,
-          method: 'POST',
-          body: queryArg.createCompensationRateDto,
-        }),
-        invalidatesTags: ['hospital/staff-profiles'],
-      }),
-      staffProfilesControllerRemoveCompensationRate: build.mutation<
-        StaffProfilesControllerRemoveCompensationRateApiResponse,
-        StaffProfilesControllerRemoveCompensationRateApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/hospital/staff-profiles/${queryArg.id}/compensation-rates/${queryArg.rateId}`,
-          method: 'DELETE',
-        }),
-        invalidatesTags: ['hospital/staff-profiles'],
+        query: (queryArg) => ({ url: `/shift-types/organization/${queryArg}` }),
+        providesTags: ["ShiftTypes"],
       }),
       shiftSchedulesControllerCreate: build.mutation<
         ShiftSchedulesControllerCreateApiResponse,
         ShiftSchedulesControllerCreateApiArg
       >({
         query: (queryArg) => ({
-          url: `/hospital/shift-schedules`,
-          method: 'POST',
+          url: `/shift-schedules`,
+          method: "POST",
           body: queryArg,
         }),
-        invalidatesTags: ['hospital/shift-schedules'],
+        invalidatesTags: ["ShiftSchedules"],
       }),
       shiftSchedulesControllerFindAll: build.query<
         ShiftSchedulesControllerFindAllApiResponse,
         ShiftSchedulesControllerFindAllApiArg
       >({
+        query: () => ({ url: `/shift-schedules` }),
+        providesTags: ["ShiftSchedules"],
+      }),
+      shiftSchedulesControllerBulkCreate: build.mutation<
+        ShiftSchedulesControllerBulkCreateApiResponse,
+        ShiftSchedulesControllerBulkCreateApiArg
+      >({
         query: (queryArg) => ({
-          url: `/hospital/shift-schedules`,
-          params: {
-            skip: queryArg.skip,
-            take: queryArg.take,
-            startDate: queryArg.startDate,
-            endDate: queryArg.endDate,
-            departmentId: queryArg.departmentId,
-            staffProfileId: queryArg.staffProfileId,
-            status: queryArg.status,
-          },
+          url: `/shift-schedules/bulk`,
+          method: "POST",
+          body: queryArg,
         }),
-        providesTags: ['hospital/shift-schedules'],
+        invalidatesTags: ["ShiftSchedules"],
       }),
       shiftSchedulesControllerFindOne: build.query<
         ShiftSchedulesControllerFindOneApiResponse,
         ShiftSchedulesControllerFindOneApiArg
       >({
-        query: (queryArg) => ({ url: `/hospital/shift-schedules/${queryArg}` }),
-        providesTags: ['hospital/shift-schedules'],
+        query: (queryArg) => ({ url: `/shift-schedules/${queryArg}` }),
+        providesTags: ["ShiftSchedules"],
       }),
       shiftSchedulesControllerUpdate: build.mutation<
         ShiftSchedulesControllerUpdateApiResponse,
         ShiftSchedulesControllerUpdateApiArg
       >({
         query: (queryArg) => ({
-          url: `/hospital/shift-schedules/${queryArg.id}`,
-          method: 'PATCH',
+          url: `/shift-schedules/${queryArg.id}`,
+          method: "PATCH",
           body: queryArg.updateShiftScheduleDto,
         }),
-        invalidatesTags: ['hospital/shift-schedules'],
+        invalidatesTags: ["ShiftSchedules"],
       }),
       shiftSchedulesControllerRemove: build.mutation<
         ShiftSchedulesControllerRemoveApiResponse,
         ShiftSchedulesControllerRemoveApiArg
       >({
         query: (queryArg) => ({
-          url: `/hospital/shift-schedules/${queryArg}`,
-          method: 'DELETE',
+          url: `/shift-schedules/${queryArg}`,
+          method: "DELETE",
         }),
-        invalidatesTags: ['hospital/shift-schedules'],
+        invalidatesTags: ["ShiftSchedules"],
+      }),
+      shiftSchedulesControllerFindByStaff: build.query<
+        ShiftSchedulesControllerFindByStaffApiResponse,
+        ShiftSchedulesControllerFindByStaffApiArg
+      >({
+        query: (queryArg) => ({ url: `/shift-schedules/staff/${queryArg}` }),
+        providesTags: ["ShiftSchedules"],
+      }),
+      shiftSchedulesControllerFindByDepartment: build.query<
+        ShiftSchedulesControllerFindByDepartmentApiResponse,
+        ShiftSchedulesControllerFindByDepartmentApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/shift-schedules/department/${queryArg}`,
+        }),
+        providesTags: ["ShiftSchedules"],
+      }),
+      shiftSchedulesControllerSwapShifts: build.mutation<
+        ShiftSchedulesControllerSwapShiftsApiResponse,
+        ShiftSchedulesControllerSwapShiftsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/shift-schedules/swap`,
+          method: "POST",
+          body: queryArg,
+        }),
+        invalidatesTags: ["ShiftSchedules"],
       }),
       shiftAttendancesControllerCreate: build.mutation<
         ShiftAttendancesControllerCreateApiResponse,
         ShiftAttendancesControllerCreateApiArg
       >({
         query: (queryArg) => ({
-          url: `/hospital/shift-attendances`,
-          method: 'POST',
+          url: `/shift-attendances`,
+          method: "POST",
           body: queryArg,
         }),
-        invalidatesTags: ['hospital/shift-attendances'],
+        invalidatesTags: ["Shift Attendances"],
       }),
       shiftAttendancesControllerFindAll: build.query<
         ShiftAttendancesControllerFindAllApiResponse,
         ShiftAttendancesControllerFindAllApiArg
       >({
-        query: (queryArg) => ({
-          url: `/hospital/shift-attendances`,
-          params: {
-            skip: queryArg.skip,
-            take: queryArg.take,
-            status: queryArg.status,
-            date: queryArg.date,
-            departmentId: queryArg.departmentId,
-          },
-        }),
-        providesTags: ['hospital/shift-attendances'],
+        query: () => ({ url: `/shift-attendances` }),
+        providesTags: ["Shift Attendances"],
       }),
       shiftAttendancesControllerFindOne: build.query<
         ShiftAttendancesControllerFindOneApiResponse,
         ShiftAttendancesControllerFindOneApiArg
       >({
-        query: (queryArg) => ({
-          url: `/hospital/shift-attendances/${queryArg}`,
-        }),
-        providesTags: ['hospital/shift-attendances'],
+        query: (queryArg) => ({ url: `/shift-attendances/${queryArg}` }),
+        providesTags: ["Shift Attendances"],
       }),
       shiftAttendancesControllerUpdate: build.mutation<
         ShiftAttendancesControllerUpdateApiResponse,
         ShiftAttendancesControllerUpdateApiArg
       >({
         query: (queryArg) => ({
-          url: `/hospital/shift-attendances/${queryArg.id}`,
-          method: 'PATCH',
+          url: `/shift-attendances/${queryArg.id}`,
+          method: "PATCH",
           body: queryArg.updateShiftAttendanceDto,
         }),
-        invalidatesTags: ['hospital/shift-attendances'],
+        invalidatesTags: ["Shift Attendances"],
       }),
       shiftAttendancesControllerRemove: build.mutation<
         ShiftAttendancesControllerRemoveApiResponse,
         ShiftAttendancesControllerRemoveApiArg
       >({
         query: (queryArg) => ({
-          url: `/hospital/shift-attendances/${queryArg}`,
-          method: 'DELETE',
+          url: `/shift-attendances/${queryArg}`,
+          method: "DELETE",
         }),
-        invalidatesTags: ['hospital/shift-attendances'],
+        invalidatesTags: ["Shift Attendances"],
       }),
-      payPeriodsControllerCreate: build.mutation<
-        PayPeriodsControllerCreateApiResponse,
-        PayPeriodsControllerCreateApiArg
+      shiftAttendancesControllerApprove: build.mutation<
+        ShiftAttendancesControllerApproveApiResponse,
+        ShiftAttendancesControllerApproveApiArg
       >({
         query: (queryArg) => ({
-          url: `/hospital/pay-periods`,
-          method: 'POST',
+          url: `/shift-attendances/${queryArg.id}/approve`,
+          method: "POST",
+          body: queryArg.body,
+        }),
+        invalidatesTags: ["Shift Attendances"],
+      }),
+      shiftAttendancesControllerFindByShiftSchedule: build.query<
+        ShiftAttendancesControllerFindByShiftScheduleApiResponse,
+        ShiftAttendancesControllerFindByShiftScheduleApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/shift-attendances/by-shift/${queryArg}`,
+        }),
+        providesTags: ["Shift Attendances"],
+      }),
+      shiftAttendancesControllerClockIn: build.mutation<
+        ShiftAttendancesControllerClockInApiResponse,
+        ShiftAttendancesControllerClockInApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/shift-attendances/clock-in/${queryArg}`,
+          method: "POST",
+        }),
+        invalidatesTags: ["Shift Attendances"],
+      }),
+      shiftAttendancesControllerClockOut: build.mutation<
+        ShiftAttendancesControllerClockOutApiResponse,
+        ShiftAttendancesControllerClockOutApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/shift-attendances/clock-out/${queryArg}`,
+          method: "POST",
+        }),
+        invalidatesTags: ["Shift Attendances"],
+      }),
+      shiftReportsControllerGetStaffHoursReport: build.query<
+        ShiftReportsControllerGetStaffHoursReportApiResponse,
+        ShiftReportsControllerGetStaffHoursReportApiArg
+      >({
+        query: (queryArg) => ({ url: `/shift-reports/staff/${queryArg}` }),
+        providesTags: ["ShiftReports"],
+      }),
+      shiftReportsControllerGetDepartmentHoursReport: build.query<
+        ShiftReportsControllerGetDepartmentHoursReportApiResponse,
+        ShiftReportsControllerGetDepartmentHoursReportApiArg
+      >({
+        query: (queryArg) => ({ url: `/shift-reports/department/${queryArg}` }),
+        providesTags: ["ShiftReports"],
+      }),
+      shiftReportsControllerGetOrganizationCoverageReport: build.query<
+        ShiftReportsControllerGetOrganizationCoverageReportApiResponse,
+        ShiftReportsControllerGetOrganizationCoverageReportApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/shift-reports/organization/${queryArg}/coverage`,
+        }),
+        providesTags: ["ShiftReports"],
+      }),
+      shiftReportsControllerGetOvertimeReport: build.query<
+        ShiftReportsControllerGetOvertimeReportApiResponse,
+        ShiftReportsControllerGetOvertimeReportApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/shift-reports/organization/${queryArg}/overtime`,
+        }),
+        providesTags: ["ShiftReports"],
+      }),
+      paymentRulesControllerCreate: build.mutation<
+        PaymentRulesControllerCreateApiResponse,
+        PaymentRulesControllerCreateApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/payment-rules`,
+          method: "POST",
           body: queryArg,
         }),
-        invalidatesTags: ['hospital/pay-periods'],
+        invalidatesTags: ["Payment Rules"],
       }),
-      payPeriodsControllerFindAll: build.query<
-        PayPeriodsControllerFindAllApiResponse,
-        PayPeriodsControllerFindAllApiArg
+      paymentRulesControllerFindAll: build.query<
+        PaymentRulesControllerFindAllApiResponse,
+        PaymentRulesControllerFindAllApiArg
       >({
         query: (queryArg) => ({
-          url: `/hospital/pay-periods`,
+          url: `/api/payment-rules`,
           params: {
+            shiftTypeId: queryArg.shiftTypeId,
+            roleId: queryArg.roleId,
+            organizationId: queryArg.organizationId,
+            paymentType: queryArg.paymentType,
+            effectiveDate: queryArg.effectiveDate,
+            active: queryArg.active,
             skip: queryArg.skip,
             take: queryArg.take,
-            status: queryArg.status,
-            startDate: queryArg.startDate,
-            endDate: queryArg.endDate,
           },
         }),
-        providesTags: ['hospital/pay-periods'],
+        providesTags: ["Payment Rules"],
       }),
-      payPeriodsControllerFindOne: build.query<
-        PayPeriodsControllerFindOneApiResponse,
-        PayPeriodsControllerFindOneApiArg
+      paymentRulesControllerFindOne: build.query<
+        PaymentRulesControllerFindOneApiResponse,
+        PaymentRulesControllerFindOneApiArg
       >({
-        query: (queryArg) => ({ url: `/hospital/pay-periods/${queryArg}` }),
-        providesTags: ['hospital/pay-periods'],
+        query: (queryArg) => ({ url: `/api/payment-rules/${queryArg}` }),
+        providesTags: ["Payment Rules"],
       }),
-      payPeriodsControllerUpdate: build.mutation<
-        PayPeriodsControllerUpdateApiResponse,
-        PayPeriodsControllerUpdateApiArg
+      paymentRulesControllerUpdate: build.mutation<
+        PaymentRulesControllerUpdateApiResponse,
+        PaymentRulesControllerUpdateApiArg
       >({
         query: (queryArg) => ({
-          url: `/hospital/pay-periods/${queryArg.id}`,
-          method: 'PATCH',
-          body: queryArg.updatePayPeriodDto,
+          url: `/api/payment-rules/${queryArg.id}`,
+          method: "PATCH",
+          body: queryArg.updatePaymentRuleDto,
         }),
-        invalidatesTags: ['hospital/pay-periods'],
+        invalidatesTags: ["Payment Rules"],
       }),
-      payPeriodsControllerRemove: build.mutation<
-        PayPeriodsControllerRemoveApiResponse,
-        PayPeriodsControllerRemoveApiArg
+      paymentRulesControllerRemove: build.mutation<
+        PaymentRulesControllerRemoveApiResponse,
+        PaymentRulesControllerRemoveApiArg
       >({
         query: (queryArg) => ({
-          url: `/hospital/pay-periods/${queryArg}`,
-          method: 'DELETE',
+          url: `/api/payment-rules/${queryArg}`,
+          method: "DELETE",
         }),
-        invalidatesTags: ['hospital/pay-periods'],
+        invalidatesTags: ["Payment Rules"],
       }),
-      staffPaymentsControllerCreate: build.mutation<
-        StaffPaymentsControllerCreateApiResponse,
-        StaffPaymentsControllerCreateApiArg
+      paymentRulesControllerFindByOrganization: build.query<
+        PaymentRulesControllerFindByOrganizationApiResponse,
+        PaymentRulesControllerFindByOrganizationApiArg
       >({
         query: (queryArg) => ({
-          url: `/hospital/staff-payments`,
-          method: 'POST',
+          url: `/api/payment-rules/organization/${queryArg.organizationId}`,
+          params: {
+            take: queryArg.take,
+            skip: queryArg.skip,
+            active: queryArg.active,
+            effectiveDate: queryArg.effectiveDate,
+            paymentType: queryArg.paymentType,
+            roleId: queryArg.roleId,
+            shiftTypeId: queryArg.shiftTypeId,
+          },
+        }),
+        providesTags: ["Payment Rules"],
+      }),
+      paymentRulesControllerFindByRole: build.query<
+        PaymentRulesControllerFindByRoleApiResponse,
+        PaymentRulesControllerFindByRoleApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/payment-rules/role/${queryArg.roleId}`,
+          params: {
+            take: queryArg.take,
+            skip: queryArg.skip,
+            active: queryArg.active,
+            effectiveDate: queryArg.effectiveDate,
+            paymentType: queryArg.paymentType,
+            organizationId: queryArg.organizationId,
+            shiftTypeId: queryArg.shiftTypeId,
+          },
+        }),
+        providesTags: ["Payment Rules"],
+      }),
+      paymentRulesControllerFindByShiftType: build.query<
+        PaymentRulesControllerFindByShiftTypeApiResponse,
+        PaymentRulesControllerFindByShiftTypeApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/payment-rules/shift-type/${queryArg.shiftTypeId}`,
+          params: {
+            take: queryArg.take,
+            skip: queryArg.skip,
+            active: queryArg.active,
+            effectiveDate: queryArg.effectiveDate,
+            paymentType: queryArg.paymentType,
+            organizationId: queryArg.organizationId,
+            roleId: queryArg.roleId,
+          },
+        }),
+        providesTags: ["Payment Rules"],
+      }),
+      shiftTypePremiumsControllerCreate: build.mutation<
+        ShiftTypePremiumsControllerCreateApiResponse,
+        ShiftTypePremiumsControllerCreateApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/shift-type-premiums`,
+          method: "POST",
           body: queryArg,
         }),
-        invalidatesTags: ['hospital/staff-payments'],
+        invalidatesTags: ["Shift Type Premiums"],
       }),
-      staffPaymentsControllerFindAll: build.query<
-        StaffPaymentsControllerFindAllApiResponse,
-        StaffPaymentsControllerFindAllApiArg
+      shiftTypePremiumsControllerFindAll: build.query<
+        ShiftTypePremiumsControllerFindAllApiResponse,
+        ShiftTypePremiumsControllerFindAllApiArg
       >({
         query: (queryArg) => ({
-          url: `/hospital/staff-payments`,
+          url: `/api/shift-type-premiums`,
           params: {
+            shiftTypeId: queryArg.shiftTypeId,
+            compensationRateId: queryArg.compensationRateId,
+            effectiveDate: queryArg.effectiveDate,
+            active: queryArg.active,
             skip: queryArg.skip,
             take: queryArg.take,
-            payPeriodId: queryArg.payPeriodId,
+          },
+        }),
+        providesTags: ["Shift Type Premiums"],
+      }),
+      shiftTypePremiumsControllerFindOne: build.query<
+        ShiftTypePremiumsControllerFindOneApiResponse,
+        ShiftTypePremiumsControllerFindOneApiArg
+      >({
+        query: (queryArg) => ({ url: `/api/shift-type-premiums/${queryArg}` }),
+        providesTags: ["Shift Type Premiums"],
+      }),
+      shiftTypePremiumsControllerUpdate: build.mutation<
+        ShiftTypePremiumsControllerUpdateApiResponse,
+        ShiftTypePremiumsControllerUpdateApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/shift-type-premiums/${queryArg.id}`,
+          method: "PATCH",
+          body: queryArg.updateShiftTypePremiumDto,
+        }),
+        invalidatesTags: ["Shift Type Premiums"],
+      }),
+      shiftTypePremiumsControllerRemove: build.mutation<
+        ShiftTypePremiumsControllerRemoveApiResponse,
+        ShiftTypePremiumsControllerRemoveApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/shift-type-premiums/${queryArg}`,
+          method: "DELETE",
+        }),
+        invalidatesTags: ["Shift Type Premiums"],
+      }),
+      shiftTypePremiumsControllerFindApplicablePremiums: build.query<
+        ShiftTypePremiumsControllerFindApplicablePremiumsApiResponse,
+        ShiftTypePremiumsControllerFindApplicablePremiumsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/shift-type-premiums/applicable/${queryArg.staffProfileId}/${queryArg.departmentId}/${queryArg.shiftTypeId}`,
+        }),
+        providesTags: ["Shift Type Premiums"],
+      }),
+      staffCompensationRatesControllerCreate: build.mutation<
+        StaffCompensationRatesControllerCreateApiResponse,
+        StaffCompensationRatesControllerCreateApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/staff-compensation-rates`,
+          method: "POST",
+          body: queryArg,
+        }),
+        invalidatesTags: ["Staff Compensation Rates"],
+      }),
+      staffCompensationRatesControllerFindAll: build.query<
+        StaffCompensationRatesControllerFindAllApiResponse,
+        StaffCompensationRatesControllerFindAllApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/staff-compensation-rates`,
+          params: {
             staffProfileId: queryArg.staffProfileId,
-            paymentStatus: queryArg.paymentStatus,
+            departmentId: queryArg.departmentId,
+            paymentType: queryArg.paymentType,
+            effectiveDate: queryArg.effectiveDate,
+            active: queryArg.active,
+            includePremiums: queryArg.includePremiums,
+            skip: queryArg.skip,
+            take: queryArg.take,
           },
         }),
-        providesTags: ['hospital/staff-payments'],
+        providesTags: ["Staff Compensation Rates"],
       }),
-      staffPaymentsControllerFindOne: build.query<
-        StaffPaymentsControllerFindOneApiResponse,
-        StaffPaymentsControllerFindOneApiArg
-      >({
-        query: (queryArg) => ({ url: `/hospital/staff-payments/${queryArg}` }),
-        providesTags: ['hospital/staff-payments'],
-      }),
-      staffPaymentsControllerUpdate: build.mutation<
-        StaffPaymentsControllerUpdateApiResponse,
-        StaffPaymentsControllerUpdateApiArg
+      staffCompensationRatesControllerFindOne: build.query<
+        StaffCompensationRatesControllerFindOneApiResponse,
+        StaffCompensationRatesControllerFindOneApiArg
       >({
         query: (queryArg) => ({
-          url: `/hospital/staff-payments/${queryArg.id}`,
-          method: 'PATCH',
-          body: queryArg.updateStaffPaymentDto,
+          url: `/api/staff-compensation-rates/${queryArg.id}`,
+          params: {
+            includePremiums: queryArg.includePremiums,
+          },
         }),
-        invalidatesTags: ['hospital/staff-payments'],
+        providesTags: ["Staff Compensation Rates"],
       }),
-      staffPaymentsControllerRemove: build.mutation<
-        StaffPaymentsControllerRemoveApiResponse,
-        StaffPaymentsControllerRemoveApiArg
+      staffCompensationRatesControllerUpdate: build.mutation<
+        StaffCompensationRatesControllerUpdateApiResponse,
+        StaffCompensationRatesControllerUpdateApiArg
       >({
         query: (queryArg) => ({
-          url: `/hospital/staff-payments/${queryArg}`,
-          method: 'DELETE',
+          url: `/api/staff-compensation-rates/${queryArg.id}`,
+          method: "PATCH",
+          body: queryArg.updateStaffCompensationRateDto,
         }),
-        invalidatesTags: ['hospital/staff-payments'],
+        invalidatesTags: ["Staff Compensation Rates"],
+      }),
+      staffCompensationRatesControllerRemove: build.mutation<
+        StaffCompensationRatesControllerRemoveApiResponse,
+        StaffCompensationRatesControllerRemoveApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/staff-compensation-rates/${queryArg}`,
+          method: "DELETE",
+        }),
+        invalidatesTags: ["Staff Compensation Rates"],
+      }),
+      staffCompensationRatesControllerFindCurrentRate: build.query<
+        StaffCompensationRatesControllerFindCurrentRateApiResponse,
+        StaffCompensationRatesControllerFindCurrentRateApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/staff-compensation-rates/staff/${queryArg.staffProfileId}/department/${queryArg.departmentId}`,
+        }),
+        providesTags: ["Staff Compensation Rates"],
+      }),
+      staffCompensationRatesControllerCalculateShiftPay: build.query<
+        StaffCompensationRatesControllerCalculateShiftPayApiResponse,
+        StaffCompensationRatesControllerCalculateShiftPayApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/staff-compensation-rates/calculate-pay`,
+          params: {
+            staffProfileId: queryArg.staffProfileId,
+            departmentId: queryArg.departmentId,
+            shiftTypeId: queryArg.shiftTypeId,
+            hoursWorked: queryArg.hoursWorked,
+          },
+        }),
+        providesTags: ["Staff Compensation Rates"],
       }),
     }),
     overrideExisting: false,
@@ -871,19 +1042,19 @@ export type OrganizationsControllerFindAllApiArg = {
   take?: number;
   name?: string;
   category?:
-    | 'HOSPITAL'
-    | 'CARE_HOME'
-    | 'STAFF_PROVIDER'
-    | 'SOFTWARE_COMPANY'
-    | 'MANUFACTURING'
-    | 'EDUCATION'
-    | 'RETAIL'
-    | 'LOGISTICS'
-    | 'CONSTRUCTION'
-    | 'FINANCIAL'
-    | 'HOSPITALITY'
-    | 'HEALTHCARE'
-    | 'OTHER';
+    | "HOSPITAL"
+    | "CARE_HOME"
+    | "STAFF_PROVIDER"
+    | "SOFTWARE_COMPANY"
+    | "MANUFACTURING"
+    | "EDUCATION"
+    | "RETAIL"
+    | "LOGISTICS"
+    | "CONSTRUCTION"
+    | "FINANCIAL"
+    | "HOSPITALITY"
+    | "HEALTHCARE"
+    | "OTHER";
 };
 export type OrganizationsControllerFindOneApiResponse = unknown;
 export type OrganizationsControllerFindOneApiArg = string;
@@ -911,19 +1082,19 @@ export type RolesControllerFindAllApiArg = {
   isSystemRole?: boolean;
   organizationId?: string;
   sector?:
-    | 'HOSPITAL'
-    | 'CARE_HOME'
-    | 'STAFF_PROVIDER'
-    | 'SOFTWARE_COMPANY'
-    | 'MANUFACTURING'
-    | 'EDUCATION'
-    | 'RETAIL'
-    | 'LOGISTICS'
-    | 'CONSTRUCTION'
-    | 'FINANCIAL'
-    | 'HOSPITALITY'
-    | 'HEALTHCARE'
-    | 'OTHER';
+    | "HOSPITAL"
+    | "CARE_HOME"
+    | "STAFF_PROVIDER"
+    | "SOFTWARE_COMPANY"
+    | "MANUFACTURING"
+    | "EDUCATION"
+    | "RETAIL"
+    | "LOGISTICS"
+    | "CONSTRUCTION"
+    | "FINANCIAL"
+    | "HOSPITALITY"
+    | "HEALTHCARE"
+    | "OTHER";
 };
 export type RolesControllerFindAllPermissionsApiResponse = unknown;
 export type RolesControllerFindAllPermissionsApiArg = void;
@@ -949,12 +1120,7 @@ export type RolesControllerRemovePermissionApiArg = {
 export type ShiftTypesControllerCreateApiResponse = unknown;
 export type ShiftTypesControllerCreateApiArg = CreateShiftTypeDto;
 export type ShiftTypesControllerFindAllApiResponse = unknown;
-export type ShiftTypesControllerFindAllApiArg = {
-  skip?: number;
-  take?: number;
-  name?: string;
-  organizationId?: string;
-};
+export type ShiftTypesControllerFindAllApiArg = void;
 export type ShiftTypesControllerFindOneApiResponse = unknown;
 export type ShiftTypesControllerFindOneApiArg = string;
 export type ShiftTypesControllerUpdateApiResponse = unknown;
@@ -964,47 +1130,17 @@ export type ShiftTypesControllerUpdateApiArg = {
 };
 export type ShiftTypesControllerRemoveApiResponse = unknown;
 export type ShiftTypesControllerRemoveApiArg = string;
-export type StaffProfilesControllerCreateApiResponse = unknown;
-export type StaffProfilesControllerCreateApiArg = CreateStaffProfileDto;
-export type StaffProfilesControllerFindAllApiResponse = unknown;
-export type StaffProfilesControllerFindAllApiArg = {
-  skip?: number;
-  take?: number;
-  specialty?: string;
-  status?: 'ACTIVE' | 'ON_LEAVE' | 'TERMINATED';
-  staffType?: 'DOCTOR' | 'NURSE' | 'TECHNICIAN' | 'RECEPTION' | 'SUPPORT';
-};
-export type StaffProfilesControllerFindOneApiResponse = unknown;
-export type StaffProfilesControllerFindOneApiArg = string;
-export type StaffProfilesControllerUpdateApiResponse = unknown;
-export type StaffProfilesControllerUpdateApiArg = {
-  id: string;
-  updateStaffProfileDto: UpdateStaffProfileDto;
-};
-export type StaffProfilesControllerRemoveApiResponse = unknown;
-export type StaffProfilesControllerRemoveApiArg = string;
-export type StaffProfilesControllerAddCompensationRateApiResponse = unknown;
-export type StaffProfilesControllerAddCompensationRateApiArg = {
-  id: string;
-  createCompensationRateDto: CreateCompensationRateDto;
-};
-export type StaffProfilesControllerRemoveCompensationRateApiResponse = unknown;
-export type StaffProfilesControllerRemoveCompensationRateApiArg = {
-  id: string;
-  rateId: string;
-};
+export type ShiftTypesControllerCloneShiftTypeApiResponse = unknown;
+export type ShiftTypesControllerCloneShiftTypeApiArg = string;
+export type ShiftTypesControllerFindByOrganizationApiResponse = unknown;
+export type ShiftTypesControllerFindByOrganizationApiArg = string;
 export type ShiftSchedulesControllerCreateApiResponse = unknown;
 export type ShiftSchedulesControllerCreateApiArg = CreateShiftScheduleDto;
 export type ShiftSchedulesControllerFindAllApiResponse = unknown;
-export type ShiftSchedulesControllerFindAllApiArg = {
-  skip?: number;
-  take?: number;
-  startDate?: string;
-  endDate?: string;
-  departmentId?: string;
-  staffProfileId?: string;
-  status?: string;
-};
+export type ShiftSchedulesControllerFindAllApiArg = void;
+export type ShiftSchedulesControllerBulkCreateApiResponse = unknown;
+export type ShiftSchedulesControllerBulkCreateApiArg =
+  BulkCreateShiftScheduleDto;
 export type ShiftSchedulesControllerFindOneApiResponse = unknown;
 export type ShiftSchedulesControllerFindOneApiArg = string;
 export type ShiftSchedulesControllerUpdateApiResponse = unknown;
@@ -1014,63 +1150,246 @@ export type ShiftSchedulesControllerUpdateApiArg = {
 };
 export type ShiftSchedulesControllerRemoveApiResponse = unknown;
 export type ShiftSchedulesControllerRemoveApiArg = string;
-export type ShiftAttendancesControllerCreateApiResponse = unknown;
+export type ShiftSchedulesControllerFindByStaffApiResponse = unknown;
+export type ShiftSchedulesControllerFindByStaffApiArg = string;
+export type ShiftSchedulesControllerFindByDepartmentApiResponse = unknown;
+export type ShiftSchedulesControllerFindByDepartmentApiArg = string;
+export type ShiftSchedulesControllerSwapShiftsApiResponse = unknown;
+export type ShiftSchedulesControllerSwapShiftsApiArg = SwapShiftDto;
+export type ShiftAttendancesControllerCreateApiResponse =
+  /** status 201 The shift attendance has been successfully created. */ ShiftAttendance;
 export type ShiftAttendancesControllerCreateApiArg = CreateShiftAttendanceDto;
-export type ShiftAttendancesControllerFindAllApiResponse = unknown;
-export type ShiftAttendancesControllerFindAllApiArg = {
-  skip?: number;
-  take?: number;
-  status?: string;
-  date?: string;
-  departmentId?: string;
-};
-export type ShiftAttendancesControllerFindOneApiResponse = unknown;
-export type ShiftAttendancesControllerFindOneApiArg = string;
-export type ShiftAttendancesControllerUpdateApiResponse = unknown;
+export type ShiftAttendancesControllerFindAllApiResponse =
+  /** status 200 List of shift attendance records retrieved successfully. */ ShiftAttendance[];
+export type ShiftAttendancesControllerFindAllApiArg = void;
+export type ShiftAttendancesControllerFindOneApiResponse =
+  /** status 200 The shift attendance record has been found. */ ShiftAttendance;
+export type ShiftAttendancesControllerFindOneApiArg =
+  /** The ID of the shift attendance record */ string;
+export type ShiftAttendancesControllerUpdateApiResponse =
+  /** status 200 The shift attendance record has been successfully updated. */ ShiftAttendance;
 export type ShiftAttendancesControllerUpdateApiArg = {
+  /** The ID of the shift attendance record to update */
   id: string;
   updateShiftAttendanceDto: UpdateShiftAttendanceDto;
 };
-export type ShiftAttendancesControllerRemoveApiResponse = unknown;
-export type ShiftAttendancesControllerRemoveApiArg = string;
-export type PayPeriodsControllerCreateApiResponse = unknown;
-export type PayPeriodsControllerCreateApiArg = CreatePayPeriodDto;
-export type PayPeriodsControllerFindAllApiResponse = unknown;
-export type PayPeriodsControllerFindAllApiArg = {
-  skip?: number;
-  take?: number;
-  status?: string;
-  startDate?: string;
-  endDate?: string;
-};
-export type PayPeriodsControllerFindOneApiResponse = unknown;
-export type PayPeriodsControllerFindOneApiArg = string;
-export type PayPeriodsControllerUpdateApiResponse = unknown;
-export type PayPeriodsControllerUpdateApiArg = {
+export type ShiftAttendancesControllerRemoveApiResponse =
+  /** status 200 The shift attendance record has been successfully deleted. */ ShiftAttendance;
+export type ShiftAttendancesControllerRemoveApiArg =
+  /** The ID of the shift attendance record to delete */ string;
+export type ShiftAttendancesControllerApproveApiResponse =
+  /** status 200 The shift attendance record has been successfully approved. */ ShiftAttendance;
+export type ShiftAttendancesControllerApproveApiArg = {
+  /** The ID of the shift attendance record to approve */
   id: string;
-  updatePayPeriodDto: UpdatePayPeriodDto;
+  body: {
+    /** ID of the user approving the attendance */
+    approvedById: string;
+    /** Optional approval notes */
+    notes?: string | null;
+  };
 };
-export type PayPeriodsControllerRemoveApiResponse = unknown;
-export type PayPeriodsControllerRemoveApiArg = string;
-export type StaffPaymentsControllerCreateApiResponse = unknown;
-export type StaffPaymentsControllerCreateApiArg = CreateStaffPaymentDto;
-export type StaffPaymentsControllerFindAllApiResponse = unknown;
-export type StaffPaymentsControllerFindAllApiArg = {
+export type ShiftAttendancesControllerFindByShiftScheduleApiResponse =
+  /** status 200 The shift attendance record has been found. */ ShiftAttendance;
+export type ShiftAttendancesControllerFindByShiftScheduleApiArg =
+  /** The ID of the shift schedule */ string;
+export type ShiftAttendancesControllerClockInApiResponse =
+  /** status 200 Successfully clocked in for the shift. */ ShiftAttendance;
+export type ShiftAttendancesControllerClockInApiArg =
+  /** The ID of the shift schedule to clock in for */ string;
+export type ShiftAttendancesControllerClockOutApiResponse =
+  /** status 200 Successfully clocked out from the shift. */ ShiftAttendance;
+export type ShiftAttendancesControllerClockOutApiArg =
+  /** The ID of the shift schedule to clock out from */ string;
+export type ShiftReportsControllerGetStaffHoursReportApiResponse = unknown;
+export type ShiftReportsControllerGetStaffHoursReportApiArg = string;
+export type ShiftReportsControllerGetDepartmentHoursReportApiResponse = unknown;
+export type ShiftReportsControllerGetDepartmentHoursReportApiArg = string;
+export type ShiftReportsControllerGetOrganizationCoverageReportApiResponse =
+  unknown;
+export type ShiftReportsControllerGetOrganizationCoverageReportApiArg = string;
+export type ShiftReportsControllerGetOvertimeReportApiResponse = unknown;
+export type ShiftReportsControllerGetOvertimeReportApiArg = string;
+export type PaymentRulesControllerCreateApiResponse =
+  /** status 201 The payment rule has been successfully created. */ PaymentRuleResponseDto;
+export type PaymentRulesControllerCreateApiArg = CreatePaymentRuleDto;
+export type PaymentRulesControllerFindAllApiResponse =
+  /** status 200 Returns all payment rules that match the query. */ PaymentRuleResponseDto[];
+export type PaymentRulesControllerFindAllApiArg = {
+  /** Filter by shift type ID */
+  shiftTypeId?: string;
+  /** Filter by role ID */
+  roleId?: string;
+  /** Filter by organization ID */
+  organizationId?: string;
+  /** Filter by payment type */
+  paymentType?: "HOURLY" | "WEEKLY" | "MONTHLY" | "PER_SHIFT";
+  /** Filter by effective date - returns rules effective at the specified date */
+  effectiveDate?: string;
+  /** Filter active rules only (rules with no end date or end date in the future) */
+  active?: boolean;
+  /** Number of records to skip for pagination */
   skip?: number;
+  /** Number of records to take for pagination */
   take?: number;
-  payPeriodId?: string;
+};
+export type PaymentRulesControllerFindOneApiResponse =
+  /** status 200 Returns the payment rule with the given ID. */ PaymentRuleResponseDto;
+export type PaymentRulesControllerFindOneApiArg =
+  /** The payment rule ID */ string;
+export type PaymentRulesControllerUpdateApiResponse =
+  /** status 200 The payment rule has been successfully updated. */ PaymentRuleResponseDto;
+export type PaymentRulesControllerUpdateApiArg = {
+  /** The payment rule ID */
+  id: string;
+  updatePaymentRuleDto: UpdatePaymentRuleDto;
+};
+export type PaymentRulesControllerRemoveApiResponse =
+  /** status 200 The payment rule has been successfully deleted. */ PaymentRuleResponseDto;
+export type PaymentRulesControllerRemoveApiArg =
+  /** The payment rule ID */ string;
+export type PaymentRulesControllerFindByOrganizationApiResponse =
+  /** status 200 Returns all payment rules for the given organization. */ PaymentRuleResponseDto[];
+export type PaymentRulesControllerFindByOrganizationApiArg = {
+  /** The organization ID */
+  organizationId: string;
+  take?: number;
+  skip?: number;
+  active?: boolean;
+  effectiveDate?: string;
+  paymentType?: "HOURLY" | "WEEKLY" | "MONTHLY" | "PER_SHIFT";
+  roleId?: string;
+  shiftTypeId?: string;
+};
+export type PaymentRulesControllerFindByRoleApiResponse =
+  /** status 200 Returns all payment rules for the given role. */ PaymentRuleResponseDto[];
+export type PaymentRulesControllerFindByRoleApiArg = {
+  /** The role ID */
+  roleId: string;
+  take?: number;
+  skip?: number;
+  active?: boolean;
+  effectiveDate?: string;
+  paymentType?: "HOURLY" | "WEEKLY" | "MONTHLY" | "PER_SHIFT";
+  organizationId?: string;
+  shiftTypeId?: string;
+};
+export type PaymentRulesControllerFindByShiftTypeApiResponse =
+  /** status 200 Returns all payment rules for the given shift type. */ PaymentRuleResponseDto[];
+export type PaymentRulesControllerFindByShiftTypeApiArg = {
+  /** The shift type ID */
+  shiftTypeId: string;
+  take?: number;
+  skip?: number;
+  active?: boolean;
+  effectiveDate?: string;
+  paymentType?: "HOURLY" | "WEEKLY" | "MONTHLY" | "PER_SHIFT";
+  organizationId?: string;
+  roleId?: string;
+};
+export type ShiftTypePremiumsControllerCreateApiResponse =
+  /** status 201 The shift premium has been successfully created. */ object;
+export type ShiftTypePremiumsControllerCreateApiArg = CreateShiftTypePremiumDto;
+export type ShiftTypePremiumsControllerFindAllApiResponse =
+  /** status 200 Returns all shift premiums that match the query. */ object[];
+export type ShiftTypePremiumsControllerFindAllApiArg = {
+  /** Filter by shift type ID */
+  shiftTypeId?: string;
+  /** Filter by compensation rate ID */
+  compensationRateId?: string;
+  /** Filter by effective date - returns premiums effective at the specified date */
+  effectiveDate?: string;
+  /** Filter active premiums only (premiums with no end date or end date in the future) */
+  active?: boolean;
+  /** Number of records to skip for pagination */
+  skip?: number;
+  /** Number of records to take for pagination */
+  take?: number;
+};
+export type ShiftTypePremiumsControllerFindOneApiResponse =
+  /** status 200 Returns the shift premium with the given ID. */ object;
+export type ShiftTypePremiumsControllerFindOneApiArg =
+  /** The shift premium ID */ string;
+export type ShiftTypePremiumsControllerUpdateApiResponse =
+  /** status 200 The shift premium has been successfully updated. */ object;
+export type ShiftTypePremiumsControllerUpdateApiArg = {
+  /** The shift premium ID */
+  id: string;
+  updateShiftTypePremiumDto: UpdateShiftTypePremiumDto;
+};
+export type ShiftTypePremiumsControllerRemoveApiResponse =
+  /** status 200 The shift premium has been successfully deleted. */ object;
+export type ShiftTypePremiumsControllerRemoveApiArg =
+  /** The shift premium ID */ string;
+export type ShiftTypePremiumsControllerFindApplicablePremiumsApiResponse =
+  /** status 200 Returns all applicable shift premiums. */ object[];
+export type ShiftTypePremiumsControllerFindApplicablePremiumsApiArg = {
+  /** The staff profile ID */
+  staffProfileId: string;
+  /** The department ID */
+  departmentId: string;
+  /** The shift type ID */
+  shiftTypeId: string;
+};
+export type StaffCompensationRatesControllerCreateApiResponse =
+  /** status 201 The compensation rate has been successfully created. */ object;
+export type StaffCompensationRatesControllerCreateApiArg =
+  CreateStaffCompensationRateDto;
+export type StaffCompensationRatesControllerFindAllApiResponse =
+  /** status 200 Returns all compensation rates that match the query. */ object[];
+export type StaffCompensationRatesControllerFindAllApiArg = {
+  /** Filter by staff profile ID */
   staffProfileId?: string;
-  paymentStatus?: string;
+  /** Filter by department ID */
+  departmentId?: string;
+  /** Filter by payment type */
+  paymentType?: "HOURLY" | "WEEKLY" | "MONTHLY";
+  /** Filter by effective date - returns rates effective at the specified date */
+  effectiveDate?: string;
+  /** Filter active rates only (rates with no end date or end date in the future) */
+  active?: boolean;
+  /** Include shift type premiums in the response */
+  includePremiums?: boolean;
+  /** Number of records to skip for pagination */
+  skip?: number;
+  /** Number of records to take for pagination */
+  take?: number;
 };
-export type StaffPaymentsControllerFindOneApiResponse = unknown;
-export type StaffPaymentsControllerFindOneApiArg = string;
-export type StaffPaymentsControllerUpdateApiResponse = unknown;
-export type StaffPaymentsControllerUpdateApiArg = {
+export type StaffCompensationRatesControllerFindOneApiResponse =
+  /** status 200 Returns the compensation rate with the given ID. */ object;
+export type StaffCompensationRatesControllerFindOneApiArg = {
+  /** The compensation rate ID */
   id: string;
-  updateStaffPaymentDto: UpdateStaffPaymentDto;
+  /** Include shift premiums in the response */
+  includePremiums?: boolean;
 };
-export type StaffPaymentsControllerRemoveApiResponse = unknown;
-export type StaffPaymentsControllerRemoveApiArg = string;
+export type StaffCompensationRatesControllerUpdateApiResponse =
+  /** status 200 The compensation rate has been successfully updated. */ object;
+export type StaffCompensationRatesControllerUpdateApiArg = {
+  /** The compensation rate ID */
+  id: string;
+  updateStaffCompensationRateDto: UpdateStaffCompensationRateDto;
+};
+export type StaffCompensationRatesControllerRemoveApiResponse =
+  /** status 200 The compensation rate has been successfully deleted. */ object;
+export type StaffCompensationRatesControllerRemoveApiArg =
+  /** The compensation rate ID */ string;
+export type StaffCompensationRatesControllerFindCurrentRateApiResponse =
+  /** status 200 Returns the current effective compensation rate. */ object;
+export type StaffCompensationRatesControllerFindCurrentRateApiArg = {
+  /** The staff profile ID */
+  staffProfileId: string;
+  /** The department ID */
+  departmentId: string;
+};
+export type StaffCompensationRatesControllerCalculateShiftPayApiResponse =
+  /** status 200 Returns the calculated payment details. */ object;
+export type StaffCompensationRatesControllerCalculateShiftPayApiArg = {
+  staffProfileId: string;
+  departmentId: string;
+  shiftTypeId: string;
+  hoursWorked: number;
+};
 export type LoginDto = {
   email: string;
   password: string;
@@ -1102,6 +1421,8 @@ export type CreateUserDto = {
   departments?: UserDepartmentDto[];
   /** Sector-specific user profile data */
   sectorProfile?: object;
+  /** User address */
+  address?: object;
 };
 export type CreateInvitationDto = {
   /** Email address of the invitee */
@@ -1134,6 +1455,8 @@ export type UpdateUserDto = {
   departments?: UserDepartmentDto[];
   /** Sector-specific user profile data */
   sectorProfile?: object;
+  /** User address */
+  address?: object;
 };
 export type AssignRoleDto = {
   /** Role ID to assign to the user */
@@ -1176,19 +1499,19 @@ export type CreateOrganizationDto = {
   name: string;
   /** Organization category */
   category:
-    | 'HOSPITAL'
-    | 'CARE_HOME'
-    | 'STAFF_PROVIDER'
-    | 'SOFTWARE_COMPANY'
-    | 'MANUFACTURING'
-    | 'EDUCATION'
-    | 'RETAIL'
-    | 'LOGISTICS'
-    | 'CONSTRUCTION'
-    | 'FINANCIAL'
-    | 'HOSPITALITY'
-    | 'HEALTHCARE'
-    | 'OTHER';
+    | "HOSPITAL"
+    | "CARE_HOME"
+    | "STAFF_PROVIDER"
+    | "SOFTWARE_COMPANY"
+    | "MANUFACTURING"
+    | "EDUCATION"
+    | "RETAIL"
+    | "LOGISTICS"
+    | "CONSTRUCTION"
+    | "FINANCIAL"
+    | "HOSPITALITY"
+    | "HEALTHCARE"
+    | "OTHER";
   /** Organization description */
   description?: string;
   /** Organization email */
@@ -1209,19 +1532,19 @@ export type UpdateOrganizationDto = {
   name?: string;
   /** Organization category */
   category?:
-    | 'HOSPITAL'
-    | 'CARE_HOME'
-    | 'STAFF_PROVIDER'
-    | 'SOFTWARE_COMPANY'
-    | 'MANUFACTURING'
-    | 'EDUCATION'
-    | 'RETAIL'
-    | 'LOGISTICS'
-    | 'CONSTRUCTION'
-    | 'FINANCIAL'
-    | 'HOSPITALITY'
-    | 'HEALTHCARE'
-    | 'OTHER';
+    | "HOSPITAL"
+    | "CARE_HOME"
+    | "STAFF_PROVIDER"
+    | "SOFTWARE_COMPANY"
+    | "MANUFACTURING"
+    | "EDUCATION"
+    | "RETAIL"
+    | "LOGISTICS"
+    | "CONSTRUCTION"
+    | "FINANCIAL"
+    | "HOSPITALITY"
+    | "HEALTHCARE"
+    | "OTHER";
   /** Organization description */
   description?: string;
   /** Organization email */
@@ -1254,19 +1577,19 @@ export type CreateRolesDto = {
   isSystemRole?: boolean;
   /** Sector this role applies to (null means cross-sector) */
   sector?:
-    | 'HOSPITAL'
-    | 'CARE_HOME'
-    | 'STAFF_PROVIDER'
-    | 'SOFTWARE_COMPANY'
-    | 'MANUFACTURING'
-    | 'EDUCATION'
-    | 'RETAIL'
-    | 'LOGISTICS'
-    | 'CONSTRUCTION'
-    | 'FINANCIAL'
-    | 'HOSPITALITY'
-    | 'HEALTHCARE'
-    | 'OTHER';
+    | "HOSPITAL"
+    | "CARE_HOME"
+    | "STAFF_PROVIDER"
+    | "SOFTWARE_COMPANY"
+    | "MANUFACTURING"
+    | "EDUCATION"
+    | "RETAIL"
+    | "LOGISTICS"
+    | "CONSTRUCTION"
+    | "FINANCIAL"
+    | "HOSPITALITY"
+    | "HEALTHCARE"
+    | "OTHER";
   /** Organization ID (null for system roles) */
   organizationId?: string;
   /** Permission IDs to assign */
@@ -1281,19 +1604,19 @@ export type UpdateRolesDto = {
   isSystemRole?: boolean;
   /** Sector this role applies to (null means cross-sector) */
   sector?:
-    | 'HOSPITAL'
-    | 'CARE_HOME'
-    | 'STAFF_PROVIDER'
-    | 'SOFTWARE_COMPANY'
-    | 'MANUFACTURING'
-    | 'EDUCATION'
-    | 'RETAIL'
-    | 'LOGISTICS'
-    | 'CONSTRUCTION'
-    | 'FINANCIAL'
-    | 'HOSPITALITY'
-    | 'HEALTHCARE'
-    | 'OTHER';
+    | "HOSPITAL"
+    | "CARE_HOME"
+    | "STAFF_PROVIDER"
+    | "SOFTWARE_COMPANY"
+    | "MANUFACTURING"
+    | "EDUCATION"
+    | "RETAIL"
+    | "LOGISTICS"
+    | "CONSTRUCTION"
+    | "FINANCIAL"
+    | "HOSPITALITY"
+    | "HEALTHCARE"
+    | "OTHER";
   /** Organization ID (null for system roles) */
   organizationId?: string;
   /** Permission IDs to assign */
@@ -1306,230 +1629,157 @@ export type AssignPermissionDto = {
   conditions?: object;
 };
 export type CreateShiftTypeDto = {
-  /** Shift type name (e.g., Morning, Night) */
+  /** Shift type name */
   name: string;
-  /** Start time in 24-hour format (HH:MM) */
-  startTime: string;
-  /** End time in 24-hour format (HH:MM) */
-  endTime: string;
-  /** Whether the shift spans overnight (e.g., 22:00 to 06:00) */
-  isOvernight?: boolean;
-  /** Base pay multiplier (e.g., 1.5 for night shifts) */
-  basePayMultiplier?: number;
   /** Shift type description */
-  description?: string;
-  /** Organization ID */
-  organizationId: string;
-};
-export type UpdateShiftTypeDto = {
-  /** Shift type name (e.g., Morning, Night) */
-  name?: string;
-  /** Start time in 24-hour format (HH:MM) */
   startTime?: string;
-  /** End time in 24-hour format (HH:MM) */
-  endTime?: string;
-  /** Whether the shift spans overnight (e.g., 22:00 to 06:00) */
+  /** Shift type description */
+  endTime: string;
+  /** Whether the shift type is overnight */
   isOvernight?: boolean;
-  /** Base pay multiplier (e.g., 1.5 for night shifts) */
+  /** Shift type hours count */
+  hoursCount: number;
+  /** Shift type base pay multiplier */
   basePayMultiplier?: number;
   /** Shift type description */
   description?: string;
   /** Organization ID */
-  organizationId?: string;
-};
-export type CreateCompensationRateDto = {
-  /** Department ID */
-  departmentId: string;
-  /** Base rate (hourly or per shift) */
-  baseRate: number;
-  /** Specialty bonus */
-  specialtyBonus?: number;
-  /** Experience multiplier */
-  experienceMultiplier?: number;
-  /** Effective date */
-  effectiveDate?: string;
-  /** End date (if applicable) */
-  endDate?: string;
-};
-export type CreateStaffProfileDto = {
-  /** User ID */
-  userId: string;
-  /** Staff type */
-  staffType: 'DOCTOR' | 'NURSE' | 'TECHNICIAN' | 'RECEPTION' | 'SUPPORT';
-  /** Specialty (e.g., Cardiology, Orthopedics) */
-  specialty?: string;
-  /** Years of experience */
-  experienceYears?: number;
-  /** Education level */
-  educationLevel?: string;
-  /** Certifications as JSON array */
-  certifications?: object;
-  /** Base salary type */
-  baseSalaryType?: 'HOURLY' | 'MONTHLY' | 'WEEKLY' | 'PER_SHIFT';
-  /** Base salary amount */
-  baseSalaryAmount?: number;
-  /** Date joined */
-  dateJoined?: string;
-  /** Staff status */
-  status?: 'ACTIVE' | 'ON_LEAVE' | 'TERMINATED';
-  /** Compensation rates */
-  compensationRates?: CreateCompensationRateDto[];
-};
-export type UpdateStaffProfileDto = {
-  /** User ID */
-  userId?: string;
-  /** Staff type */
-  staffType?: 'DOCTOR' | 'NURSE' | 'TECHNICIAN' | 'RECEPTION' | 'SUPPORT';
-  /** Specialty (e.g., Cardiology, Orthopedics) */
-  specialty?: string;
-  /** Years of experience */
-  experienceYears?: number;
-  /** Education level */
-  educationLevel?: string;
-  /** Certifications as JSON array */
-  certifications?: object;
-  /** Base salary type */
-  baseSalaryType?: 'HOURLY' | 'MONTHLY' | 'WEEKLY' | 'PER_SHIFT';
-  /** Base salary amount */
-  baseSalaryAmount?: number;
-  /** Date joined */
-  dateJoined?: string;
-  /** Staff status */
-  status?: 'ACTIVE' | 'ON_LEAVE' | 'TERMINATED';
-  /** Compensation rates */
-  compensationRates?: CreateCompensationRateDto[];
-};
-export type CreateShiftScheduleDto = {
-  /** Staff Profile ID */
-  staffProfileId: string;
-  /** Shift Type ID */
-  shiftTypeId: string;
-  /** Department ID */
-  departmentId: string;
-  /** Shift start date and time */
-  startDateTime: string;
-  /** Shift end date and time */
-  endDateTime: string;
-  /** Shift status */
-  status?: 'SCHEDULED' | 'COMPLETED' | 'CANCELED' | 'SWAPPED';
-  /** Whether the shift is confirmed by the staff */
-  isConfirmed?: boolean;
-  /** Shift notes */
-  notes?: string;
-};
-export type UpdateShiftScheduleDto = {
-  /** Staff Profile ID */
-  staffProfileId?: string;
-  /** Shift Type ID */
-  shiftTypeId?: string;
-  /** Department ID */
-  departmentId?: string;
-  /** Shift start date and time */
-  startDateTime?: string;
-  /** Shift end date and time */
-  endDateTime?: string;
-  /** Shift status */
-  status?: 'SCHEDULED' | 'COMPLETED' | 'CANCELED' | 'SWAPPED';
-  /** Whether the shift is confirmed by the staff */
-  isConfirmed?: boolean;
-  /** Shift notes */
-  notes?: string;
-};
-export type CreateShiftAttendanceDto = {
-  /** Shift Schedule ID */
-  shiftScheduleId: string;
-  /** Actual start time of the shift */
-  actualStartTime?: string;
-  /** Actual end time of the shift */
-  actualEndTime?: string;
-  /** Attendance status */
-  status?: 'PENDING' | 'PRESENT' | 'LATE' | 'ABSENT' | 'PARTIALLY_COMPLETE';
-  /** Overtime minutes */
-  overtimeMinutes?: number;
-  /** Notes about the attendance */
-  notes?: string;
-};
-export type UpdateShiftAttendanceDto = {
-  /** Shift Schedule ID */
-  shiftScheduleId?: string;
-  /** Actual start time of the shift */
-  actualStartTime?: string;
-  /** Actual end time of the shift */
-  actualEndTime?: string;
-  /** Attendance status */
-  status?: 'PENDING' | 'PRESENT' | 'LATE' | 'ABSENT' | 'PARTIALLY_COMPLETE';
-  /** Overtime minutes */
-  overtimeMinutes?: number;
-  /** Notes about the attendance */
-  notes?: string;
-};
-export type CreatePayPeriodDto = {
-  /** Organization ID */
   organizationId: string;
-  /** Pay period start date */
-  startDate: string;
-  /** Pay period end date */
-  endDate: string;
-  /** Pay period status */
-  status?: 'OPEN' | 'CALCULATING' | 'FINALIZED' | 'PAID';
 };
-export type UpdatePayPeriodDto = {
-  /** Organization ID */
-  organizationId?: string;
-  /** Pay period start date */
-  startDate?: string;
-  /** Pay period end date */
+export type UpdateShiftTypeDto = {};
+export type CreateShiftScheduleDto = {};
+export type BulkCreateShiftScheduleDto = {
+  /** Array of shift schedules to be created */
+  shifts: CreateShiftScheduleDto[];
+};
+export type UpdateShiftScheduleDto = {};
+export type SwapShiftDto = {};
+export type ShiftAttendance = {};
+export type CreateShiftAttendanceDto = {};
+export type UpdateShiftAttendanceDto = {};
+export type PaymentRuleResponseDto = {
+  /** Unique identifier for the payment rule */
+  id: string;
+  /** The ID of the shift type for this payment rule */
+  shiftTypeId: string;
+  /** The ID of the role for this payment rule */
+  roleId: string;
+  /** The type of payment */
+  paymentType: "HOURLY" | "WEEKLY" | "MONTHLY" | "PER_SHIFT";
+  /** The base payment rate */
+  baseRate: number;
+  /** Additional bonus for specialized skills */
+  specialtyBonus: number;
+  /** Multiplier applied based on experience level */
+  experienceMultiplier: number;
+  /** The date when this payment rule becomes effective */
+  effectiveDate: string;
+  /** The date when this payment rule expires */
+  endDate?: string | null;
+  /** The ID of the organization this payment rule belongs to */
+  organizationId: string;
+  /** When the payment rule was created */
+  createdAt: string;
+  /** When the payment rule was last updated */
+  updatedAt: string;
+  /** The related shift type details */
+  shiftType?: object;
+  /** The related role details */
+  role?: object;
+};
+export type CreatePaymentRuleDto = {
+  /** The ID of the shift type for this payment rule */
+  shiftTypeId: string;
+  /** The ID of the role for this payment rule */
+  roleId: string;
+  /** The type of payment (hourly, weekly, monthly, or per shift) */
+  paymentType: "HOURLY" | "WEEKLY" | "MONTHLY" | "PER_SHIFT";
+  /** The base payment rate */
+  baseRate: number;
+  /** Additional bonus for specialized skills (optional) */
+  specialtyBonus?: number;
+  /** Multiplier applied based on experience level (optional) */
+  experienceMultiplier?: number;
+  /** The date when this payment rule becomes effective */
+  effectiveDate: string;
+  /** The date when this payment rule expires (optional) */
   endDate?: string;
-  /** Pay period status */
-  status?: 'OPEN' | 'CALCULATING' | 'FINALIZED' | 'PAID';
+  /** The ID of the organization this payment rule belongs to */
+  organizationId: string;
 };
-export type CreateStaffPaymentDto = {
-  /** Staff Profile ID */
+export type UpdatePaymentRuleDto = {
+  /** The ID of the shift type for this payment rule */
+  shiftTypeId?: string;
+  /** The ID of the role for this payment rule */
+  roleId?: string;
+  /** The type of payment (hourly, weekly, monthly, or per shift) */
+  paymentType?: "HOURLY" | "WEEKLY" | "MONTHLY" | "PER_SHIFT";
+  /** The base payment rate */
+  baseRate?: number;
+  /** Additional bonus for specialized skills */
+  specialtyBonus?: number;
+  /** Multiplier applied based on experience level */
+  experienceMultiplier?: number;
+  /** The date when this payment rule becomes effective */
+  effectiveDate?: string;
+  /** The date when this payment rule expires */
+  endDate?: string | null;
+};
+export type CreateShiftTypePremiumDto = {
+  /** The ID of the shift type this premium applies to */
+  shiftTypeId: string;
+  /** The ID of the compensation rate this premium applies to */
+  compensationRateId: string;
+  /** Whether the premium is calculated as a percentage (true) or fixed amount (false) */
+  isPremiumPercentage: boolean;
+  /** The premium value (percentage or fixed amount) */
+  premiumValue: number;
+  /** The date when this shift premium becomes effective */
+  effectiveDate: string;
+  /** The date when this shift premium expires (optional) */
+  endDate?: string;
+};
+export type UpdateShiftTypePremiumDto = {
+  /** Whether the premium is calculated as a percentage (true) or fixed amount (false) */
+  isPremiumPercentage?: boolean;
+  /** The premium value (percentage or fixed amount) */
+  premiumValue?: number;
+  /** The date when this shift premium becomes effective */
+  effectiveDate?: string;
+  /** The date when this shift premium expires */
+  endDate?: string | null;
+};
+export type CreateStaffCompensationRateDto = {
+  /** The ID of the staff profile this compensation applies to */
   staffProfileId: string;
-  /** Pay Period ID */
-  payPeriodId: string;
-  /** Regular hours worked */
-  regularHours: number;
-  /** Overtime hours worked */
-  overtimeHours?: number;
-  /** Regular pay amount */
-  regularPay: number;
-  /** Overtime pay amount */
-  overtimePay?: number;
-  /** Specialty bonus amount */
+  /** The ID of the department this compensation applies to */
+  departmentId: string;
+  /** The base compensation rate amount */
+  baseRate: number;
+  /** The type of payment (hourly, weekly, or monthly) */
+  paymentType: "HOURLY" | "WEEKLY" | "MONTHLY";
+  /** Additional bonus for specialized skills (optional) */
   specialtyBonus?: number;
-  /** Other bonuses amount */
-  otherBonuses?: number;
-  /** Deductions amount */
-  deductions?: number;
-  /** Payment status */
-  paymentStatus?: 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED';
-  /** Payment date */
-  paymentDate?: string;
+  /** Multiplier applied based on experience level (optional) */
+  experienceMultiplier?: number;
+  /** The date when this compensation rate becomes effective */
+  effectiveDate: string;
+  /** The date when this compensation rate expires (optional) */
+  endDate?: string;
 };
-export type UpdateStaffPaymentDto = {
-  /** Staff Profile ID */
-  staffProfileId?: string;
-  /** Pay Period ID */
-  payPeriodId?: string;
-  /** Regular hours worked */
-  regularHours?: number;
-  /** Overtime hours worked */
-  overtimeHours?: number;
-  /** Regular pay amount */
-  regularPay?: number;
-  /** Overtime pay amount */
-  overtimePay?: number;
-  /** Specialty bonus amount */
+export type UpdateStaffCompensationRateDto = {
+  /** The base compensation rate amount */
+  baseRate?: number;
+  /** The type of payment (hourly, weekly, or monthly) */
+  paymentType?: "HOURLY" | "WEEKLY" | "MONTHLY";
+  /** Additional bonus for specialized skills */
   specialtyBonus?: number;
-  /** Other bonuses amount */
-  otherBonuses?: number;
-  /** Deductions amount */
-  deductions?: number;
-  /** Payment status */
-  paymentStatus?: 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED';
-  /** Payment date */
-  paymentDate?: string;
+  /** Multiplier applied based on experience level */
+  experienceMultiplier?: number;
+  /** The date when this compensation rate becomes effective */
+  effectiveDate?: string;
+  /** The date when this compensation rate expires */
+  endDate?: string | null;
 };
 export const {
   useAuthControllerLoginMutation,
@@ -1575,31 +1825,49 @@ export const {
   useShiftTypesControllerFindOneQuery,
   useShiftTypesControllerUpdateMutation,
   useShiftTypesControllerRemoveMutation,
-  useStaffProfilesControllerCreateMutation,
-  useStaffProfilesControllerFindAllQuery,
-  useStaffProfilesControllerFindOneQuery,
-  useStaffProfilesControllerUpdateMutation,
-  useStaffProfilesControllerRemoveMutation,
-  useStaffProfilesControllerAddCompensationRateMutation,
-  useStaffProfilesControllerRemoveCompensationRateMutation,
+  useShiftTypesControllerCloneShiftTypeMutation,
+  useShiftTypesControllerFindByOrganizationQuery,
   useShiftSchedulesControllerCreateMutation,
   useShiftSchedulesControllerFindAllQuery,
+  useShiftSchedulesControllerBulkCreateMutation,
   useShiftSchedulesControllerFindOneQuery,
   useShiftSchedulesControllerUpdateMutation,
   useShiftSchedulesControllerRemoveMutation,
+  useShiftSchedulesControllerFindByStaffQuery,
+  useShiftSchedulesControllerFindByDepartmentQuery,
+  useShiftSchedulesControllerSwapShiftsMutation,
   useShiftAttendancesControllerCreateMutation,
   useShiftAttendancesControllerFindAllQuery,
   useShiftAttendancesControllerFindOneQuery,
   useShiftAttendancesControllerUpdateMutation,
   useShiftAttendancesControllerRemoveMutation,
-  usePayPeriodsControllerCreateMutation,
-  usePayPeriodsControllerFindAllQuery,
-  usePayPeriodsControllerFindOneQuery,
-  usePayPeriodsControllerUpdateMutation,
-  usePayPeriodsControllerRemoveMutation,
-  useStaffPaymentsControllerCreateMutation,
-  useStaffPaymentsControllerFindAllQuery,
-  useStaffPaymentsControllerFindOneQuery,
-  useStaffPaymentsControllerUpdateMutation,
-  useStaffPaymentsControllerRemoveMutation,
+  useShiftAttendancesControllerApproveMutation,
+  useShiftAttendancesControllerFindByShiftScheduleQuery,
+  useShiftAttendancesControllerClockInMutation,
+  useShiftAttendancesControllerClockOutMutation,
+  useShiftReportsControllerGetStaffHoursReportQuery,
+  useShiftReportsControllerGetDepartmentHoursReportQuery,
+  useShiftReportsControllerGetOrganizationCoverageReportQuery,
+  useShiftReportsControllerGetOvertimeReportQuery,
+  usePaymentRulesControllerCreateMutation,
+  usePaymentRulesControllerFindAllQuery,
+  usePaymentRulesControllerFindOneQuery,
+  usePaymentRulesControllerUpdateMutation,
+  usePaymentRulesControllerRemoveMutation,
+  usePaymentRulesControllerFindByOrganizationQuery,
+  usePaymentRulesControllerFindByRoleQuery,
+  usePaymentRulesControllerFindByShiftTypeQuery,
+  useShiftTypePremiumsControllerCreateMutation,
+  useShiftTypePremiumsControllerFindAllQuery,
+  useShiftTypePremiumsControllerFindOneQuery,
+  useShiftTypePremiumsControllerUpdateMutation,
+  useShiftTypePremiumsControllerRemoveMutation,
+  useShiftTypePremiumsControllerFindApplicablePremiumsQuery,
+  useStaffCompensationRatesControllerCreateMutation,
+  useStaffCompensationRatesControllerFindAllQuery,
+  useStaffCompensationRatesControllerFindOneQuery,
+  useStaffCompensationRatesControllerUpdateMutation,
+  useStaffCompensationRatesControllerRemoveMutation,
+  useStaffCompensationRatesControllerFindCurrentRateQuery,
+  useStaffCompensationRatesControllerCalculateShiftPayQuery,
 } = injectedRtkApi;

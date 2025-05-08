@@ -65,13 +65,14 @@ import {
     CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useDispatch } from "react-redux";
+import { NavMain } from "./NavMain";
 
 // Menu item type definition
 interface MenuItem {
     id: string;
     label: string;
     path: string;
-    icon: string;
+    icon: any;
     roles?: string[];
 }
 
@@ -79,7 +80,7 @@ interface MenuItem {
 interface MenuSection {
     id: string;
     label: string;
-    icon: string;
+    icon: any;
     items: MenuItem[];
     roles?: string[];
 }
@@ -105,85 +106,6 @@ const getIconComponent = (iconName: string): LucideIcon => {
     return iconMap[iconName] || LayoutDashboard; // Default to Dashboard icon if not found
 };
 
-// NavMenuItem Component
-const NavMenuItem = ({
-    item,
-    isActive = false
-}: {
-    item: MenuItem,
-    isActive?: boolean
-}) => {
-    const navigate = useNavigate();
-    const { isMobile } = useSidebar();
-
-    // Get the icon component
-    const IconComponent = getIconComponent(item.icon);
-
-    const handleClick = (e: React.MouseEvent) => {
-        e.preventDefault();
-        if (item.path) {
-            navigate(item.path);
-        }
-    };
-
-    return (
-        <SidebarMenuItem>
-            <SidebarMenuButton
-                tooltip={item.label}
-                isActive={isActive}
-                onClick={handleClick}
-            >
-                <IconComponent className="h-5 w-5" />
-                <span>{item.label}</span>
-            </SidebarMenuButton>
-        </SidebarMenuItem>
-    );
-};
-
-// NavSubmenu Component
-const NavSubmenu = ({
-    section,
-    currentPath
-}: {
-    section: MenuSection,
-    currentPath: string
-}) => {
-    const navigate = useNavigate();
-    const IconComponent = getIconComponent(section.icon);
-
-    return (
-        <Collapsible asChild defaultOpen className="group/collapsible">
-            <SidebarMenuItem>
-                <CollapsibleTrigger asChild>
-                    <SidebarMenuButton tooltip={section.label}>
-                        <IconComponent className="h-5 w-5" />
-                        <span>{section.label}</span>
-                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                    </SidebarMenuButton>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                    <SidebarMenuSub>
-                        {section.items.map((item) => (
-                            <SidebarMenuSubItem key={item.id}>
-                                <SidebarMenuSubButton
-                                    isActive={currentPath === item.path}
-                                    asChild
-                                >
-                                    <a href={item.path} onClick={(e) => {
-                                        e.preventDefault();
-                                        navigate(item.path);
-                                    }}>
-                                        <span>{item.label}</span>
-                                    </a>
-                                </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                        ))}
-                    </SidebarMenuSub>
-                </CollapsibleContent>
-            </SidebarMenuItem>
-        </Collapsible>
-    );
-};
 
 // User Profile Component
 const UserProfile = () => {
@@ -272,9 +194,9 @@ const generateMenuConfig = (userRoles: string[]) => {
         {
             id: 'dashboard',
             label: 'Dashboard',
-            icon: 'dashboard',
+            icon: getIconComponent('dashboard'),
             items: [
-                { id: 'overview', label: 'Overview', path: '/dashboard', icon: 'dashboard' }
+                { id: 'overview', label: 'Overview', path: '/dashboard', icon: getIconComponent('dashboard') }
             ]
         }
     ];
@@ -284,11 +206,11 @@ const generateMenuConfig = (userRoles: string[]) => {
         {
             id: 'system',
             label: 'System',
-            icon: 'settings',
+            icon: getIconComponent('settings'),
             items: [
-                { id: 'organizations', label: 'Organizations', path: '/organizations', icon: 'organizations' },
-                { id: 'roles', label: 'Roles', path: '/roles', icon: 'roles' },
-                { id: 'permissions', label: 'Permissions', path: '/permissions', icon: 'permissions' }
+                { id: 'organizations', label: 'Organizations', path: '/organizations', icon: getIconComponent('organizations') },
+                { id: 'roles', label: 'Roles', path: '/roles', icon: getIconComponent('roles') },
+                { id: 'permissions', label: 'Permissions', path: '/permissions', icon: getIconComponent('permissions') }
             ],
             roles: ['Super Admin']
         }
@@ -299,10 +221,28 @@ const generateMenuConfig = (userRoles: string[]) => {
         {
             id: 'users',
             label: 'Users',
-            icon: 'users',
+            icon: getIconComponent('users'),
             items: [
-                { id: 'all-users', label: 'All Users', path: '/users', icon: 'users' },
-                { id: 'invite-user', label: 'Invite User', path: '/users/invite', icon: 'add' }
+                { id: 'all-users', label: 'All Users', path: '/users', icon: getIconComponent('users') },
+                { id: 'invite-user', label: 'Invite User', path: '/users/invite', icon: getIconComponent('add') }
+            ],
+            roles: ['Super Admin', 'Organization Admin']
+        },
+        // settings section for organization admin
+
+        {
+            id: 'settings',
+            label: 'Settings',
+            icon: getIconComponent('settings'),
+            items: [
+                { id: 'profile', label: 'Profile', path: '/settings/profile', icon: getIconComponent('settings') },
+                { id: 'shifts', label: 'Shifts', path: '/settings/shifts', icon: getIconComponent('settings') },
+                {
+                    id: 'shifts-payments',
+                    label: 'Shifts Payments',
+                    path: '/settings/shifts-payments',
+                    icon: getIconComponent('settings')
+                }
             ],
             roles: ['Super Admin', 'Organization Admin']
         }
@@ -313,50 +253,50 @@ const generateMenuConfig = (userRoles: string[]) => {
         {
             id: 'patients',
             label: 'Patients',
-            icon: 'patients',
+            icon: getIconComponent('patients'),
             items: [
-                { id: 'all-patients', label: 'All Patients', path: '/patients', icon: 'patients' },
-                { id: 'add-patient', label: 'Add Patient', path: '/patients/create', icon: 'add' }
+                { id: 'all-patients', label: 'All Patients', path: '/patients', icon: getIconComponent('patients') },
+                { id: 'add-patient', label: 'Add Patient', path: '/patients/create', icon: getIconComponent('add') }
             ],
             roles: ['Doctor', 'Nurse', 'Receptionist']
         },
         {
             id: 'appointments',
             label: 'Appointments',
-            icon: 'appointments',
+            icon: getIconComponent('appointments'),
             items: [
-                { id: 'all-appointments', label: 'All Appointments', path: '/appointments', icon: 'appointments' },
-                { id: 'schedule', label: 'Schedule', path: '/appointments/create', icon: 'add' }
+                { id: 'all-appointments', label: 'All Appointments', path: '/appointments', icon: getIconComponent('appointments') },
+                { id: 'schedule', label: 'Schedule', path: '/appointments/create', icon: getIconComponent('add') }
             ],
             roles: ['Doctor', 'Nurse', 'Receptionist']
         },
         {
             id: 'medical',
             label: 'Medical Records',
-            icon: 'medical-records',
+            icon: getIconComponent('medical-records'),
             items: [
-                { id: 'all-records', label: 'All Records', path: '/medical-records', icon: 'medical-records' },
-                { id: 'lab-results', label: 'Lab Results', path: '/lab-results', icon: 'lab-results' }
+                { id: 'all-records', label: 'All Records', path: '/medical-records', icon: getIconComponent('medical-records') },
+                { id: 'lab-results', label: 'Lab Results', path: '/lab-results', icon: getIconComponent('lab-results') }
             ],
             roles: ['Doctor', 'Nurse', 'Lab Technician']
         },
         {
             id: 'staff',
             label: 'Staff',
-            icon: 'schedule',
+            icon: getIconComponent('schedule'),
             items: [
-                { id: 'staff-schedule', label: 'Schedule', path: '/schedule', icon: 'schedule' },
-                { id: 'shift-management', label: 'Shift Management', path: '/shifts', icon: 'schedule' }
+                { id: 'staff-schedule', label: 'Schedule', path: '/schedule', icon: getIconComponent('schedule') },
+                { id: 'shift-management', label: 'Shift Management', path: '/shifts', icon: getIconComponent('schedule') }
             ],
             roles: ['Organization Admin', 'Doctor', 'Nurse']
         },
         {
             id: 'billing',
             label: 'Billing',
-            icon: 'billing',
+            icon: getIconComponent('billing'),
             items: [
-                { id: 'invoices', label: 'Invoices', path: '/billing/invoices', icon: 'billing' },
-                { id: 'payments', label: 'Payments', path: '/billing/payments', icon: 'billing' }
+                { id: 'invoices', label: 'Invoices', path: '/billing/invoices', icon: getIconComponent('billing') },
+                { id: 'payments', label: 'Payments', path: '/billing/payments', icon: getIconComponent('billing') }
             ],
             roles: ['Billing Staff', 'Organization Admin']
         }
@@ -400,6 +340,8 @@ export function AppSidebar() {
         return generateMenuConfig(userRoles);
     }, [userRoles]);
 
+
+
     return (
         <Sidebar collapsible="icon">
             <SidebarHeader>
@@ -421,25 +363,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                {/* Render menu sections */}
-                {menuSections.map(section => (
-                    <SidebarGroup key={section.id}>
-                        <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
-                        <SidebarMenu>
-                            {section.items.length === 1 ? (
-                                <NavMenuItem
-                                    item={section.items[0]}
-                                    isActive={currentPath === section.items[0].path}
-                                />
-                            ) : (
-                                <NavSubmenu
-                                    section={section}
-                                    currentPath={currentPath}
-                                />
-                            )}
-                        </SidebarMenu>
-                    </SidebarGroup>
-                ))}
+                <NavMain items={menuSections} />
             </SidebarContent>
 
             <SidebarFooter>

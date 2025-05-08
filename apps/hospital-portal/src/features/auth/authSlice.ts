@@ -1,11 +1,13 @@
 import { createSlice, PayloadAction, isAnyOf } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
+import { Organization } from '@/lib/types';
 import { generatedApi } from '../generatedApi';
 
 // Define the auth state interface
 export interface AuthState {
   token: string | null;
   user: any | null;
+  currentOrganization: Organization | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -18,6 +20,7 @@ const initialState: AuthState = {
   isAuthenticated: !!localStorage.getItem('token'),
   isLoading: false,
   error: null,
+  currentOrganization: null,
 };
 
 // Create the auth slice
@@ -117,7 +120,9 @@ const authSlice = createSlice({
       .addMatcher(
         generatedApi.endpoints.authControllerGetProfile.matchFulfilled,
         (state, { payload }) => {
+          console.log('Profile payload:', payload);
           state.user = payload;
+          state.currentOrganization = payload.currentOrganization;
           state.isAuthenticated = true;
           state.isLoading = false;
         }
@@ -162,6 +167,9 @@ export const selectIsAuthenticated = (state: RootState) =>
 export const selectAuthLoading = (state: RootState) => state.auth.isLoading;
 export const selectAuthError = (state: RootState) => state.auth.error;
 export const selectToken = (state: RootState) => state.auth.token;
+
+export const selectCurrentOrganization = (state: RootState) =>
+  state.auth.currentOrganization;
 
 // Export reducer
 export default authSlice.reducer;

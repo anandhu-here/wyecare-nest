@@ -22,7 +22,6 @@ import { ShiftsModule } from './shifts/shifts.module';
     OrganizationsModule,
     RolesModule,
     CaslModule,
-    HospitalModule,
     ShiftsModule,
   ],
 })

@@ -1,5 +1,5 @@
 // apps/api/src/main.ts
-
+import { config } from 'dotenv';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
@@ -38,13 +38,17 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
-
+  SwaggerModule.setup('swagger', app, document, {
+    jsonDocumentUrl: 'swagger/json',
+  });
   // CORS
   app.enableCors();
 
   // Global prefix
   app.setGlobalPrefix('api');
 
-  await app.listen(3000);
+  console.log('Environment Variables:', process.env.PORT);
+
+  await app.listen(process.env.PORT || 3000);
 }
 bootstrap();

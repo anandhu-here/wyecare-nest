@@ -37,7 +37,6 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async login(@Body() loginDto: LoginDto, @Request() req) {
     const response = await this.authService.login(req.user);
-    console.log('Login response:', response);
     return response;
   }
 
@@ -68,8 +67,14 @@ export class AuthController {
     description: 'Returns the user profile',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  getProfile(@Request() req) {
-    return req.user;
+  async getProfile(@Request() req) {
+    const currentOrganization = await this.authService.getCurrentOrganization(
+      req.user.organizationId
+    );
+    return {
+      ...req.user,
+      currentOrganization,
+    };
   }
 
   @Post('create-super-admin')

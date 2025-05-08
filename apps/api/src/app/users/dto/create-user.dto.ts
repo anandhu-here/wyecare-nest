@@ -12,6 +12,7 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import { AddressDto } from '../../organizations/dto/address.dto';
 
 class UserDepartmentDto {
   @ApiProperty({ description: 'Department ID' })
@@ -95,4 +96,13 @@ export class CreateUserDto {
   })
   @IsOptional()
   sectorProfile?: any;
+
+  // address
+  @ApiProperty({
+    description: 'User address',
+    required: false,
+    type: Object,
+  })
+  @IsOptional()
+  address?: any;
 }

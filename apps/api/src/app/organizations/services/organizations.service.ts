@@ -87,28 +87,38 @@ export class OrganizationsService {
   }
 
   async findOne(id: string) {
-    const organization = await this.prisma.organization.findUnique({
-      where: { id },
-      include: {
-        address: true,
-        departments: {
-          include: {
-            children: true,
+    try {
+      const organization = await this.prisma.organization.findUnique({
+        where: { id },
+        include: {
+          address: true,
+          departments: {
+            include: {
+              children: true,
+            },
+          },
+          _count: {
+            select: {
+              users: true,
+            },
           },
         },
-        _count: {
-          select: {
-            users: true,
-          },
-        },
-      },
-    });
+      });
 
-    if (!organization) {
-      throw new NotFoundException(`Organization with ID ${id} not found`);
+      if (!organization) {
+        throw new NotFoundException(`Organization with ID ${id} not found`);
+      }
+
+      // The organization is returned with the address included (even if null)
+      return organization;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException(
+        `Failed to find organization: ${error.message}`
+      );
     }
-
-    return organization;
   }
 
   async update(id: string, updateOrganizationDto: UpdateOrganizationDto) {

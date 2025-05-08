@@ -8,7 +8,11 @@
     provider = "postgresql"
     url      = env("DATABASE_URL")
   }
-
+enum PaymentType {
+  HOURLY
+  WEEKLY
+  MONTHLY
+}
   enum StaffType {
     DOCTOR
     NURSE
@@ -55,7 +59,9 @@
     payPeriods         PayPeriod[]
 
     invitations       Invitation[]
-  }
+  
+    PaymentRule PaymentRule[]
+}
 
   enum OrgCategory {
     HOSPITAL
@@ -81,10 +87,12 @@
     zipCode         String
     country         String
     countryCode     String?
-    
+    phone           String?
     // Relationships
     organizationId  String?        @unique
     organization    Organization?  @relation(fields: [organizationId], references: [id])
+    userId          String?        @unique
+    user            User?          @relation(fields: [userId], references: [id])
     createdAt       DateTime       @default(now())
     updatedAt       DateTime       @updatedAt
   }
@@ -123,9 +131,12 @@
     organization      Organization?       @relation(fields: [organizationId], references: [id])
     createdAt         DateTime            @default(now())
     updatedAt         DateTime            @updatedAt
+
+    
     
     // Relationships
     departments       UserDepartment[]
+    address           Address?
     roles             UserRole[]
     sectorProfile     Json?               // Sector-specific user metadata
     staffProfile       StaffProfile?
@@ -168,7 +179,8 @@
     invitations       Invitation[]
     
     @@unique([name, organizationId])
-  }
+      PaymentRule PaymentRule[]
+}
 
   model Permission {
     id                String              @id @default(uuid())
@@ -249,6 +261,69 @@
     payments          StaffPayment[]
   }
 
+  model StaffCompensationRate {
+  id                  String         @id @default(uuid())
+  staffProfileId      String
+  staffProfile        StaffProfile   @relation(fields: [staffProfileId], references: [id])
+  departmentId        String
+  department          Department     @relation(fields: [departmentId], references: [id])
+  baseRate            Decimal        // Base rate amount
+  paymentType         PaymentType    @default(HOURLY) // HOURLY, WEEKLY, MONTHLY
+  specialtyBonus      Decimal        @default(0)
+  experienceMultiplier Float         @default(1.0)
+  effectiveDate       DateTime       @default(now())
+  endDate             DateTime?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  
+  // Relationships
+  shiftPremiums       ShiftTypePremium[]
+  
+  @@unique([staffProfileId, departmentId, effectiveDate])
+}
+
+model ShiftTypePremium {
+  id                  String         @id @default(uuid())
+  shiftTypeId         String
+  shiftType           ShiftType      @relation(fields: [shiftTypeId], references: [id])
+  compensationRateId  String
+  compensationRate    StaffCompensationRate @relation(fields: [compensationRateId], references: [id])
+  
+  // Premium can be either a percentage or fixed amount
+  isPremiumPercentage Boolean        @default(true)
+  premiumValue        Decimal        @default(0)     // Either percentage (1.25 = 25% extra) or fixed amount
+  
+  // For tracking audit and enforcement 
+  effectiveDate       DateTime       @default(now())
+  endDate             DateTime?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  
+  // Unique constraint - one premium per shift type per compensation rate
+  @@unique([shiftTypeId, compensationRateId, effectiveDate])
+}
+
+
+  model PaymentRule {
+  id                 String      @id @default(uuid())
+  shiftTypeId        String
+  shiftType          ShiftType   @relation(fields: [shiftTypeId], references: [id])
+  roleId             String
+  role               Role        @relation(fields: [roleId], references: [id])
+  paymentType        String      // HOURLY, WEEKLY, MONTHLY, PER_SHIFT
+  baseRate           Decimal
+  specialtyBonus     Decimal     @default(0)
+  experienceMultiplier Float     @default(1.0)
+  effectiveDate      DateTime    @default(now())
+  endDate            DateTime?
+  organizationId     String
+  organization       Organization @relation(fields: [organizationId], references: [id])
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  
+  @@unique([shiftTypeId, roleId, effectiveDate, organizationId])
+}
+
   // Shift Type Model
   model ShiftType {
     id                String         @id @default(uuid())
@@ -268,25 +343,10 @@
     schedules         ShiftSchedule[]
     
     @@unique([name, organizationId])
-  }
+      PaymentRule PaymentRule[]
+    ShiftTypePremium ShiftTypePremium[]
+}
 
-  // Staff Compensation Rate Model
-  model StaffCompensationRate {
-    id                  String         @id @default(uuid())
-    staffProfileId      String
-    staffProfile        StaffProfile   @relation(fields: [staffProfileId], references: [id])
-    departmentId        String
-    department          Department     @relation(fields: [departmentId], references: [id])
-    baseRate            Decimal
-    specialtyBonus      Decimal        @default(0)
-    experienceMultiplier Float         @default(1.0)
-    effectiveDate       DateTime       @default(now())
-    endDate             DateTime?
-    createdAt           DateTime       @default(now())
-    updatedAt           DateTime       @updatedAt
-    
-    @@unique([staffProfileId, departmentId, effectiveDate])
-  }
 
   // Shift Schedule Model
   model ShiftSchedule {
